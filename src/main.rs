@@ -1,15 +1,20 @@
 use my_sdl::MySdl;
+use prelude::SCREEN_WIDTH;
 use util::is_mac;
 
+pub mod draw_grid;
 pub mod handle_events;
 pub mod my_sdl;
 pub mod util;
 
+use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
 
 mod prelude {
-    pub const SCREEN_WIDTH: i32 = 800;
+    pub const SCREEN_WIDTH: i32 = 600;
     pub const SCREEN_HEIGHT: i32 = 1000;
+    pub const COLS: i32 = 8;
+    pub const ROWS: i32 = 14;
 }
 
 pub enum Msg {
@@ -21,6 +26,8 @@ fn main() {
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
 
+    let square_size = SCREEN_WIDTH / 10;
+
     'running: loop {
         sdl.clear();
 
@@ -29,6 +36,8 @@ fn main() {
         if let Msg::Quit = msg {
             break 'running;
         }
+
+        draw_grid(&sdl, square_size);
 
         sdl.present();
     }

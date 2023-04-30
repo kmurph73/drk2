@@ -13,11 +13,11 @@ pub use self::bindings::{
     IMG_Init, IMG_InitFlags_IMG_INIT_JPG, IMG_InitFlags_IMG_INIT_PNG, IMG_LoadTexture,
     SDL_BlendMode_SDL_BLENDMODE_BLEND, SDL_CreateRenderer, SDL_CreateWindow, SDL_Delay,
     SDL_DestroyRenderer, SDL_DestroyWindow, SDL_Event, SDL_EventType_SDL_KEYDOWN,
-    SDL_EventType_SDL_QUIT, SDL_Init, SDL_PollEvent, SDL_Quit, SDL_RenderClear, SDL_RenderPresent,
-    SDL_RenderSetScale, SDL_Renderer, SDL_RendererFlags_SDL_RENDERER_ACCELERATED,
-    SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint, SDL_SetRenderDrawBlendMode,
-    SDL_SetRenderDrawColor, SDL_Texture, SDL_Window, SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI,
-    SDL_INIT_VIDEO, SDL_WINDOWPOS_UNDEFINED_MASK,
+    SDL_EventType_SDL_QUIT, SDL_Init, SDL_PollEvent, SDL_Quit, SDL_RenderClear, SDL_RenderDrawLine,
+    SDL_RenderPresent, SDL_RenderSetScale, SDL_Renderer,
+    SDL_RendererFlags_SDL_RENDERER_ACCELERATED, SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint,
+    SDL_SetRenderDrawBlendMode, SDL_SetRenderDrawColor, SDL_Texture, SDL_Window,
+    SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI, SDL_INIT_VIDEO, SDL_WINDOWPOS_UNDEFINED_MASK,
 };
 
 pub struct MySdl {
