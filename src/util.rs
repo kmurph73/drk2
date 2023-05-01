@@ -1,5 +1,7 @@
 use os_info::Type;
 
+use crate::prelude::COLS;
+
 pub fn is_mac() -> bool {
     let info = os_info::get();
 
@@ -17,4 +19,8 @@ pub fn is_linux() -> bool {
         Type::Ubuntu => true,
         _ => false,
     }
+}
+
+pub fn map_idx(x: i32, y: i32) -> usize {
+    ((y * COLS) + x) as usize
 }
