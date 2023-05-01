@@ -1,16 +1,20 @@
 use my_sdl::MySdl;
 use prelude::SCREEN_WIDTH;
+use random_scenario::random_scenario;
 use util::is_mac;
 
+pub mod dot;
+pub mod draw_app;
 pub mod draw_grid;
 pub mod handle_events;
+pub mod img_consts;
 pub mod my_sdl;
 pub mod random_scenario;
 pub mod util;
 
+use crate::draw_app::draw_app;
 use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
-use crate::prelude::NUM_SQUARES;
 
 mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
@@ -18,24 +22,6 @@ mod prelude {
     pub const COLS: i32 = 8;
     pub const ROWS: i32 = 14;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
-}
-
-pub enum DotColor {
-    Orange,
-    Blue,
-    Red,
-    Green,
-    Yellow,
-}
-
-pub enum DotType {
-    Good,
-    Bad,
-}
-
-pub struct Dot {
-    pub color: DotColor,
-    pub kind: DotType,
 }
 
 pub enum Msg {
@@ -49,6 +35,8 @@ fn main() {
 
     let square_size = SCREEN_WIDTH / 10;
 
+    let squares = random_scenario();
+
     'running: loop {
         sdl.clear();
 
@@ -59,6 +47,7 @@ fn main() {
         }
 
         draw_grid(&sdl, square_size);
+        draw_app(&sdl, &squares);
 
         sdl.present();
     }

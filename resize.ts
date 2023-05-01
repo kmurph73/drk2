@@ -3,7 +3,7 @@ const bigDir = "bigimgs";
 const out = "imgs";
 
 const main = async () => {
-  const is_linux = mod.existsSync("/home");
+  const is_mac = Deno.build.vendor === "apple";
 
   const outDirExists = mod.existsSync(out);
 
@@ -14,7 +14,7 @@ const main = async () => {
   const files = Deno.readDirSync("bigimgs");
 
   const cmds: Array<Promise<Deno.ProcessStatus>> = [];
-  const dims = is_linux ? "60x60" : "120x120";
+  const dims = is_mac ? "120x120" : "60x60";
 
   for (const img of files) {
     // convert original.png -resize 100x100 new.png
