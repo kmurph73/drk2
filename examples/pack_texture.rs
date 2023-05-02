@@ -6,7 +6,7 @@ use glob::glob;
 use std::io::Write;
 
 use serde::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{self, File};
 use texture_packer::Rect;
 use texture_packer::{
     exporter::ImageExporter, importer::ImageImporter, texture::Texture, TexturePacker,
@@ -96,6 +96,8 @@ fn work() {
 
         imgs.push(img);
     }
+
+    fs::create_dir_all("resources").unwrap();
 
     //
     // Save the result

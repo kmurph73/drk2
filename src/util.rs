@@ -5,20 +5,13 @@ use crate::{my_sdl::SDL_Rect, prelude::COLS};
 pub fn is_mac() -> bool {
     let info = os_info::get();
 
-    match info.os_type() {
-        Type::Macos => true,
-        _ => false,
-    }
+    matches!(info.os_type(), Type::Macos)
 }
 
 pub fn is_linux() -> bool {
     let info = os_info::get();
 
-    match info.os_type() {
-        Type::Fedora => true,
-        Type::Ubuntu => true,
-        _ => false,
-    }
+    matches!(info.os_type(), Type::Fedora | Type::Ubuntu)
 }
 
 pub fn map_idx(x: i32, y: i32) -> usize {

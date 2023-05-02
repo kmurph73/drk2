@@ -1,36 +1,25 @@
 use crate::{
     dot::Dot,
-    my_sdl::{MySdl, SDL_Rect},
+    my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy},
+    pos::Pos,
 };
 
-pub fn draw_app(sdl: &MySdl, squares: &Vec<Option<Dot>>) {
-    for square in squares {
-        if let Some(dot) = square {
-            let rect = dot.img_rect();
-            let SDL_Rect { w, h, .. } = rect;
+pub fn draw_app(sdl: &MySdl, squares: &[Option<Dot>], square_size: i32) {
+    for dot in squares.iter().flatten() {
+        let srcrect = dot.img_rect();
+        let SDL_Rect { w, h, .. } = srcrect;
 
-            // let dest = SDL_Rect {
-            //     x: building.rect.x,
-            //     y: building.rect.y,
-            //     w: w / 2,
-            //     h: h / 2,
-            // };
+        let Pos(x, y) = dot.tile.top_left_px(square_size);
+
+        let dest = SDL_Rect {
+            x,
+            y,
+            w: w / 2,
+            h: h / 2,
+        };
+
+        unsafe {
+            SDL_RenderCopy(sdl.renderer, sdl.texture, &srcrect, &dest);
         }
     }
-    // let pylon_img = tuple_to_rect(PYLON_IMG);
-    // let SDL_Rect { w, h, .. } = pylon_img;
-
-    // let dest = SDL_Rect {
-    //     x: building.rect.x,
-    //     y: building.rect.y,
-    //     w: w / 2,
-    //     h: h / 2,
-    // };
-
-    // SDL_RenderCopy(
-    //     sdl.renderer,
-    //     sdl.texture,
-    //     &pylon_img,
-    //     &dest.adjust(camera_offset),
-    // );
 }

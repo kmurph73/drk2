@@ -1,5 +1,6 @@
 use crate::{
     dot::{Dot, DotColor},
+    pos::Pos,
     prelude::{COLS, NUM_SQUARES, ROWS},
     util::map_idx,
 };
@@ -16,15 +17,17 @@ pub fn number_to_color(n: i32) -> DotColor {
     }
 }
 
-fn random_tile(rng: &mut ThreadRng) -> (i32, i32) {
-    let row = rng.gen_range(0..COLS);
-    let col = rng.gen_range(4..ROWS);
+fn random_tile(rng: &mut ThreadRng) -> Pos {
+    let row = rng.gen_range(3..ROWS);
+    let col = rng.gen_range(0..COLS);
 
-    (row, col)
+    Pos(col, row)
 }
 
+// https://www.reddit.com/r/rust/comments/qjh00f/comment/hiqrmc9/?utm_source=share&utm_medium=web2x&context=3
+const NONE: Option<Dot> = None;
 pub fn random_scenario() -> Vec<Option<Dot>> {
-    let mut squares: Vec<Option<Dot>> = Vec::with_capacity(NUM_SQUARES as usize);
+    let mut squares: Vec<Option<Dot>> = Vec::from([NONE; NUM_SQUARES as usize]);
 
     let mut rng = rand::thread_rng();
 
@@ -32,7 +35,7 @@ pub fn random_scenario() -> Vec<Option<Dot>> {
 
     loop {
         let tile = random_tile(&mut rng);
-        let (x, y) = tile;
+        let Pos(x, y) = tile;
 
         let idx = map_idx(x, y);
         if squares[idx].is_some() {
@@ -43,6 +46,8 @@ pub fn random_scenario() -> Vec<Option<Dot>> {
         let color = number_to_color(color);
 
         let bad_dot = Dot::bad(tile, color);
+
+        println!("{bad_dot:#?}");
 
         squares[idx] = Some(bad_dot);
 

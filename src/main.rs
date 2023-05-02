@@ -9,6 +9,7 @@ pub mod draw_grid;
 pub mod handle_events;
 pub mod img_consts;
 pub mod my_sdl;
+pub mod pos;
 pub mod random_scenario;
 pub mod util;
 
@@ -47,7 +48,7 @@ fn main() {
         }
 
         draw_grid(&sdl, square_size);
-        draw_app(&sdl, &squares);
+        draw_app(&sdl, &squares, square_size);
 
         sdl.present();
     }

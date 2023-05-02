@@ -4,9 +4,11 @@ use crate::{
         ORANGE_KODAMA_IMG, RED_DOT_IMG, RED_KODAMA_IMG, YELLOW_DOT_IMG, YELLOW_KODAMA_IMG,
     },
     my_sdl::SDL_Rect,
+    pos::Pos,
     util::tuple_to_rect,
 };
 
+#[derive(Debug)]
 pub enum DotColor {
     Orange,
     Blue,
@@ -15,19 +17,21 @@ pub enum DotColor {
     Yellow,
 }
 
+#[derive(Debug)]
 pub enum DotType {
     Good,
     Bad,
 }
 
+#[derive(Debug)]
 pub struct Dot {
-    pub tile: (i32, i32),
+    pub tile: Pos,
     pub color: DotColor,
     pub kind: DotType,
 }
 
 impl Dot {
-    pub fn bad(tile: (i32, i32), color: DotColor) -> Dot {
+    pub fn bad(tile: Pos, color: DotColor) -> Dot {
         Dot {
             tile,
             color,
