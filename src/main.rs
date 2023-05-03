@@ -1,4 +1,5 @@
 use my_sdl::MySdl;
+use piece::Piece;
 use prelude::SCREEN_WIDTH;
 use random_scenario::random_scenario;
 use util::is_mac;
@@ -9,6 +10,7 @@ pub mod draw_grid;
 pub mod handle_events;
 pub mod img_consts;
 pub mod my_sdl;
+pub mod piece;
 pub mod pos;
 pub mod random_scenario;
 pub mod util;
@@ -36,7 +38,11 @@ fn main() {
 
     let square_size = SCREEN_WIDTH / 10;
 
-    let squares = random_scenario();
+    let mut rng = rand::thread_rng();
+    let squares = random_scenario(&mut rng);
+    let piece = Piece::random(&mut rng);
+
+    let img_divisor = if is_mac { 2 } else { 1 };
 
     'running: loop {
         sdl.clear();
@@ -48,7 +54,7 @@ fn main() {
         }
 
         draw_grid(&sdl, square_size);
-        draw_app(&sdl, &squares, square_size);
+        draw_app(&sdl, &piece, &squares, square_size, img_divisor);
 
         sdl.present();
     }

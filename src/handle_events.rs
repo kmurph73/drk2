@@ -27,7 +27,7 @@ pub fn handle_events() -> Msg {
                 SDL_EventType_SDL_QUIT => {
                     return Msg::Quit;
                 }
-                _ => break,
+                _ => {}
             }
         }
 

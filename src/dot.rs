@@ -1,3 +1,6 @@
+use rand::rngs::ThreadRng;
+use rand::Rng;
+
 use crate::{
     img_consts::{
         BLUE_DOT_IMG, BLUE_KODAMA_IMG, GREEN_DOT_IMG, GREEN_KODAMA_IMG, ORANGE_DOT_IMG,
@@ -17,6 +20,25 @@ pub enum DotColor {
     Yellow,
 }
 
+impl DotColor {
+    pub fn random(rng: &mut ThreadRng) -> DotColor {
+        let n = rng.gen_range(0..5);
+
+        DotColor::from_number(n)
+    }
+
+    pub fn from_number(n: i32) -> DotColor {
+        match n {
+            0 => DotColor::Red,
+            1 => DotColor::Green,
+            2 => DotColor::Blue,
+            3 => DotColor::Yellow,
+            4 => DotColor::Orange,
+            _ => panic!("number {n} doesnt correspond to a DotColor"),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum DotType {
     Good,
@@ -31,11 +53,23 @@ pub struct Dot {
 }
 
 impl Dot {
-    pub fn bad(tile: Pos, color: DotColor) -> Dot {
+    pub fn random_bad(rng: &mut ThreadRng, tile: Pos) -> Dot {
+        let color = DotColor::random(rng);
+
         Dot {
             tile,
             color,
             kind: DotType::Bad,
+        }
+    }
+
+    pub fn random_good(rng: &mut ThreadRng, tile: Pos) -> Dot {
+        let color = DotColor::random(rng);
+
+        Dot {
+            tile,
+            color,
+            kind: DotType::Good,
         }
     }
 
