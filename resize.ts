@@ -2,6 +2,8 @@ import * as mod from "https://deno.land/std@0.185.0/fs/mod.ts";
 const bigDir = "bigimgs";
 const out = "imgs";
 
+const size = 56;
+
 const main = async () => {
   const is_mac = Deno.build.vendor === "apple";
 
@@ -14,7 +16,10 @@ const main = async () => {
   const files = Deno.readDirSync("bigimgs");
 
   const cmds: Array<Promise<Deno.ProcessStatus>> = [];
-  const dims = is_mac ? "120x120" : "60x60";
+  const dotSize = is_mac ? size * 2 : size;
+  const dims = `${dotSize}x${dotSize}`;
+  const connectorSize = Math.floor(dotSize / 4);
+  const connectorDims = `${connectorSize}x${connectorSize}`;
 
   for (const img of files) {
     // convert original.png -resize 100x100 new.png
@@ -22,7 +27,9 @@ const main = async () => {
 
     const name = img.name;
 
-    const cmd = `convert ${bigDir}/${name} -resize ${dims} ${out}/${name}`;
+    const dimensions = name === "connector.png" ? connectorDims : dims;
+
+    const cmd = `convert ${bigDir}/${name} -resize ${dimensions} ${out}/${name}`;
     const c = Deno.run({ cmd: cmd.split(" ") }).status();
     cmds.push(c);
   }

@@ -1,14 +1,14 @@
 use std::ptr::null_mut;
 
 use crate::{
+    handle_keydown::handle_keydown,
+    keyboard::KeyboardState,
     my_sdl::{SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_QUIT, SDL_PollEvent},
     Msg,
 };
 
-pub const ESCAPE: u8 = 41;
-
 #[allow(non_upper_case_globals)]
-pub fn handle_events() -> Msg {
+pub fn handle_events(keys: &mut KeyboardState) -> Msg {
     unsafe {
         let mut _event: *mut SDL_Event = null_mut();
 
@@ -20,7 +20,7 @@ pub fn handle_events() -> Msg {
 
             match (*sdl_event).type_ {
                 SDL_EventType_SDL_KEYDOWN => {
-                    if button.button == ESCAPE {
+                    if let Msg::Quit = handle_keydown(button.button, keys) {
                         return Msg::Quit;
                     }
                 }

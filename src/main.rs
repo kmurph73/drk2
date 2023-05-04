@@ -1,3 +1,4 @@
+use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
 use prelude::SCREEN_WIDTH;
@@ -8,7 +9,9 @@ pub mod dot;
 pub mod draw_app;
 pub mod draw_grid;
 pub mod handle_events;
+pub mod handle_keydown;
 pub mod img_consts;
+pub mod keyboard;
 pub mod my_sdl;
 pub mod piece;
 pub mod pos;
@@ -44,10 +47,15 @@ fn main() {
 
     let img_divisor = if is_mac { 2 } else { 1 };
 
+    let mut keys = KeyboardState {
+        pressed: Keyboard::init(false),
+        enabled: Keyboard::init(true),
+    };
+
     'running: loop {
         sdl.clear();
 
-        let msg = handle_events();
+        let msg = handle_events(&mut keys);
 
         if let Msg::Quit = msg {
             break 'running;
