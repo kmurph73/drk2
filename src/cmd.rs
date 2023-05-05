@@ -1,6 +1,6 @@
 use crate::pos::Pos;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Up,
     Down,
@@ -22,6 +22,11 @@ impl Direction {
 }
 
 pub enum Cmd {
+    Move(Direction),
+    Rotate,
+}
+
+pub enum Event {
     Move(Direction),
     Rotate,
 }

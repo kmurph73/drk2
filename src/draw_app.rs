@@ -25,14 +25,28 @@ fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     }
 }
 
-fn draw_connector(lhs: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
+fn connector_offset(rotation: i32, square_size: i32) -> (i32, i32) {
+    let (x, y) = match rotation {
+        0 => (square_size - 10, 20),
+        1 => (20, -10),
+        2 => (-10, 20),
+        3 => (20, square_size - 10),
+        _ => panic!("{rotation} should be 0..3"),
+    };
+
+    (x, y)
+}
+
+fn draw_connector(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     // let half_square = square_size / 2;
     // let quarter_square = square_size / 4;
 
-    let Pos(x, y) = lhs.tile.top_left_px(square_size);
+    let Pos(x, y) = piece.lhs.tile.top_left_px(square_size);
 
-    let x = x + square_size - 10;
-    let y = y + 20;
+    let (x_offset, y_offset) = connector_offset(piece.rotation, square_size);
+
+    let x = x + x_offset;
+    let y = y + y_offset;
 
     let (_img_x, _img_y, w, h) = CONNECTOR_IMG;
 
@@ -53,7 +67,7 @@ fn draw_connector(lhs: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
 fn draw_piece(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     draw_dot(&piece.lhs, sdl, square_size, img_divisor);
     draw_dot(&piece.rhs, sdl, square_size, img_divisor);
-    draw_connector(&piece.lhs, sdl, square_size, img_divisor);
+    draw_connector(&piece, sdl, square_size, img_divisor);
 }
 
 pub fn draw_app(

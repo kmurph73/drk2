@@ -1,4 +1,4 @@
-use cmd::Cmd;
+use cmd::{Cmd, Event};
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
@@ -68,7 +68,7 @@ fn main() {
             break 'running;
         }
 
-        handle_cmds(&new_cmds, &mut piece);
+        let events = handle_cmds(&new_cmds, &piece, &squares);
 
         draw_grid(&sdl, square_size);
         draw_app(&sdl, &piece, &squares, square_size, img_divisor);
