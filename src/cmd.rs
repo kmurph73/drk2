@@ -28,5 +28,5 @@ pub enum Cmd {
 
 pub enum Event {
     Move(Direction),
-    Rotate,
+    Rotate((Pos, Pos, i32)),
 }

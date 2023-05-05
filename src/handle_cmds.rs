@@ -4,7 +4,7 @@ use crate::{
     piece::Piece,
 };
 
-pub fn handle_cmds(cmds: &[Cmd], piece: &Piece, squares: &Vec<Option<Dot>>) -> Vec<Event> {
+pub fn handle_cmds(cmds: &[Cmd], piece: &Piece, squares: &[Option<Dot>]) -> Vec<Event> {
     let mut events: Vec<Event> = Vec::new();
 
     for cmd in cmds {
@@ -15,8 +15,8 @@ pub fn handle_cmds(cmds: &[Cmd], piece: &Piece, squares: &Vec<Option<Dot>>) -> V
                 }
             }
             Cmd::Rotate => {
-                if piece.can_rotate(squares) {
-                    events.push(Event::Rotate)
+                if let Some(rotation) = piece.attempt_rotation(squares) {
+                    events.push(Event::Rotate(rotation))
                 }
             }
         }

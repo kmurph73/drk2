@@ -67,7 +67,7 @@ fn draw_connector(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32
 fn draw_piece(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     draw_dot(&piece.lhs, sdl, square_size, img_divisor);
     draw_dot(&piece.rhs, sdl, square_size, img_divisor);
-    draw_connector(&piece, sdl, square_size, img_divisor);
+    draw_connector(piece, sdl, square_size, img_divisor);
 }
 
 pub fn draw_app(

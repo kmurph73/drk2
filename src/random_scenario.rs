@@ -7,7 +7,7 @@ use crate::{
 use rand::{rngs::ThreadRng, Rng};
 
 fn random_tile(rng: &mut ThreadRng) -> Pos {
-    let row = rng.gen_range(3..ROWS);
+    let row = rng.gen_range(4..ROWS);
     let col = rng.gen_range(0..COLS);
 
     Pos(col, row)

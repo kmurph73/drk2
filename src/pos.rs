@@ -18,24 +18,26 @@ impl Pos {
     }
 
     pub fn add_mut(&mut self, Pos(x, y): Pos) {
-        self.0 = self.0 + x;
-        self.1 = self.1 + y;
+        self.0 += x;
+        self.1 += y;
     }
 
     pub fn add(&self, pos: Pos) -> Pos {
         Pos(self.0 + pos.0, self.1 + pos.1)
     }
 
-    pub fn intersects(&self, squares: &Vec<Option<Dot>>) -> bool {
-        for square in squares {
-            if let Some(square) = square {
-                if square.tile == *self {
-                    return true;
-                }
+    pub fn intersects(&self, squares: &[Option<Dot>]) -> bool {
+        for square in squares.iter().flatten() {
+            if square.tile == *self {
+                return true;
             }
         }
 
         false
+    }
+
+    pub fn blocked(&self, squares: &[Option<Dot>]) -> bool {
+        self.outside_of_grid() || self.intersects(squares)
     }
 
     pub fn outside_of_grid(&self) -> bool {

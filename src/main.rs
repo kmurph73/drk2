@@ -1,4 +1,4 @@
-use cmd::{Cmd, Event};
+use cmd::Cmd;
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
@@ -20,12 +20,14 @@ pub mod keyboard;
 pub mod my_sdl;
 pub mod piece;
 pub mod pos;
+pub mod process_events;
 pub mod random_scenario;
 pub mod util;
 
 use crate::draw_app::draw_app;
 use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
+use crate::process_events::process_events;
 
 mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
@@ -69,6 +71,8 @@ fn main() {
         }
 
         let events = handle_cmds(&new_cmds, &piece, &squares);
+
+        process_events(&events, &mut piece);
 
         draw_grid(&sdl, square_size);
         draw_app(&sdl, &piece, &squares, square_size, img_divisor);
