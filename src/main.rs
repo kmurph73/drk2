@@ -1,3 +1,5 @@
+use cmd::Cmd;
+use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
@@ -5,11 +7,14 @@ use prelude::SCREEN_WIDTH;
 use random_scenario::random_scenario;
 use util::is_mac;
 
+pub mod cmd;
 pub mod dot;
 pub mod draw_app;
 pub mod draw_grid;
+pub mod handle_cmds;
 pub mod handle_events;
 pub mod handle_keydown;
+pub mod handle_keyup;
 pub mod img_consts;
 pub mod keyboard;
 pub mod my_sdl;
@@ -43,7 +48,7 @@ fn main() {
 
     let mut rng = rand::thread_rng();
     let squares = random_scenario(&mut rng);
-    let piece = Piece::random(&mut rng);
+    let mut piece = Piece::random(&mut rng);
 
     let img_divisor = if is_mac { 2 } else { 1 };
 
@@ -55,11 +60,15 @@ fn main() {
     'running: loop {
         sdl.clear();
 
-        let msg = handle_events(&mut keys);
+        let mut new_cmds: Vec<Cmd> = Vec::new();
+
+        let msg = handle_events(&mut keys, &mut new_cmds);
 
         if let Msg::Quit = msg {
             break 'running;
         }
+
+        handle_cmds(&new_cmds, &mut piece);
 
         draw_grid(&sdl, square_size);
         draw_app(&sdl, &piece, &squares, square_size, img_divisor);

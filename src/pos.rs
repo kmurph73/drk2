@@ -11,4 +11,9 @@ impl Pos {
 
         Pos(x, y)
     }
+
+    pub fn add_mut(&mut self, Pos(x, y): Pos) {
+        self.0 = self.0 + x;
+        self.1 = self.1 + y;
+    }
 }

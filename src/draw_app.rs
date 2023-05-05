@@ -27,12 +27,12 @@ fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
 
 fn draw_connector(lhs: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     // let half_square = square_size / 2;
-    let quarter_square = square_size / 4;
+    // let quarter_square = square_size / 4;
 
     let Pos(x, y) = lhs.tile.top_left_px(square_size);
 
-    let x = x + square_size - quarter_square + 5;
-    let y = y + quarter_square + 5;
+    let x = x + square_size - 10;
+    let y = y + 20;
 
     let (_img_x, _img_y, w, h) = CONNECTOR_IMG;
 

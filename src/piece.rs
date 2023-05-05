@@ -1,6 +1,6 @@
 use rand::rngs::ThreadRng;
 
-use crate::{dot::Dot, pos::Pos};
+use crate::{cmd::Direction, dot::Dot, pos::Pos};
 
 pub struct Piece {
     pub lhs: Dot,
@@ -18,5 +18,22 @@ impl Piece {
             rhs,
             rotation: 0,
         }
+    }
+
+    pub fn adjust_mut(&mut self, offset: Pos) {
+        self.lhs.tile.add_mut(offset);
+        self.rhs.tile.add_mut(offset);
+    }
+
+    pub fn move_mut(&mut self, dir: &Direction) {
+        self.adjust_mut(dir.offset());
+    }
+
+    pub fn rotate_mut(&mut self) {
+        if self.rotation == 3 {
+            self.rotation = 0;
+        }
+
+        self.rotation += 1;
     }
 }

@@ -3,6 +3,7 @@ const bigDir = "bigimgs";
 const out = "imgs";
 
 const size = 56;
+const connectorSize = 20;
 
 const main = async () => {
   const is_mac = Deno.build.vendor === "apple";
@@ -18,8 +19,8 @@ const main = async () => {
   const cmds: Array<Promise<Deno.ProcessStatus>> = [];
   const dotSize = is_mac ? size * 2 : size;
   const dims = `${dotSize}x${dotSize}`;
-  const connectorSize = Math.floor(dotSize / 4);
-  const connectorDims = `${connectorSize}x${connectorSize}`;
+  const conSize = is_mac ? connectorSize * 2 : connectorSize;
+  const connectorDims = `${conSize}x${conSize}`;
 
   for (const img of files) {
     // convert original.png -resize 100x100 new.png
