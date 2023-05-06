@@ -2,7 +2,7 @@ use crate::{
     dot::Dot,
     pos::Pos,
     prelude::{COLS, NUM_SQUARES, ROWS},
-    util::map_idx,
+    util::{empty_array, map_idx},
 };
 use rand::{rngs::ThreadRng, Rng};
 
@@ -13,10 +13,8 @@ fn random_tile(rng: &mut ThreadRng) -> Pos {
     Pos(col, row)
 }
 
-// https://www.reddit.com/r/rust/comments/qjh00f/comment/hiqrmc9/?utm_source=share&utm_medium=web2x&context=3
-const NONE: Option<Dot> = None;
 pub fn random_scenario(rng: &mut ThreadRng) -> Vec<Option<Dot>> {
-    let mut squares: Vec<Option<Dot>> = Vec::from([NONE; NUM_SQUARES as usize]);
+    let mut squares = empty_array(NUM_SQUARES as usize);
 
     let mut cnt = 0;
 

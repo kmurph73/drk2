@@ -53,6 +53,14 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn new_blue_bad(tile: Pos) -> Dot {
+        Dot {
+            tile,
+            color: DotColor::Blue,
+            kind: DotType::Bad,
+        }
+    }
+
     pub fn random_bad(rng: &mut ThreadRng, tile: Pos) -> Dot {
         let color = DotColor::random(rng);
 

@@ -20,16 +20,29 @@ fn rotation_offset(n: i32) -> Pos {
     Pos(x, y)
 }
 
-fn forced_rotation_offset(n: i32) -> (Pos, Pos) {
-    let ((lx, ly), (rx, ry)) = match n {
+fn forced_rotation_offset(rotation: i32) -> (Pos, Pos) {
+    let ((lx, ly), (rx, ry)) = match rotation {
         0 => ((0, -1), (-1, -1)),
-        1 => ((0, 0), (1, -1)),
+        1 => ((1, -1), (0, 0)),
         2 => ((0, -1), (1, 1)),
         3 => ((-1, 0), (0, -1)),
-        _ => panic!("{n} should be 0..3"),
+        _ => panic!("{rotation} should be 0..3"),
     };
 
     (Pos(lx, ly), Pos(rx, ry))
+}
+
+fn second_forced_rotation_offset(rotation: i32) -> (Pos, Pos, i32) {
+    println!("rot: {rotation}");
+    let ((lx, ly), (rx, ry), r) = match rotation {
+        0 => ((0, 1), (-1, 0), 1),
+        1 => ((1, 0), (0, 1), 2),
+        2 => ((-1, 1), (0, 0), 1),
+        3 => ((-1, 1), (0, 0), 0),
+        _ => panic!("{rotation} should be 0..3"),
+    };
+
+    (Pos(lx, ly), Pos(rx, ry), r)
 }
 
 fn piece_intersects(lhs: &Pos, rhs: &Pos, squares: &[Option<Dot>]) -> bool {
@@ -52,16 +65,16 @@ fn next_rotation(n: i32) -> i32 {
 
 impl Piece {
     pub fn random(rng: &mut ThreadRng) -> Piece {
-        let tile = Pos(7, 2);
+        let tile = Pos(0, 4);
         let lhs = Dot::random_good(rng, tile);
 
-        let tile = Pos(7, 3);
+        let tile = Pos(0, 3);
         let rhs = Dot::random_good(rng, tile);
 
         Piece {
             lhs,
             rhs,
-            rotation: 3,
+            rotation: 1,
         }
     }
 
@@ -97,7 +110,16 @@ impl Piece {
             let rhs = self.rhs.tile.add(right_offset);
 
             if rhs.blocked(squares) || lhs.blocked(squares) {
-                return None;
+                let (left_offset, right_offset, rotation) = second_forced_rotation_offset(rotation);
+
+                let lhs = self.lhs.tile.add(left_offset);
+                let rhs = self.rhs.tile.add(right_offset);
+
+                if rhs.blocked(squares) || lhs.blocked(squares) {
+                    return None;
+                } else {
+                    return Some((lhs, rhs, rotation));
+                }
             } else {
                 return Some((lhs, rhs, next_rotation(rotation)));
             }
@@ -113,7 +135,6 @@ impl Piece {
     pub fn set_rotation(&mut self, (lhs, rhs, rotation): &(Pos, Pos, i32)) {
         self.lhs.tile = *lhs;
         self.rhs.tile = *rhs;
-        println!("rot: {rotation}");
         self.rotation = *rotation;
     }
 }

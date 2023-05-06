@@ -4,7 +4,6 @@ use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
 use prelude::SCREEN_WIDTH;
-use random_scenario::random_scenario;
 use util::is_mac;
 
 pub mod cmd;
@@ -22,12 +21,14 @@ pub mod piece;
 pub mod pos;
 pub mod process_events;
 pub mod random_scenario;
+pub mod test_scenario;
 pub mod util;
 
 use crate::draw_app::draw_app;
 use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
 use crate::process_events::process_events;
+use crate::test_scenario::test_scenario;
 
 mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
@@ -49,7 +50,7 @@ fn main() {
     let square_size = SCREEN_WIDTH / 10;
 
     let mut rng = rand::thread_rng();
-    let squares = random_scenario(&mut rng);
+    let squares = test_scenario();
     let mut piece = Piece::random(&mut rng);
 
     let img_divisor = if is_mac { 2 } else { 1 };

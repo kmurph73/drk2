@@ -21,3 +21,14 @@ pub fn map_idx(x: i32, y: i32) -> usize {
 pub fn tuple_to_rect((x, y, w, h): (i32, i32, i32, i32)) -> SDL_Rect {
     SDL_Rect { x, y, w, h }
 }
+
+// https://www.reddit.com/r/rust/comments/qjh00f/fill_a_vecoptiont_with_none_without_requiring/
+pub fn empty_array<T>(capacity: usize) -> Vec<Option<T>> {
+    let mut vec = Vec::with_capacity(capacity);
+
+    for _ in 0..capacity {
+        vec.push(None);
+    }
+
+    vec
+}
