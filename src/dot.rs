@@ -53,6 +53,22 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn green(tile: Pos) -> Dot {
+        Dot {
+            tile,
+            color: DotColor::Green,
+            kind: DotType::Good,
+        }
+    }
+
+    pub fn blue(tile: Pos) -> Dot {
+        Dot {
+            tile,
+            color: DotColor::Blue,
+            kind: DotType::Good,
+        }
+    }
+
     pub fn new_blue_bad(tile: Pos) -> Dot {
         Dot {
             tile,

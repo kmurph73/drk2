@@ -49,9 +49,9 @@ fn main() {
 
     let square_size = SCREEN_WIDTH / 10;
 
-    let mut rng = rand::thread_rng();
+    // let mut rng = rand::thread_rng();
     let squares = test_scenario();
-    let mut piece = Piece::random(&mut rng);
+    let mut piece = Piece::custom();
 
     let img_divisor = if is_mac { 2 } else { 1 };
 

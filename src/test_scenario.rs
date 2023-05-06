@@ -5,7 +5,7 @@ use crate::{
     util::{empty_array, map_idx},
 };
 
-fn assign(tile: Pos, squares: &mut Vec<Option<Dot>>) {
+fn assign(tile: Pos, squares: &mut [Option<Dot>]) {
     let Pos(x, y) = tile;
     let dot = Dot::new_blue_bad(tile);
     let idx = map_idx(x, y);
@@ -20,6 +20,7 @@ pub fn test_scenario() -> Vec<Option<Dot>> {
     assign(Pos(1, 2), &mut squares);
 
     assign(Pos(7, 5), &mut squares);
+    assign(Pos(6, 5), &mut squares);
     assign(Pos(6, 3), &mut squares);
 
     squares

@@ -7,6 +7,10 @@ use crate::{
 pub struct Pos(pub i32, pub i32);
 
 impl Pos {
+    pub fn from_tuple((x, y): (i32, i32)) -> Pos {
+        Pos(x, y)
+    }
+
     pub fn top_left_px(&self, square_size: i32) -> Pos {
         let Pos(x, y) = self;
 

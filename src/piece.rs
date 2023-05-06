@@ -8,41 +8,64 @@ pub struct Piece {
     pub rotation: i32,
 }
 
-fn rotation_offset(n: i32) -> Pos {
-    let (x, y) = match n {
-        0 => (-1, -1),
-        1 => (-1, 1),
-        2 => (1, 1),
-        3 => (1, -1),
-        _ => panic!("{n} should be 0..3"),
-    };
-
-    Pos(x, y)
+pub struct Rotation {
+    left_offset: Pos,
+    right_offset: Pos,
+    next_rotation: i32,
 }
 
-fn forced_rotation_offset(rotation: i32) -> (Pos, Pos) {
-    let ((lx, ly), (rx, ry)) = match rotation {
-        0 => ((0, -1), (-1, -1)),
-        1 => ((1, -1), (0, 0)),
-        2 => ((0, -1), (1, 1)),
-        3 => ((-1, 0), (0, -1)),
-        _ => panic!("{rotation} should be 0..3"),
+fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
+    // if attempt > 1 {
+    //     println!("attempt: {attempt}, rot: {rotation}");
+    // }
+
+    let (lhs, rhs, next_rotation) = match attempt {
+        0 => {
+            let lhs = (0, 0);
+
+            let rhs = match rotation {
+                0 => (-1, -1),
+                1 => (-1, 1),
+                2 => (1, 1),
+                3 => (1, -1),
+                _ => panic!("{rotation} should be 0..3"),
+            };
+
+            (lhs, rhs, get_next_rotation(rotation))
+        }
+        1 => {
+            let (lhs, rhs) = match rotation {
+                0 => ((0, -1), (-1, -1)),
+                1 => ((1, 0), (0, 1)),
+                2 => ((0, -1), (1, 1)),
+                3 => ((-1, 0), (0, -1)),
+                _ => panic!("{rotation} should be 0..3"),
+            };
+
+            (lhs, rhs, get_next_rotation(rotation))
+        }
+        2 => match rotation {
+            0 => ((0, 1), (-1, 0), 1),
+            1 => ((1, 0), (0, 1), 2),
+            2 => ((-1, 0), (0, 1), 3),
+            3 => ((-1, 1), (0, 0), 0),
+            _ => panic!("{rotation} should be 0..3"),
+        },
+        3 => match rotation {
+            0 => ((1, 0), (0, -1), 1),
+            1 => ((0, 0), (0, 0), rotation),
+            2 => ((0, -1), (1, 0), 3),
+            3 => ((0, 0), (0, 0), rotation),
+            _ => panic!("{rotation} should be 0..3"),
+        },
+        _ => panic!("{attempt} should be 0..2"),
     };
 
-    (Pos(lx, ly), Pos(rx, ry))
-}
-
-fn second_forced_rotation_offset(rotation: i32) -> (Pos, Pos, i32) {
-    println!("rot: {rotation}");
-    let ((lx, ly), (rx, ry), r) = match rotation {
-        0 => ((0, 1), (-1, 0), 1),
-        1 => ((1, 0), (0, 1), 2),
-        2 => ((-1, 1), (0, 0), 1),
-        3 => ((-1, 1), (0, 0), 0),
-        _ => panic!("{rotation} should be 0..3"),
-    };
-
-    (Pos(lx, ly), Pos(rx, ry), r)
+    Rotation {
+        left_offset: Pos::from_tuple(lhs),
+        right_offset: Pos::from_tuple(rhs),
+        next_rotation,
+    }
 }
 
 fn piece_intersects(lhs: &Pos, rhs: &Pos, squares: &[Option<Dot>]) -> bool {
@@ -55,7 +78,7 @@ fn piece_intersects(lhs: &Pos, rhs: &Pos, squares: &[Option<Dot>]) -> bool {
     false
 }
 
-fn next_rotation(n: i32) -> i32 {
+fn get_next_rotation(n: i32) -> i32 {
     if n == 3 {
         0
     } else {
@@ -64,6 +87,20 @@ fn next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
+    pub fn custom() -> Piece {
+        let tile = Pos(0, 0);
+        let lhs = Dot::green(tile);
+
+        let tile = Pos(1, 0);
+        let rhs = Dot::blue(tile);
+
+        Piece {
+            lhs,
+            rhs,
+            rotation: 0,
+        }
+    }
+
     pub fn random(rng: &mut ThreadRng) -> Piece {
         let tile = Pos(0, 4);
         let lhs = Dot::random_good(rng, tile);
@@ -96,36 +133,28 @@ impl Piece {
     }
 
     pub fn attempt_rotation(&self, squares: &[Option<Dot>]) -> Option<(Pos, Pos, i32)> {
+        let mut attempt = 0;
         let rotation = self.rotation;
 
-        let offset = rotation_offset(rotation);
-
-        let lhs = self.lhs.tile;
-        let rhs = self.rhs.tile.add(offset);
-
-        if rhs.blocked(squares) {
-            let (left_offset, right_offset) = forced_rotation_offset(rotation);
+        while attempt < 4 {
+            let Rotation {
+                left_offset,
+                right_offset,
+                next_rotation,
+            } = attempt_rotation(rotation, attempt);
 
             let lhs = self.lhs.tile.add(left_offset);
             let rhs = self.rhs.tile.add(right_offset);
 
             if rhs.blocked(squares) || lhs.blocked(squares) {
-                let (left_offset, right_offset, rotation) = second_forced_rotation_offset(rotation);
-
-                let lhs = self.lhs.tile.add(left_offset);
-                let rhs = self.rhs.tile.add(right_offset);
-
-                if rhs.blocked(squares) || lhs.blocked(squares) {
-                    return None;
-                } else {
-                    return Some((lhs, rhs, rotation));
-                }
+                attempt += 1;
+                continue;
             } else {
-                return Some((lhs, rhs, next_rotation(rotation)));
+                return Some((lhs, rhs, next_rotation));
             }
         }
 
-        Some((lhs, rhs, next_rotation(rotation)))
+        None
     }
 
     pub fn move_mut(&mut self, dir: &Direction) {
