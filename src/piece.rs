@@ -15,9 +15,9 @@ pub struct Rotation {
 }
 
 fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
-    // if attempt > 1 {
-    //     println!("attempt: {attempt}, rot: {rotation}");
-    // }
+    if attempt > 2 {
+        println!("attempt: {attempt}, rot: {rotation}");
+    }
 
     let (lhs, rhs, next_rotation) = match attempt {
         0 => {
@@ -53,12 +53,19 @@ fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
         },
         3 => match rotation {
             0 => ((1, 0), (0, -1), 1),
-            1 => ((0, 0), (0, 0), rotation),
+            1 => ((0, -1), (-1, 0), 2),
             2 => ((0, -1), (1, 0), 3),
+            3 => ((0, 1), (1, 0), 0),
+            _ => panic!("{rotation} should be 0..3"),
+        },
+        4 => match rotation {
+            0 => ((0, 0), (0, 0), rotation),
+            1 => ((0, 0), (0, 0), rotation),
+            2 => ((-1, -1), (0, 0), 3),
             3 => ((0, 0), (0, 0), rotation),
             _ => panic!("{rotation} should be 0..3"),
         },
-        _ => panic!("{attempt} should be 0..2"),
+        _ => panic!("{attempt} should be 0..4"),
     };
 
     Rotation {
@@ -136,7 +143,7 @@ impl Piece {
         let mut attempt = 0;
         let rotation = self.rotation;
 
-        while attempt < 4 {
+        while attempt < 5 {
             let Rotation {
                 left_offset,
                 right_offset,

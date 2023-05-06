@@ -23,5 +23,10 @@ pub fn test_scenario() -> Vec<Option<Dot>> {
     assign(Pos(6, 5), &mut squares);
     assign(Pos(6, 3), &mut squares);
 
+    assign(Pos(4, 3), &mut squares);
+    assign(Pos(4, 4), &mut squares);
+    assign(Pos(4, 5), &mut squares);
+    assign(Pos(5, 5), &mut squares);
+
     squares
 }
