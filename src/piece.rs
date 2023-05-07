@@ -15,54 +15,6 @@ pub struct Rotation {
 }
 
 fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
-    if attempt > 1 {
-        println!("rotation: {rotation}");
-    }
-    let (lhs, rhs, next_rotation) = match attempt {
-        0 => {
-            let (lhs, rhs) = match rotation {
-                0 => ((0, 0), (-1, -1)),
-                1 => ((1, 0), (0, 1)),
-                2 => ((-1, -1), (0, 0)),
-                3 => ((0, 1), (1, 0)),
-                _ => panic!("{rotation} should be 0..3"),
-            };
-
-            (lhs, rhs, get_next_rotation(rotation))
-        }
-        1 => {
-            let (lhs, rhs) = match rotation {
-                0 => ((0, 1), (-1, 0)),
-                1 => ((0, 0), (-1, 1)),
-                2 => ((-1, 0), (0, 1)),
-                3 => ((-1, 1), (0, 0)),
-                _ => panic!("{rotation} should be 0..3"),
-            };
-
-            (lhs, rhs, get_next_rotation(rotation))
-        }
-        2 => {
-            let (lhs, rhs) = match rotation {
-                0 => ((1, 0), (0, -1)),
-                1 => ((0, 0), (0, 0)),
-                2 => ((0, -1), (1, 0)),
-                3 => ((0, 0), (0, 0)),
-                _ => panic!("{rotation} should be 0..3"),
-            };
-
-            (lhs, rhs, get_next_rotation(rotation))
-        }
-        _ => panic!("{attempt} should be 0..2"),
-    };
-
-    Rotation {
-        left_offset: Pos::from_tuple(lhs),
-        right_offset: Pos::from_tuple(rhs),
-        next_rotation,
-    }
-}
-
-fn attempt_rotation2(rotation: i32, attempt: usize) -> Rotation {
     let is_even = rotation % 2 == 0;
 
     let (lhs, rhs) = match attempt {
@@ -171,7 +123,7 @@ impl Piece {
                 left_offset,
                 right_offset,
                 next_rotation,
-            } = attempt_rotation2(rotation, attempt);
+            } = attempt_rotation(rotation, attempt);
 
             let lhs = self.lhs.tile.add(left_offset);
             let rhs = self.rhs.tile.add(right_offset);
