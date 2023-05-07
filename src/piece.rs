@@ -15,19 +15,13 @@ pub struct Rotation {
 }
 
 fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
-    if attempt > 2 {
-        println!("attempt: {attempt}, rot: {rotation}");
-    }
-
     let (lhs, rhs, next_rotation) = match attempt {
         0 => {
-            let lhs = (0, 0);
-
-            let rhs = match rotation {
-                0 => (-1, -1),
-                1 => (-1, 1),
-                2 => (1, 1),
-                3 => (1, -1),
+            let (lhs, rhs) = match rotation {
+                0 => ((0, 0), (-1, -1)),
+                1 => ((1, 0), (0, 1)),
+                2 => ((-1, -1), (0, 0)),
+                3 => ((0, 1), (1, 0)),
                 _ => panic!("{rotation} should be 0..3"),
             };
 
@@ -35,37 +29,16 @@ fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
         }
         1 => {
             let (lhs, rhs) = match rotation {
-                0 => ((0, -1), (-1, -1)),
-                1 => ((1, 0), (0, 1)),
-                2 => ((0, -1), (1, 1)),
-                3 => ((-1, 0), (0, -1)),
+                0 => ((1, 0), (0, -1)),
+                1 => ((0, 0), (-1, 1)),
+                2 => ((0, -1), (1, 0)),
+                3 => ((-1, 1), (0, 0)),
                 _ => panic!("{rotation} should be 0..3"),
             };
 
             (lhs, rhs, get_next_rotation(rotation))
         }
-        2 => match rotation {
-            0 => ((0, 1), (-1, 0), 1),
-            1 => ((1, 0), (0, 1), 2),
-            2 => ((-1, 0), (0, 1), 3),
-            3 => ((-1, 1), (0, 0), 0),
-            _ => panic!("{rotation} should be 0..3"),
-        },
-        3 => match rotation {
-            0 => ((1, 0), (0, -1), 1),
-            1 => ((0, -1), (-1, 0), 2),
-            2 => ((0, -1), (1, 0), 3),
-            3 => ((0, 1), (1, 0), 0),
-            _ => panic!("{rotation} should be 0..3"),
-        },
-        4 => match rotation {
-            0 => ((0, 0), (0, 0), rotation),
-            1 => ((0, 0), (0, 0), rotation),
-            2 => ((-1, -1), (0, 0), 3),
-            3 => ((0, 0), (0, 0), rotation),
-            _ => panic!("{rotation} should be 0..3"),
-        },
-        _ => panic!("{attempt} should be 0..4"),
+        _ => panic!("{attempt} should be 0..1"),
     };
 
     Rotation {
@@ -122,28 +95,36 @@ impl Piece {
         }
     }
 
-    pub fn adjust_mut(&mut self, offset: Pos) {
-        self.lhs.tile.add_mut(offset);
-        self.rhs.tile.add_mut(offset);
+    fn lowest_top(&self) -> i32 {
+        if self.rhs.tile.1 < 0 || self.lhs.tile.1 < 0 {
+            -1
+        } else {
+            0
+        }
     }
 
-    pub fn can_move(&self, dir: &Direction, squares: &[Option<Dot>]) -> bool {
+    pub fn attempt_move(&self, dir: &Direction, squares: &[Option<Dot>]) -> Option<(Pos, Pos)> {
         let offset = dir.offset();
         let lhs = self.lhs.tile.add(offset);
         let rhs = self.rhs.tile.add(offset);
 
-        if lhs.outside_of_grid() || rhs.outside_of_grid() || piece_intersects(&lhs, &rhs, squares) {
-            return false;
+        let lowest_top = self.lowest_top();
+
+        if lhs.outside_of_grid(lowest_top)
+            || rhs.outside_of_grid(lowest_top)
+            || piece_intersects(&lhs, &rhs, squares)
+        {
+            return None;
         }
 
-        true
+        Some((lhs, rhs))
     }
 
     pub fn attempt_rotation(&self, squares: &[Option<Dot>]) -> Option<(Pos, Pos, i32)> {
         let mut attempt = 0;
         let rotation = self.rotation;
 
-        while attempt < 5 {
+        while attempt < 2 {
             let Rotation {
                 left_offset,
                 right_offset,
@@ -153,7 +134,7 @@ impl Piece {
             let lhs = self.lhs.tile.add(left_offset);
             let rhs = self.rhs.tile.add(right_offset);
 
-            if rhs.blocked(squares) || lhs.blocked(squares) {
+            if rhs.blocked(squares, -1) || lhs.blocked(squares, -1) {
                 attempt += 1;
                 continue;
             } else {
@@ -164,8 +145,9 @@ impl Piece {
         None
     }
 
-    pub fn move_mut(&mut self, dir: &Direction) {
-        self.adjust_mut(dir.offset());
+    pub fn set_pos(&mut self, lhs: Pos, rhs: Pos) {
+        self.lhs.tile = lhs;
+        self.rhs.tile = rhs;
     }
 
     pub fn set_rotation(&mut self, (lhs, rhs, rotation): &(Pos, Pos, i32)) {

@@ -10,8 +10,8 @@ pub fn handle_cmds(cmds: &[Cmd], piece: &Piece, squares: &[Option<Dot>]) -> Vec<
     for cmd in cmds {
         match cmd {
             Cmd::Move(dir) => {
-                if piece.can_move(dir, squares) {
-                    events.push(Event::Move(*dir));
+                if let Some(new_pos) = piece.attempt_move(dir, squares) {
+                    events.push(Event::Move(new_pos));
                 }
             }
             Cmd::Rotate => {

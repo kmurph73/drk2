@@ -40,12 +40,12 @@ impl Pos {
         false
     }
 
-    pub fn blocked(&self, squares: &[Option<Dot>]) -> bool {
-        self.outside_of_grid() || self.intersects(squares)
+    pub fn blocked(&self, squares: &[Option<Dot>], lowest_top: i32) -> bool {
+        self.outside_of_grid(lowest_top) || self.intersects(squares)
     }
 
-    pub fn outside_of_grid(&self) -> bool {
-        if self.0 < 0 || self.1 < 0 {
+    pub fn outside_of_grid(&self, lowest_top: i32) -> bool {
+        if self.0 < 0 || self.1 < lowest_top {
             return true;
         }
 
