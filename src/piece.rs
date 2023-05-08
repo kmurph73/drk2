@@ -2,6 +2,7 @@ use rand::rngs::ThreadRng;
 
 use crate::{cmd::Direction, dot::Dot, pos::Pos};
 
+#[derive(Clone)]
 pub struct Piece {
     pub lhs: Dot,
     pub rhs: Dot,
@@ -95,6 +96,22 @@ impl Piece {
         } else {
             0
         }
+    }
+
+    fn lowest_y_offset(&self, squares: &[Option<Dot>]) -> i32 {
+        let lh_offset = self.lhs.lowest_y_offset(squares);
+        let rh_offset = self.rhs.lowest_y_offset(squares);
+
+        std::cmp::min(lh_offset, rh_offset)
+    }
+
+    pub fn find_lowest_drop(&self, squares: &[Option<Dot>]) -> (Pos, Pos) {
+        let y_offset = self.lowest_y_offset(squares);
+
+        let lhs = self.lhs.tile.add_y(y_offset);
+        let rhs = self.rhs.tile.add_y(y_offset);
+
+        (lhs, rhs)
     }
 
     pub fn attempt_move(&self, dir: &Direction, squares: &[Option<Dot>]) -> Option<(Pos, Pos)> {

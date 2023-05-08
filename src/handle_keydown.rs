@@ -4,6 +4,7 @@ use crate::{
     Msg,
 };
 
+pub const C: u8 = 6;
 pub const X: u8 = 27;
 pub const ESCAPE: u8 = 41;
 pub const UP: u8 = 82;
@@ -15,6 +16,7 @@ pub fn handle_keydown(key: u8, keys: &mut KeyboardState, cmds: &mut Vec<Cmd>) ->
     match key {
         ESCAPE => keys.pressed.esc = true,
         X => keys.pressed.x = true,
+        C => keys.pressed.c = true,
         UP => keys.pressed.up = true,
         LEFT => keys.pressed.left = true,
         RIGHT => keys.pressed.right = true,
@@ -29,6 +31,7 @@ pub fn handle_keydown(key: u8, keys: &mut KeyboardState, cmds: &mut Vec<Cmd>) ->
         up,
         right,
         down,
+        c,
         ..
     } = keys.pressed;
 
@@ -51,9 +54,16 @@ pub fn handle_keydown(key: u8, keys: &mut KeyboardState, cmds: &mut Vec<Cmd>) ->
         cmds.push(cmd);
     }
 
-    if x {
+    if x && keys.enabled.x {
         let cmd = Cmd::Rotate;
         cmds.push(cmd);
+        keys.enabled.x = false;
+    }
+
+    if c && keys.enabled.c {
+        let cmd = Cmd::DropPiece;
+        cmds.push(cmd);
+        keys.enabled.c = false;
     }
 
     Msg::Nada

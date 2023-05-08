@@ -21,12 +21,15 @@ impl Direction {
     }
 }
 
+#[derive(Debug)]
 pub enum Cmd {
     Move(Direction),
     Rotate,
+    DropPiece,
 }
 
 pub enum Event {
     Move((Pos, Pos)),
     Rotate((Pos, Pos, i32)),
+    DropPiece((Pos, Pos)),
 }

@@ -1,6 +1,7 @@
 pub struct Keyboard {
     pub esc: bool,
     pub x: bool,
+    pub c: bool,
     pub up: bool,
     pub right: bool,
     pub down: bool,
@@ -16,6 +17,7 @@ impl Keyboard {
         Keyboard {
             esc: default,
             x: default,
+            c: default,
             up: default,
             right: default,
             down: default,

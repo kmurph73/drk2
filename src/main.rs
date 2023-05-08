@@ -19,7 +19,6 @@ pub mod keyboard;
 pub mod my_sdl;
 pub mod piece;
 pub mod pos;
-pub mod process_events;
 pub mod random_scenario;
 pub mod test_scenario;
 pub mod util;
@@ -27,7 +26,6 @@ pub mod util;
 use crate::draw_app::draw_app;
 use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
-use crate::process_events::process_events;
 use crate::test_scenario::test_scenario;
 
 mod prelude {
@@ -71,9 +69,7 @@ fn main() {
             break 'running;
         }
 
-        let events = handle_cmds(&new_cmds, &piece, &squares);
-
-        process_events(&events, &mut piece);
+        handle_cmds(&new_cmds, &mut piece, &squares);
 
         draw_grid(&sdl, square_size);
         draw_app(&sdl, &piece, &squares, square_size, img_divisor);

@@ -8,10 +8,11 @@ use crate::{
     },
     my_sdl::SDL_Rect,
     pos::Pos,
-    util::tuple_to_rect,
+    prelude::ROWS,
+    util::{map_idx, tuple_to_rect},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DotColor {
     Orange,
     Blue,
@@ -39,13 +40,13 @@ impl DotColor {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DotType {
     Good,
     Bad,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dot {
     pub tile: Pos,
     pub color: DotColor,
@@ -53,6 +54,41 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn lowest_y(&self, squares: &[Option<Dot>]) -> i32 {
+        let x = self.tile.0;
+        let mut y = self.tile.1 + 1;
+
+        while y < ROWS {
+            let idx = map_idx(x, y);
+            if squares[idx].is_some() {
+                return y - 1;
+            }
+
+            y += 1;
+        }
+
+        y - 1
+    }
+
+    pub fn lowest_y_offset(&self, squares: &[Option<Dot>]) -> i32 {
+        let mut offset = 0;
+        let x = self.tile.0;
+        let mut y = self.tile.1 + 1;
+
+        while y < ROWS {
+            let idx = map_idx(x, y);
+
+            if squares[idx].is_some() {
+                return offset;
+            }
+
+            offset += 1;
+            y += 1;
+        }
+
+        offset
+    }
+
     pub fn green(tile: Pos) -> Dot {
         Dot {
             tile,
@@ -73,6 +109,14 @@ impl Dot {
         Dot {
             tile,
             color: DotColor::Blue,
+            kind: DotType::Bad,
+        }
+    }
+
+    pub fn new_red_bad(tile: Pos) -> Dot {
+        Dot {
+            tile,
+            color: DotColor::Red,
             kind: DotType::Bad,
         }
     }

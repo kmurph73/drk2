@@ -7,6 +7,10 @@ use crate::{
 pub struct Pos(pub i32, pub i32);
 
 impl Pos {
+    pub fn add_y(&self, y_offset: i32) -> Pos {
+        Pos(self.0, self.1 + y_offset)
+    }
+
     pub fn from_tuple((x, y): (i32, i32)) -> Pos {
         Pos(x, y)
     }

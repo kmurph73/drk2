@@ -1,26 +1,24 @@
-use crate::{
-    cmd::{Cmd, Event},
-    dot::Dot,
-    piece::Piece,
-};
+use crate::{cmd::Cmd, dot::Dot, piece::Piece};
 
-pub fn handle_cmds(cmds: &[Cmd], piece: &Piece, squares: &[Option<Dot>]) -> Vec<Event> {
-    let mut events: Vec<Event> = Vec::new();
-
+pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) {
     for cmd in cmds {
         match cmd {
             Cmd::Move(dir) => {
                 if let Some(new_pos) = piece.attempt_move(dir, squares) {
-                    events.push(Event::Move(new_pos));
+                    let (lhs, rhs) = new_pos;
+                    piece.set_pos(lhs, rhs);
                 }
             }
             Cmd::Rotate => {
                 if let Some(rotation) = piece.attempt_rotation(squares) {
-                    events.push(Event::Rotate(rotation))
+                    piece.set_rotation(&rotation);
                 }
+            }
+            Cmd::DropPiece => {
+                let new_pos = piece.find_lowest_drop(squares);
+                let (lhs, rhs) = new_pos;
+                piece.set_pos(lhs, rhs);
             }
         }
     }
-
-    events
 }
