@@ -37,13 +37,13 @@ fn connector_offset(rotation: i32, square_size: i32) -> (i32, i32) {
     (x, y)
 }
 
-fn draw_connector(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
+fn draw_connector(lhs: &Dot, rotation: i32, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     // let half_square = square_size / 2;
     // let quarter_square = square_size / 4;
 
-    let Pos(x, y) = piece.lhs.tile.top_left_px(square_size);
+    let Pos(x, y) = lhs.tile.top_left_px(square_size);
 
-    let (x_offset, y_offset) = connector_offset(piece.rotation, square_size);
+    let (x_offset, y_offset) = connector_offset(rotation, square_size);
 
     let x = x + x_offset;
     let y = y + y_offset;
@@ -64,21 +64,19 @@ fn draw_connector(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32
     }
 }
 
-fn draw_piece(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
-    draw_dot(&piece.lhs, sdl, square_size, img_divisor);
-    draw_dot(&piece.rhs, sdl, square_size, img_divisor);
-    draw_connector(piece, sdl, square_size, img_divisor);
+pub fn draw_piece_connectors(pieces: &Vec<Piece>, sdl: &MySdl, square_size: i32, img_divisor: i32) {
+    for piece in pieces {
+        draw_connector(&piece.lhs, piece.rotation, sdl, square_size, img_divisor);
+    }
 }
 
-pub fn draw_app(
-    sdl: &MySdl,
-    piece: &Piece,
-    squares: &[Option<Dot>],
-    square_size: i32,
-    img_divisor: i32,
-) {
-    draw_piece(piece, sdl, square_size, img_divisor);
+pub fn draw_piece(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
+    draw_dot(&piece.lhs, sdl, square_size, img_divisor);
+    draw_dot(&piece.rhs, sdl, square_size, img_divisor);
+    draw_connector(&piece.lhs, piece.rotation, sdl, square_size, img_divisor);
+}
 
+pub fn draw_dots(sdl: &MySdl, squares: &[Option<Dot>], square_size: i32, img_divisor: i32) {
     for dot in squares.iter().flatten() {
         draw_dot(dot, sdl, square_size, img_divisor);
     }

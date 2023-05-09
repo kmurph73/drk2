@@ -51,6 +51,8 @@ pub struct Dot {
     pub tile: Pos,
     pub color: DotColor,
     pub kind: DotType,
+    pub sibling_index: Option<usize>,
+    pub rotation: Option<i32>,
 }
 
 impl Dot {

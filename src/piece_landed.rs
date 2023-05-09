@@ -27,9 +27,14 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
                     }
                 }
 
-                chain_count = 0;
                 chain_color = color.clone();
                 current_chain.clear();
+                if color.is_some() {
+                    current_chain.push(idx);
+                    chain_count = 1;
+                } else {
+                    chain_count = 0;
+                }
             }
         }
     }
@@ -55,8 +60,13 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
                 }
 
                 chain_color = color.clone();
-                chain_count = 0;
                 current_chain.clear();
+                if color.is_some() {
+                    current_chain.push(idx);
+                    chain_count = 1;
+                } else {
+                    chain_count = 0;
+                }
             }
         }
     }

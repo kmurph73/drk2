@@ -1,4 +1,5 @@
 use cmd::Cmd;
+use draw_game::{draw_piece, draw_piece_connectors};
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
@@ -8,7 +9,7 @@ use util::is_mac;
 
 pub mod cmd;
 pub mod dot;
-pub mod draw_app;
+pub mod draw_game;
 pub mod draw_grid;
 pub mod handle_cmds;
 pub mod handle_events;
@@ -24,7 +25,7 @@ pub mod random_scenario;
 pub mod test_scenario;
 pub mod util;
 
-use crate::draw_app::draw_app;
+use crate::draw_game::draw_dots;
 use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
 use crate::piece_landed::get_indexes_to_remove;
@@ -56,7 +57,7 @@ fn main() {
 
     // let mut rng = rand::thread_rng();
     let mut squares = test_scenario();
-    let mut piece = Piece::custom();
+    let mut current_piece = Some(Piece::custom());
 
     let img_divisor = if is_mac { 2 } else { 1 };
 
@@ -76,20 +77,26 @@ fn main() {
             break 'running;
         }
 
-        let just_landed = handle_cmds(&new_cmds, &mut piece, &squares);
+        if let Some(piece) = &mut current_piece {
+            let just_landed = handle_cmds(&new_cmds, piece, &squares);
 
-        if just_landed {
-            squares[piece.lhs.idx()] = Some(piece.lhs.clone());
-            squares[piece.rhs.idx()] = Some(piece.rhs.clone());
-            let indexes_to_remove = get_indexes_to_remove(&squares);
+            if just_landed {
+                squares[piece.lhs.idx()] = Some(piece.lhs.clone());
+                squares[piece.rhs.idx()] = Some(piece.rhs.clone());
+                let indexes_to_remove = get_indexes_to_remove(&squares);
 
-            for idx in &indexes_to_remove {
-                squares[*idx] = None;
+                current_piece = None;
+                for idx in &indexes_to_remove {
+                    squares[*idx] = None;
+                }
             }
         }
 
         draw_grid(&sdl, square_size);
-        draw_app(&sdl, &piece, &squares, square_size, img_divisor);
+        draw_dots(&sdl, &squares, square_size, img_divisor);
+        if let Some(piece) = &current_piece {
+            draw_piece(piece, &sdl, square_size, img_divisor);
+        }
 
         sdl.present();
     }
