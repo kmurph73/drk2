@@ -18,6 +18,7 @@ pub mod img_consts;
 pub mod keyboard;
 pub mod my_sdl;
 pub mod piece;
+pub mod piece_landed;
 pub mod pos;
 pub mod random_scenario;
 pub mod test_scenario;
@@ -26,6 +27,7 @@ pub mod util;
 use crate::draw_app::draw_app;
 use crate::draw_grid::draw_grid;
 use crate::handle_events::handle_events;
+use crate::piece_landed::get_indexes_to_remove;
 use crate::test_scenario::test_scenario;
 
 mod prelude {
@@ -41,6 +43,11 @@ pub enum Msg {
     Quit,
 }
 
+pub enum GameState {
+    Normal,
+    PieceLanded,
+}
+
 fn main() {
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
@@ -48,7 +55,7 @@ fn main() {
     let square_size = SCREEN_WIDTH / 10;
 
     // let mut rng = rand::thread_rng();
-    let squares = test_scenario();
+    let mut squares = test_scenario();
     let mut piece = Piece::custom();
 
     let img_divisor = if is_mac { 2 } else { 1 };
@@ -69,7 +76,17 @@ fn main() {
             break 'running;
         }
 
-        handle_cmds(&new_cmds, &mut piece, &squares);
+        let just_landed = handle_cmds(&new_cmds, &mut piece, &squares);
+
+        if just_landed {
+            squares[piece.lhs.idx()] = Some(piece.lhs.clone());
+            squares[piece.rhs.idx()] = Some(piece.rhs.clone());
+            let indexes_to_remove = get_indexes_to_remove(&squares);
+
+            for idx in &indexes_to_remove {
+                squares[*idx] = None;
+            }
+        }
 
         draw_grid(&sdl, square_size);
         draw_app(&sdl, &piece, &squares, square_size, img_divisor);

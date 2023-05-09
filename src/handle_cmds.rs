@@ -1,6 +1,6 @@
 use crate::{cmd::Cmd, dot::Dot, piece::Piece};
 
-pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) {
+pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> bool {
     for cmd in cmds {
         match cmd {
             Cmd::Move(dir) => {
@@ -18,7 +18,10 @@ pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) {
                 let new_pos = piece.find_lowest_drop(squares);
                 let (lhs, rhs) = new_pos;
                 piece.set_pos(lhs, rhs);
+                return true;
             }
         }
     }
+
+    false
 }

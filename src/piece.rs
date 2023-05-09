@@ -7,6 +7,7 @@ pub struct Piece {
     pub lhs: Dot,
     pub rhs: Dot,
     pub rotation: i32,
+    pub landed: bool,
 }
 
 pub struct Rotation {
@@ -73,6 +74,7 @@ impl Piece {
             lhs,
             rhs,
             rotation: 0,
+            landed: false,
         }
     }
 
@@ -87,6 +89,7 @@ impl Piece {
             lhs,
             rhs,
             rotation: 1,
+            landed: false,
         }
     }
 

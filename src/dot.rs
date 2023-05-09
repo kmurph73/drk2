@@ -12,7 +12,7 @@ use crate::{
     util::{map_idx, tuple_to_rect},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DotColor {
     Orange,
     Blue,
@@ -54,6 +54,12 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn idx(&self) -> usize {
+        let Pos(x, y) = self.tile;
+
+        map_idx(x, y)
+    }
+
     pub fn lowest_y(&self, squares: &[Option<Dot>]) -> i32 {
         let x = self.tile.0;
         let mut y = self.tile.1 + 1;
