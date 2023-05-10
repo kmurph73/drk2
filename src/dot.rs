@@ -40,7 +40,7 @@ impl DotColor {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DotType {
     Good,
     Bad,
@@ -51,11 +51,13 @@ pub struct Dot {
     pub tile: Pos,
     pub color: DotColor,
     pub kind: DotType,
-    pub sibling_index: Option<usize>,
-    pub rotation: Option<i32>,
 }
 
 impl Dot {
+    pub fn is_good(&self) -> bool {
+        self.kind == DotType::Good
+    }
+
     pub fn idx(&self) -> usize {
         let Pos(x, y) = self.tile;
 

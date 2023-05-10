@@ -5,12 +5,14 @@ use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
 use prelude::SCREEN_WIDTH;
-use util::is_mac;
+use util::{contains2, is_mac};
 
 pub mod cmd;
 pub mod dot;
 pub mod draw_game;
 pub mod draw_grid;
+pub mod get_dots_to_drop;
+pub mod get_indexes_to_remove;
 pub mod handle_cmds;
 pub mod handle_events;
 pub mod handle_keydown;
@@ -19,7 +21,6 @@ pub mod img_consts;
 pub mod keyboard;
 pub mod my_sdl;
 pub mod piece;
-pub mod piece_landed;
 pub mod pos;
 pub mod random_scenario;
 pub mod test_scenario;
@@ -27,8 +28,8 @@ pub mod util;
 
 use crate::draw_game::draw_dots;
 use crate::draw_grid::draw_grid;
+use crate::get_indexes_to_remove::get_indexes_to_remove;
 use crate::handle_events::handle_events;
-use crate::piece_landed::get_indexes_to_remove;
 use crate::test_scenario::test_scenario;
 
 mod prelude {
@@ -59,6 +60,8 @@ fn main() {
     let mut squares = test_scenario();
     let mut current_piece = Some(Piece::custom());
 
+    let mut pieces: Vec<Piece> = Vec::new();
+
     let img_divisor = if is_mac { 2 } else { 1 };
 
     let mut keys = KeyboardState {
@@ -81,14 +84,23 @@ fn main() {
             let just_landed = handle_cmds(&new_cmds, piece, &squares);
 
             if just_landed {
-                squares[piece.lhs.idx()] = Some(piece.lhs.clone());
-                squares[piece.rhs.idx()] = Some(piece.rhs.clone());
+                let lhs_idx = piece.lhs.idx();
+                let rhs_idx = piece.rhs.idx();
+                squares[lhs_idx] = Some(piece.lhs.clone());
+                squares[rhs_idx] = Some(piece.rhs.clone());
                 let indexes_to_remove = get_indexes_to_remove(&squares);
 
-                current_piece = None;
                 for idx in &indexes_to_remove {
                     squares[*idx] = None;
                 }
+
+                let needs_piece = !contains2(&indexes_to_remove, &lhs_idx, &rhs_idx);
+
+                if needs_piece {
+                    pieces.push(current_piece.unwrap().clone());
+                }
+
+                current_piece = None;
             }
         }
 
@@ -97,6 +109,8 @@ fn main() {
         if let Some(piece) = &current_piece {
             draw_piece(piece, &sdl, square_size, img_divisor);
         }
+
+        draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
         sdl.present();
     }

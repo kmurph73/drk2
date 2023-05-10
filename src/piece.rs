@@ -78,6 +78,10 @@ impl Piece {
         }
     }
 
+    pub fn has_tile(&self, tile: &Pos) -> bool {
+        self.lhs.tile == *tile || self.rhs.tile == *tile
+    }
+
     pub fn random(rng: &mut ThreadRng) -> Piece {
         let tile = Pos(0, 4);
         let lhs = Dot::random_good(rng, tile);

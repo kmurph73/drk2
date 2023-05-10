@@ -22,6 +22,16 @@ pub fn tuple_to_rect((x, y, w, h): (i32, i32, i32, i32)) -> SDL_Rect {
     SDL_Rect { x, y, w, h }
 }
 
+pub fn contains2<T: std::cmp::PartialEq>(arr: &Vec<T>, a: &T, b: &T) -> bool {
+    for i in arr {
+        if a == i || b == i {
+            return true;
+        }
+    }
+
+    false
+}
+
 // https://www.reddit.com/r/rust/comments/qjh00f/fill_a_vecoptiont_with_none_without_requiring/
 pub fn empty_array<T>(capacity: usize) -> Vec<Option<T>> {
     let mut vec = Vec::with_capacity(capacity);
