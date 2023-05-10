@@ -25,5 +25,5 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &Vec<Piece>) -> Vec<us
         }
     }
 
-    dots_to_drop
+    tiles_to_drop
 }
