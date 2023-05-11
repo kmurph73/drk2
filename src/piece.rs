@@ -63,6 +63,21 @@ fn get_next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
+    pub fn is_horizontal(&self) -> bool {
+        self.rotation == 0 || self.rotation == 2
+    }
+
+    pub fn attempt_drop(&self, squares: &[Option<Dot>]) -> Option<(usize, usize)> {
+        let lhs_index = self.lhs.idx();
+        let rhs_index = self.rhs.idx();
+
+        if self.lhs.can_drop2(squares, rhs_index) && self.rhs.can_drop2(squares, lhs_index) {
+            Some((lhs_index, rhs_index))
+        } else {
+            None
+        }
+    }
+
     pub fn custom() -> Piece {
         let tile = Pos(0, 0);
         let lhs = Dot::green(tile);

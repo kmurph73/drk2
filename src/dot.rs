@@ -8,7 +8,7 @@ use crate::{
     },
     my_sdl::SDL_Rect,
     pos::Pos,
-    prelude::ROWS,
+    prelude::{NUM_SQUARES_USIZE, ROWS},
     util::{map_idx, tuple_to_rect},
 };
 
@@ -54,6 +54,18 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn can_drop(&self, squares: &[Option<Dot>]) -> bool {
+        let idx = self.tile.add_y(1).idx();
+
+        idx < NUM_SQUARES_USIZE && squares[idx].is_none()
+    }
+
+    pub fn can_drop2(&self, squares: &[Option<Dot>], ignore: usize) -> bool {
+        let idx = self.tile.add_y(1).idx();
+
+        idx < NUM_SQUARES_USIZE && (idx == ignore || squares[idx].is_none())
+    }
+
     pub fn is_good(&self) -> bool {
         self.kind == DotType::Good
     }

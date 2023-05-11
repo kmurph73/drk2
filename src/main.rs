@@ -1,5 +1,6 @@
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
+use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
@@ -38,6 +39,7 @@ mod prelude {
     pub const COLS: i32 = 8;
     pub const ROWS: i32 = 14;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
+    pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
 }
 
 pub enum Msg {
@@ -111,6 +113,13 @@ fn main() {
         }
 
         draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
+
+        let to_drop = calc_dots_to_drop(&squares, &pieces);
+        for idx in to_drop {
+            if let Some(dot) = &mut squares[idx] {
+                dot.tile.1 += 1;
+            }
+        }
 
         sdl.present();
     }

@@ -1,12 +1,17 @@
 use crate::{
     dot::Dot,
     prelude::{COLS, ROWS},
+    util::map_idx,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Pos(pub i32, pub i32);
 
 impl Pos {
+    pub fn idx(&self) -> usize {
+        map_idx(self.0, self.1)
+    }
+
     pub fn add_y(&self, y_offset: i32) -> Pos {
         Pos(self.0, self.1 + y_offset)
     }

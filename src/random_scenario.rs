@@ -1,7 +1,7 @@
 use crate::{
     dot::Dot,
     pos::Pos,
-    prelude::{COLS, NUM_SQUARES, ROWS},
+    prelude::{COLS, NUM_SQUARES_USIZE, ROWS},
     util::{empty_array, map_idx},
 };
 use rand::{rngs::ThreadRng, Rng};
@@ -14,7 +14,7 @@ fn random_tile(rng: &mut ThreadRng) -> Pos {
 }
 
 pub fn random_scenario(rng: &mut ThreadRng) -> Vec<Option<Dot>> {
-    let mut squares = empty_array(NUM_SQUARES as usize);
+    let mut squares = empty_array(NUM_SQUARES_USIZE);
 
     let mut cnt = 0;
 
