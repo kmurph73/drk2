@@ -116,6 +116,20 @@ fn main() {
             }
         }
 
+        let start = SystemTime::now();
+        let current_time = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs();
+
+        let delta = current_time - start_time;
+        if delta > 0 {
+            let fps = frame / delta;
+            println!("secs: {delta}");
+
+            sdl.draw_fps(fps);
+        }
+
         draw_grid(&sdl, square_size);
         draw_dots(&sdl, &squares, square_size, img_divisor);
         if let Some(piece) = &current_piece {
@@ -138,6 +152,8 @@ fn main() {
         }
 
         sdl.present();
+
+        frame += 1;
     }
 
     sdl.quit();

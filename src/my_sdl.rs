@@ -4,6 +4,21 @@ use std::{
     ptr,
 };
 
+const FONT_SIZE: i32 = 48;
+const SDL_WHITE: SDL_Color = SDL_Color {
+    r: 255,
+    g: 255,
+    b: 255,
+    a: 255,
+};
+
+const SDL_BLACK: SDL_Color = SDL_Color {
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 255,
+};
+
 use crate::prelude::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 #[allow(clippy::all)]
@@ -15,14 +30,15 @@ mod bindings {
 #[allow(clippy::all)]
 pub use self::bindings::{
     IMG_Init, IMG_InitFlags_IMG_INIT_JPG, IMG_InitFlags_IMG_INIT_PNG, IMG_LoadTexture,
-    SDL_BlendMode_SDL_BLENDMODE_BLEND, SDL_CreateRenderer, SDL_CreateWindow, SDL_Delay,
-    SDL_DestroyRenderer, SDL_DestroyWindow, SDL_Event, SDL_EventType_SDL_KEYDOWN,
-    SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_QUIT, SDL_GetError, SDL_Init, SDL_PollEvent,
-    SDL_Quit, SDL_Rect, SDL_RenderClear, SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderPresent,
-    SDL_RenderSetScale, SDL_Renderer, SDL_RendererFlags_SDL_RENDERER_ACCELERATED,
-    SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC, SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint,
-    SDL_SetRenderDrawBlendMode, SDL_SetRenderDrawColor, SDL_Texture, SDL_Window,
-    SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI, TTF_Init, SDL_INIT_VIDEO,
+    SDL_BlendMode_SDL_BLENDMODE_BLEND, SDL_Color, SDL_CreateRenderer, SDL_CreateTextureFromSurface,
+    SDL_CreateWindow, SDL_Delay, SDL_DestroyRenderer, SDL_DestroyWindow, SDL_Event,
+    SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_QUIT, SDL_FreeSurface,
+    SDL_GetError, SDL_Init, SDL_PollEvent, SDL_QueryTexture, SDL_Quit, SDL_Rect, SDL_RenderClear,
+    SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderPresent, SDL_RenderSetScale, SDL_Renderer,
+    SDL_RendererFlags_SDL_RENDERER_ACCELERATED, SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC,
+    SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint, SDL_SetRenderDrawBlendMode,
+    SDL_SetRenderDrawColor, SDL_Texture, SDL_Window, SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI,
+    TTF_Init, TTF_OpenFont, TTF_RenderUTF8_Blended, _TTF_Font, SDL_INIT_VIDEO,
     SDL_WINDOWPOS_UNDEFINED_MASK,
 };
 
@@ -30,6 +46,7 @@ pub struct MySdl {
     pub texture: *mut SDL_Texture,
     pub renderer: *mut SDL_Renderer,
     pub window: *mut SDL_Window,
+    pub font: *mut _TTF_Font,
 }
 
 impl MySdl {
@@ -77,9 +94,19 @@ impl MySdl {
             let file = CString::new("resources/skyline-packer-output.png").unwrap();
             let texture = IMG_LoadTexture(renderer, file.as_ptr());
 
+            let font_path = CString::new("font/EnterCommand.ttf").expect("CString::new failed");
+            let font = TTF_OpenFont(font_path.as_ptr(), 28 as c_int);
+
+            if font.is_null() {
+                let err = SDL_GetError();
+                let str = CStr::from_ptr(err as *const _).to_str().unwrap().to_owned();
+                panic!("{str}");
+            }
+
             SDL_SetRenderDrawBlendMode(renderer, SDL_BlendMode_SDL_BLENDMODE_BLEND);
 
             MySdl {
+                font,
                 texture,
                 renderer,
                 window,
@@ -109,7 +136,40 @@ impl MySdl {
         }
     }
 
-    pub fn draw_fps(&self) {
-        unsafe {}
+    pub fn draw_fps(&self, fps: u64) {
+        let str = format!("{:#?}", fps);
+        let text = CString::new(str).expect("CString::new failed");
+        let texture = self.get_text(text.as_ptr());
+        let x = 0;
+        let y = 0;
+        self.blit(texture, x, y);
+    }
+
+    fn get_text(&self, text: *const i8) -> *mut SDL_Texture {
+        let font = self.font;
+
+        let color = SDL_WHITE;
+
+        unsafe {
+            let surface = TTF_RenderUTF8_Blended(font, text, color);
+            let texture = SDL_CreateTextureFromSurface(self.renderer, surface);
+            SDL_FreeSurface(surface);
+            texture
+        }
+    }
+
+    fn blit(&self, texture: *mut SDL_Texture, x: i32, y: i32) {
+        let mut dest = SDL_Rect { x, y, w: 0, h: 0 };
+        unsafe {
+            SDL_QueryTexture(
+                texture,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                &mut dest.w,
+                &mut dest.h,
+            );
+
+            SDL_RenderCopy(self.renderer, texture, ptr::null(), &dest);
+        }
     }
 }
