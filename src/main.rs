@@ -32,6 +32,7 @@ use crate::draw_grid::draw_grid;
 use crate::get_indexes_to_remove::get_indexes_to_remove;
 use crate::handle_events::handle_events;
 use crate::test_scenario::test_scenario;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
@@ -61,6 +62,14 @@ fn main() {
     // let mut rng = rand::thread_rng();
     let mut squares = test_scenario();
     let mut current_piece = Some(Piece::custom());
+    let mut piece_landed = false;
+
+    let mut frame = 0;
+    let start = SystemTime::now();
+    let start_time = start
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_secs();
 
     let mut pieces: Vec<Piece> = Vec::new();
 
@@ -86,6 +95,7 @@ fn main() {
             let just_landed = handle_cmds(&new_cmds, piece, &squares);
 
             if just_landed {
+                piece_landed = true;
                 let lhs_idx = piece.lhs.idx();
                 let rhs_idx = piece.rhs.idx();
                 squares[lhs_idx] = Some(piece.lhs.clone());
@@ -114,10 +124,16 @@ fn main() {
 
         draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
-        let to_drop = calc_dots_to_drop(&squares, &pieces);
-        for idx in to_drop {
-            if let Some(dot) = &mut squares[idx] {
-                dot.tile.1 += 1;
+        if piece_landed {
+            let to_drop = calc_dots_to_drop(&squares, &pieces);
+            if to_drop.is_empty() {
+                piece_landed = false;
+            } else {
+                for idx in to_drop {
+                    if let Some(dot) = &mut squares[idx] {
+                        dot.tile.1 += 1;
+                    }
+                }
             }
         }
 

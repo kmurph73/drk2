@@ -1,4 +1,8 @@
-use std::ffi::CString;
+use std::ffi::c_int;
+use std::{
+    ffi::{CStr, CString},
+    ptr,
+};
 
 use crate::prelude::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
@@ -13,11 +17,13 @@ pub use self::bindings::{
     IMG_Init, IMG_InitFlags_IMG_INIT_JPG, IMG_InitFlags_IMG_INIT_PNG, IMG_LoadTexture,
     SDL_BlendMode_SDL_BLENDMODE_BLEND, SDL_CreateRenderer, SDL_CreateWindow, SDL_Delay,
     SDL_DestroyRenderer, SDL_DestroyWindow, SDL_Event, SDL_EventType_SDL_KEYDOWN,
-    SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_QUIT, SDL_Init, SDL_PollEvent, SDL_Quit, SDL_Rect,
-    SDL_RenderClear, SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderPresent, SDL_RenderSetScale,
-    SDL_Renderer, SDL_RendererFlags_SDL_RENDERER_ACCELERATED, SDL_Scancode_SDL_SCANCODE_ESCAPE,
-    SDL_SetHint, SDL_SetRenderDrawBlendMode, SDL_SetRenderDrawColor, SDL_Texture, SDL_Window,
-    SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI, SDL_INIT_VIDEO, SDL_WINDOWPOS_UNDEFINED_MASK,
+    SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_QUIT, SDL_GetError, SDL_Init, SDL_PollEvent,
+    SDL_Quit, SDL_Rect, SDL_RenderClear, SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderPresent,
+    SDL_RenderSetScale, SDL_Renderer, SDL_RendererFlags_SDL_RENDERER_ACCELERATED,
+    SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC, SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint,
+    SDL_SetRenderDrawBlendMode, SDL_SetRenderDrawColor, SDL_Texture, SDL_Window,
+    SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI, TTF_Init, SDL_INIT_VIDEO,
+    SDL_WINDOWPOS_UNDEFINED_MASK,
 };
 
 pub struct MySdl {
@@ -33,9 +39,15 @@ impl MySdl {
                 panic!("failed to initialize sdl2 with video");
             };
 
+            if TTF_Init() < 0 {
+                let err = SDL_GetError();
+                let str = CStr::from_ptr(err as *const _).to_str().unwrap().to_owned();
+                panic!("Couldn't initialize SDL TTF: {str}");
+            }
+
             let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI;
 
-            let title = CString::new("Real Naft 2").expect("CString::new failed");
+            let title = CString::new("Dr K Dos").expect("CString::new failed");
 
             let window = SDL_CreateWindow(
                 title.as_ptr(),
@@ -50,7 +62,7 @@ impl MySdl {
             let quality = CString::new("SDL_RENDER_SCALE_QUALITY").unwrap();
             SDL_SetHint(quality.as_ptr(), linear.as_ptr());
 
-            let renderer_flags = SDL_RendererFlags_SDL_RENDERER_ACCELERATED;
+            let renderer_flags = SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC;
 
             let renderer = SDL_CreateRenderer(window, -1, renderer_flags);
             let scale = if is_mac { 2.0 } else { 1.0 };
@@ -93,7 +105,11 @@ impl MySdl {
     pub fn present(&self) {
         unsafe {
             SDL_RenderPresent(self.renderer);
-            SDL_Delay(32);
+            // SDL_Delay(32);
         }
+    }
+
+    pub fn draw_fps(&self) {
+        unsafe {}
     }
 }
