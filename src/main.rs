@@ -5,8 +5,8 @@ use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
-use prelude::{DROP_RATE_MS, SCREEN_WIDTH};
-use util::{contains2, get_current_timestamp_millis, get_current_timestamp_seconds, is_mac};
+use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH};
+use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
 pub mod dot;
@@ -40,7 +40,8 @@ mod prelude {
     pub const ROWS: i32 = 14;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
-    pub const DROP_RATE_MS: u128 = 400;
+    pub const DROP_RATE_MS: u128 = 40;
+    pub const LANDED_DELAY_MS: u128 = 400;
 }
 
 pub enum Msg {
@@ -52,6 +53,8 @@ pub enum Msg {
 pub enum GameState {
     Normal,
     PieceLanded(u128),
+    DroppingDots(u128),
+    DotsLanded(u128),
 }
 
 fn main() {
@@ -63,13 +66,8 @@ fn main() {
     // let mut rng = rand::thread_rng();
     let mut squares = test_scenario();
     let mut current_piece = Some(Piece::custom());
-    let mut piece_just_landed = false;
 
     let mut state = GameState::Normal;
-
-    let mut frame = 0;
-
-    let mut dots_to_drop: Vec<usize> = Vec::new();
 
     // let initial_time = get_current_timestamp();
 
@@ -95,30 +93,80 @@ fn main() {
 
         if state == GameState::Normal {
             if let Some(piece) = &mut current_piece {
-                let just_landed = handle_cmds(&new_cmds, piece, &squares);
+                let land_piece = handle_cmds(&new_cmds, piece, &squares);
 
-                if just_landed {
+                if land_piece {
                     state = GameState::PieceLanded(get_current_timestamp_millis());
+                }
+            }
+        }
 
-                    let lhs_idx = piece.lhs.idx();
-                    let rhs_idx = piece.rhs.idx();
-                    squares[lhs_idx] = Some(piece.lhs.clone());
-                    squares[rhs_idx] = Some(piece.rhs.clone());
+        match state {
+            GameState::PieceLanded(land_time) => {
+                let piece = current_piece.expect("piece should be here");
+
+                let lhs_idx = piece.lhs.idx();
+                let rhs_idx = piece.rhs.idx();
+                squares[lhs_idx] = Some(piece.lhs.clone());
+                squares[rhs_idx] = Some(piece.rhs.clone());
+                let indexes_to_remove = get_indexes_to_remove(&squares);
+
+                for idx in &indexes_to_remove {
+                    squares[*idx] = None;
+                }
+
+                let needs_piece = !contains2(&indexes_to_remove, &lhs_idx, &rhs_idx);
+
+                if needs_piece {
+                    pieces.push(piece.clone());
+                }
+
+                current_piece = None;
+
+                state = GameState::DroppingDots(land_time);
+            }
+            GameState::DroppingDots(last_drop) => {
+                let ts = get_current_timestamp_millis();
+                let delta = ts - last_drop;
+
+                if delta > DROP_RATE_MS {
+                    let to_drop = calc_dots_to_drop(&squares, &pieces);
+                    if to_drop.is_empty() {
+                        state = GameState::DotsLanded(ts);
+                    } else {
+                        for idx in to_drop {
+                            let result = if let Some(dot) = &squares[idx] {
+                                let dot = dot.lower();
+                                let next_idx = dot.idx();
+
+                                Some((next_idx, dot.clone()))
+                            } else {
+                                None
+                            };
+
+                            if let Some((next_idx, dot)) = result {
+                                squares[idx] = None;
+                                squares[next_idx] = Some(dot);
+                            }
+                        }
+
+                        state = GameState::DroppingDots(ts);
+                    }
+                }
+            }
+            GameState::DotsLanded(last_drop) => {
+                let delta = get_current_timestamp_millis() - last_drop;
+                if delta > LANDED_DELAY_MS {
                     let indexes_to_remove = get_indexes_to_remove(&squares);
 
                     for idx in &indexes_to_remove {
                         squares[*idx] = None;
                     }
 
-                    let needs_piece = !contains2(&indexes_to_remove, &lhs_idx, &rhs_idx);
-
-                    if needs_piece {
-                        pieces.push(current_piece.unwrap().clone());
-                    }
-
-                    current_piece = None;
+                    state = GameState::DroppingDots(last_drop)
                 }
             }
+            GameState::Normal => {}
         }
 
         // let current_time = get_current_timestamp();
@@ -139,38 +187,7 @@ fn main() {
 
         draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
-        match state {
-            GameState::PieceLanded(last_drop) => {
-                let delta = get_current_timestamp_millis() - last_drop;
-                if delta > DROP_RATE_MS {
-                    let to_drop = calc_dots_to_drop(&squares, &pieces);
-                    if to_drop.is_empty() {
-                        state = GameState::Normal;
-                    } else {
-                        for idx in to_drop {
-                            if let Some(dot) = &mut squares[idx] {
-                                dot.tile.1 += 1;
-                            }
-                        }
-
-                        let indexes_to_remove = get_indexes_to_remove(&squares);
-
-                        for idx in &indexes_to_remove {
-                            squares[*idx] = None;
-                        }
-
-                        state = GameState::PieceLanded(get_current_timestamp_millis());
-                    }
-                }
-            }
-            GameState::Normal => {}
-        }
-
-        if piece_just_landed {}
-
         sdl.present();
-
-        frame += 1;
     }
 
     sdl.quit();

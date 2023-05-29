@@ -21,7 +21,7 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
                 chain_count += 1;
                 current_chain.push(idx);
             } else {
-                if chain_count >= 3 {
+                if chain_count > 3 {
                     for i in &current_chain {
                         indexes_to_remove.push(*i);
                     }
@@ -53,7 +53,7 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
                 chain_count += 1;
                 current_chain.push(idx);
             } else {
-                if chain_count >= 3 {
+                if chain_count > 3 {
                     for i in &current_chain {
                         indexes_to_remove.push(*i);
                     }

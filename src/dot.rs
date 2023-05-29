@@ -54,6 +54,14 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn lower(&self) -> Dot {
+        Dot {
+            tile: self.tile.add_y(1),
+            color: self.color.clone(),
+            kind: self.kind.clone(),
+        }
+    }
+
     pub fn can_drop(&self, squares: &[Option<Dot>]) -> bool {
         let idx = self.tile.add_y(1).idx();
 
@@ -131,6 +139,14 @@ impl Dot {
         Dot {
             tile,
             color: DotColor::Blue,
+            kind: DotType::Bad,
+        }
+    }
+
+    pub fn new_green_bad(tile: Pos) -> Dot {
+        Dot {
+            tile,
+            color: DotColor::Green,
             kind: DotType::Bad,
         }
     }
