@@ -5,8 +5,8 @@ use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
-use prelude::SCREEN_WIDTH;
-use util::{contains2, is_mac};
+use prelude::{DROP_RATE_MS, SCREEN_WIDTH};
+use util::{contains2, get_current_timestamp_millis, get_current_timestamp_seconds, is_mac};
 
 pub mod cmd;
 pub mod dot;
@@ -32,7 +32,6 @@ use crate::draw_grid::draw_grid;
 use crate::get_indexes_to_remove::get_indexes_to_remove;
 use crate::handle_events::handle_events;
 use crate::test_scenario::test_scenario;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
@@ -41,6 +40,7 @@ mod prelude {
     pub const ROWS: i32 = 14;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
+    pub const DROP_RATE_MS: u128 = 400;
 }
 
 pub enum Msg {
@@ -48,9 +48,10 @@ pub enum Msg {
     Quit,
 }
 
+#[derive(PartialEq)]
 pub enum GameState {
     Normal,
-    PieceLanded,
+    PieceLanded(u128),
 }
 
 fn main() {
@@ -62,14 +63,15 @@ fn main() {
     // let mut rng = rand::thread_rng();
     let mut squares = test_scenario();
     let mut current_piece = Some(Piece::custom());
-    let mut piece_landed = false;
+    let mut piece_just_landed = false;
+
+    let mut state = GameState::Normal;
 
     let mut frame = 0;
-    let start = SystemTime::now();
-    let start_time = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards")
-        .as_secs();
+
+    let mut dots_to_drop: Vec<usize> = Vec::new();
+
+    // let initial_time = get_current_timestamp();
 
     let mut pieces: Vec<Piece> = Vec::new();
 
@@ -91,44 +93,43 @@ fn main() {
             break 'running;
         }
 
-        if let Some(piece) = &mut current_piece {
-            let just_landed = handle_cmds(&new_cmds, piece, &squares);
+        if state == GameState::Normal {
+            if let Some(piece) = &mut current_piece {
+                let just_landed = handle_cmds(&new_cmds, piece, &squares);
 
-            if just_landed {
-                piece_landed = true;
-                let lhs_idx = piece.lhs.idx();
-                let rhs_idx = piece.rhs.idx();
-                squares[lhs_idx] = Some(piece.lhs.clone());
-                squares[rhs_idx] = Some(piece.rhs.clone());
-                let indexes_to_remove = get_indexes_to_remove(&squares);
+                if just_landed {
+                    state = GameState::PieceLanded(get_current_timestamp_millis());
 
-                for idx in &indexes_to_remove {
-                    squares[*idx] = None;
+                    let lhs_idx = piece.lhs.idx();
+                    let rhs_idx = piece.rhs.idx();
+                    squares[lhs_idx] = Some(piece.lhs.clone());
+                    squares[rhs_idx] = Some(piece.rhs.clone());
+                    let indexes_to_remove = get_indexes_to_remove(&squares);
+
+                    for idx in &indexes_to_remove {
+                        squares[*idx] = None;
+                    }
+
+                    let needs_piece = !contains2(&indexes_to_remove, &lhs_idx, &rhs_idx);
+
+                    if needs_piece {
+                        pieces.push(current_piece.unwrap().clone());
+                    }
+
+                    current_piece = None;
                 }
-
-                let needs_piece = !contains2(&indexes_to_remove, &lhs_idx, &rhs_idx);
-
-                if needs_piece {
-                    pieces.push(current_piece.unwrap().clone());
-                }
-
-                current_piece = None;
             }
         }
 
-        let start = SystemTime::now();
-        let current_time = start
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_secs();
+        // let current_time = get_current_timestamp();
+        // let delta = current_time - initial_time;
 
-        let delta = current_time - start_time;
-        if delta > 0 {
-            let fps = frame / delta;
-            println!("secs: {delta}");
+        // if delta > 0 {
+        //     let fps = frame / delta;
+        //     println!("secs: {delta}");
 
-            sdl.draw_fps(fps);
-        }
+        //     sdl.draw_fps(fps);
+        // }
 
         draw_grid(&sdl, square_size);
         draw_dots(&sdl, &squares, square_size, img_divisor);
@@ -138,18 +139,34 @@ fn main() {
 
         draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
-        if piece_landed {
-            let to_drop = calc_dots_to_drop(&squares, &pieces);
-            if to_drop.is_empty() {
-                piece_landed = false;
-            } else {
-                for idx in to_drop {
-                    if let Some(dot) = &mut squares[idx] {
-                        dot.tile.1 += 1;
+        match state {
+            GameState::PieceLanded(last_drop) => {
+                let delta = get_current_timestamp_millis() - last_drop;
+                if delta > DROP_RATE_MS {
+                    let to_drop = calc_dots_to_drop(&squares, &pieces);
+                    if to_drop.is_empty() {
+                        state = GameState::Normal;
+                    } else {
+                        for idx in to_drop {
+                            if let Some(dot) = &mut squares[idx] {
+                                dot.tile.1 += 1;
+                            }
+                        }
+
+                        let indexes_to_remove = get_indexes_to_remove(&squares);
+
+                        for idx in &indexes_to_remove {
+                            squares[*idx] = None;
+                        }
+
+                        state = GameState::PieceLanded(get_current_timestamp_millis());
                     }
                 }
             }
+            GameState::Normal => {}
         }
+
+        if piece_just_landed {}
 
         sdl.present();
 

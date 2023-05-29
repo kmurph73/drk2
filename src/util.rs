@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use os_info::Type;
 
 use crate::{my_sdl::SDL_Rect, prelude::COLS};
@@ -41,4 +43,18 @@ pub fn empty_array<T>(capacity: usize) -> Vec<Option<T>> {
     }
 
     vec
+}
+
+pub fn get_current_timestamp_seconds() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_secs()
+}
+
+pub fn get_current_timestamp_millis() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis()
 }
