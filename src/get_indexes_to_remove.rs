@@ -18,6 +18,7 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
             let color = squares[idx].as_ref().map(|dot| dot.color.clone());
 
             if color.is_some() && color == chain_color {
+                println!("{x},{y}: {color:#?} - {chain_count}");
                 chain_count += 1;
                 current_chain.push(idx);
             } else {
@@ -36,6 +37,12 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
                     chain_count = 0;
                 }
             }
+        }
+    }
+
+    if chain_count > 3 {
+        for i in &current_chain {
+            indexes_to_remove.push(*i);
         }
     }
 
@@ -68,6 +75,12 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
                     chain_count = 0;
                 }
             }
+        }
+    }
+
+    if chain_count > 3 {
+        for i in &current_chain {
+            indexes_to_remove.push(*i);
         }
     }
 

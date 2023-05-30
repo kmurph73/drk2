@@ -63,6 +63,11 @@ fn get_next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
+    pub fn lower_mut(&mut self) {
+        self.lhs.tile.1 += 1;
+        self.rhs.tile.1 += 1;
+    }
+
     pub fn has_idx(&self, idx: usize) -> bool {
         self.lhs.idx() == idx || self.rhs.idx() == idx
     }

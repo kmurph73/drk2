@@ -6,6 +6,7 @@ use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
 use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH};
+use test_scenario::test_scenario2;
 use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
@@ -64,7 +65,7 @@ fn main() {
     let square_size = SCREEN_WIDTH / 10;
 
     // let mut rng = rand::thread_rng();
-    let mut squares = test_scenario();
+    let mut squares = test_scenario2();
     let mut current_piece = Some(Piece::custom());
 
     let mut state = GameState::Normal;
@@ -115,6 +116,19 @@ fn main() {
                     squares[*idx] = None;
                 }
 
+                pieces.retain(|p| {
+                    let mut retain = true;
+
+                    for idx in &indexes_to_remove {
+                        if p.has_idx(*idx) {
+                            retain = false;
+                            break;
+                        }
+                    }
+
+                    retain
+                });
+
                 let needs_piece = !contains2(&indexes_to_remove, &lhs_idx, &rhs_idx);
 
                 if needs_piece {
@@ -134,8 +148,8 @@ fn main() {
                     if to_drop.is_empty() {
                         state = GameState::DotsLanded(ts);
                     } else {
-                        for idx in to_drop {
-                            let result = if let Some(dot) = &squares[idx] {
+                        for idx in &to_drop {
+                            let result = if let Some(dot) = &squares[*idx] {
                                 let dot = dot.lower();
                                 let next_idx = dot.idx();
 
@@ -145,8 +159,16 @@ fn main() {
                             };
 
                             if let Some((next_idx, dot)) = result {
-                                squares[idx] = None;
+                                squares[*idx] = None;
                                 squares[next_idx] = Some(dot);
+                            }
+                        }
+
+                        for piece in &mut pieces {
+                            for idx in &to_drop {
+                                if piece.has_idx(*idx) {
+                                    piece.lower_mut();
+                                }
                             }
                         }
 

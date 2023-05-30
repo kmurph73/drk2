@@ -42,3 +42,17 @@ pub fn test_scenario() -> Vec<Option<Dot>> {
 
     squares
 }
+
+pub fn test_scenario2() -> Vec<Option<Dot>> {
+    let mut squares: Vec<Option<Dot>> = empty_array(NUM_SQUARES as usize);
+
+    assign_blue(Pos(7, 13), &mut squares);
+    assign_blue(Pos(7, 14), &mut squares);
+    assign_blue(Pos(7, 15), &mut squares);
+
+    // assign_blue(Pos(6, 13), &mut squares);
+    // assign_blue(Pos(6, 14), &mut squares);
+    // assign_blue(Pos(6, 15), &mut squares);
+
+    squares
+}
