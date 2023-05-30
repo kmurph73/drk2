@@ -37,7 +37,7 @@ mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
     pub const SCREEN_HEIGHT: i32 = 1000;
     pub const COLS: i32 = 8;
-    pub const ROWS: i32 = 14;
+    pub const ROWS: i32 = 16;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const DROP_RATE_MS: u128 = 40;
@@ -159,11 +159,29 @@ fn main() {
                 if delta > LANDED_DELAY_MS {
                     let indexes_to_remove = get_indexes_to_remove(&squares);
 
-                    for idx in &indexes_to_remove {
-                        squares[*idx] = None;
-                    }
+                    if indexes_to_remove.is_empty() {
+                        current_piece = Some(Piece::custom());
+                        state = GameState::Normal;
+                    } else {
+                        for idx in &indexes_to_remove {
+                            squares[*idx] = None;
+                        }
 
-                    state = GameState::DroppingDots(last_drop)
+                        pieces.retain(|p| {
+                            let mut retain = true;
+
+                            for idx in &indexes_to_remove {
+                                if p.has_idx(*idx) {
+                                    retain = false;
+                                    break;
+                                }
+                            }
+
+                            retain
+                        });
+
+                        state = GameState::DroppingDots(last_drop)
+                    }
                 }
             }
             GameState::Normal => {}
