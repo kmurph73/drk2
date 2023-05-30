@@ -7,7 +7,7 @@ fn draw_rows(sdl: &MySdl, square_size: i32) {
     let x1 = square_size;
     let x2 = square_size * 9;
 
-    let screen_rows = ROWS + 3;
+    let screen_rows = ROWS + 1;
 
     for i in 2..screen_rows {
         let y1 = i * square_size;
@@ -21,7 +21,7 @@ fn draw_rows(sdl: &MySdl, square_size: i32) {
 
 fn draw_cols(sdl: &MySdl, square_size: i32) {
     let y1 = square_size * 2;
-    let y2 = square_size * (ROWS + 2);
+    let y2 = square_size * ROWS;
 
     let cols = COLS + 2;
 

@@ -63,6 +63,15 @@ fn get_next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
+    pub fn lower_mut(&mut self) {
+        self.lhs.tile.1 += 1;
+        self.rhs.tile.1 += 1;
+    }
+
+    pub fn has_idx(&self, idx: usize) -> bool {
+        self.lhs.idx() == idx || self.rhs.idx() == idx
+    }
+
     pub fn is_horizontal(&self) -> bool {
         self.rotation == 0 || self.rotation == 2
     }
@@ -79,10 +88,10 @@ impl Piece {
     }
 
     pub fn custom() -> Piece {
-        let tile = Pos(0, 0);
+        let tile = Pos(0, 1);
         let lhs = Dot::green(tile);
 
-        let tile = Pos(1, 0);
+        let tile = Pos(1, 1);
         let rhs = Dot::blue(tile);
 
         Piece {
@@ -113,10 +122,10 @@ impl Piece {
     }
 
     fn lowest_top(&self) -> i32 {
-        if self.rhs.tile.1 < 0 || self.lhs.tile.1 < 0 {
-            -1
+        if self.rhs.tile.1 < 2 || self.lhs.tile.1 < 2 {
+            1
         } else {
-            0
+            2
         }
     }
 
@@ -141,7 +150,11 @@ impl Piece {
         let lhs = self.lhs.tile.add(offset);
         let rhs = self.rhs.tile.add(offset);
 
-        let lowest_top = self.lowest_top();
+        let lowest_top = if dir.is_horizontal() {
+            0
+        } else {
+            self.lowest_top()
+        };
 
         if lhs.outside_of_grid(lowest_top)
             || rhs.outside_of_grid(lowest_top)
@@ -167,7 +180,7 @@ impl Piece {
             let lhs = self.lhs.tile.add(left_offset);
             let rhs = self.rhs.tile.add(right_offset);
 
-            if rhs.blocked(squares, -1) || lhs.blocked(squares, -1) {
+            if rhs.blocked(squares, -2) || lhs.blocked(squares, -2) {
                 attempt += 1;
                 continue;
             } else {

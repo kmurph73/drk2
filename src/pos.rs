@@ -23,7 +23,7 @@ impl Pos {
     pub fn top_left_px(&self, square_size: i32) -> Pos {
         let Pos(x, y) = self;
 
-        let y = (y + 2) * square_size;
+        let y = y * square_size;
 
         let x = (x + 1) * square_size;
 

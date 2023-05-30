@@ -19,6 +19,15 @@ impl Direction {
 
         Pos(x, y)
     }
+
+    pub fn is_horizontal(&self) -> bool {
+        match self {
+            Direction::Up => false,
+            Direction::Down => false,
+            Direction::Left => true,
+            Direction::Right => true,
+        }
+    }
 }
 
 #[derive(Debug)]
