@@ -43,7 +43,7 @@ mod prelude {
     pub const NUM_SQUARES: i32 = COLS * ROWS;
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const DROP_RATE_MS: u128 = 40;
-    pub const LANDED_DELAY_MS: u128 = 400;
+    pub const LANDED_DELAY_MS: u128 = 300;
 }
 
 pub enum Msg {
