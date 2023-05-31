@@ -1,3 +1,4 @@
+use crate::random_scenario::random_scenario;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use get_dots_to_drop::calc_dots_to_drop;
@@ -6,7 +7,7 @@ use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
 use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH};
-use test_scenario::test_scenario2;
+use test_scenario::{test_scenario2, test_scenario3};
 use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
@@ -64,8 +65,8 @@ fn main() {
 
     let square_size = SCREEN_WIDTH / 10;
 
-    // let mut rng = rand::thread_rng();
-    let mut squares = test_scenario2();
+    let mut rng = rand::thread_rng();
+    let mut squares = random_scenario(&mut rng);
     let mut current_piece = Some(Piece::custom());
 
     let mut state = GameState::Normal;
@@ -182,7 +183,7 @@ fn main() {
                     let indexes_to_remove = get_indexes_to_remove(&squares);
 
                     if indexes_to_remove.is_empty() {
-                        current_piece = Some(Piece::custom());
+                        current_piece = Some(Piece::random(&mut rng));
                         state = GameState::Normal;
                     } else {
                         for idx in &indexes_to_remove {

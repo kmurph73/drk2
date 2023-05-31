@@ -30,10 +30,12 @@ fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
         },
         2 => match is_even {
             true => ((1, 0), (0, -1)),
-            false => ((0, 0), (0, 0)),
+            false => ((0, -1), (-1, 0)),
         },
         _ => panic!("{attempt} should be 0..2"),
     };
+
+    println!("attempt: {attempt}; {is_even}");
 
     let (lhs, rhs) = if rotation > 1 { (rhs, lhs) } else { (lhs, rhs) };
 
@@ -88,10 +90,10 @@ impl Piece {
     }
 
     pub fn custom() -> Piece {
-        let tile = Pos(0, 1);
+        let tile = Pos(3, 10);
         let lhs = Dot::green(tile);
 
-        let tile = Pos(1, 1);
+        let tile = Pos(4, 10);
         let rhs = Dot::blue(tile);
 
         Piece {
@@ -107,16 +109,16 @@ impl Piece {
     }
 
     pub fn random(rng: &mut ThreadRng) -> Piece {
-        let tile = Pos(0, 4);
+        let tile = Pos(3, 1);
         let lhs = Dot::random_good(rng, tile);
 
-        let tile = Pos(0, 3);
+        let tile = Pos(4, 1);
         let rhs = Dot::random_good(rng, tile);
 
         Piece {
             lhs,
             rhs,
-            rotation: 1,
+            rotation: 0,
             landed: false,
         }
     }

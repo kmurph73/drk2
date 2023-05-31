@@ -18,7 +18,6 @@ pub fn get_indexes_to_remove(squares: &[Option<Dot>]) -> Vec<usize> {
             let color = squares[idx].as_ref().map(|dot| dot.color.clone());
 
             if color.is_some() && color == chain_color {
-                println!("{x},{y}: {color:#?} - {chain_count}");
                 chain_count += 1;
                 current_chain.push(idx);
             } else {
