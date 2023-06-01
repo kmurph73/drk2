@@ -87,11 +87,28 @@ impl Piece {
         }
     }
 
+    pub fn attempt_drop2(
+        &self,
+        squares: &[Option<Dot>],
+        ignores: &Vec<usize>,
+    ) -> Option<(usize, usize)> {
+        let lhs_index = self.lhs.idx();
+        let rhs_index = self.rhs.idx();
+
+        if self.lhs.can_drop3(squares, rhs_index, ignores)
+            && self.rhs.can_drop3(squares, lhs_index, ignores)
+        {
+            Some((lhs_index, rhs_index))
+        } else {
+            None
+        }
+    }
+
     pub fn custom() -> Piece {
-        let tile = Pos(3, 10);
+        let tile = Pos(3, 2);
         let lhs = Dot::green(tile);
 
-        let tile = Pos(4, 10);
+        let tile = Pos(4, 2);
         let rhs = Dot::blue(tile);
 
         Piece {
@@ -106,11 +123,34 @@ impl Piece {
         self.lhs.tile == *tile || self.rhs.tile == *tile
     }
 
+    pub fn originate_mut(&mut self) {
+        self.lhs.tile.0 = 3;
+        self.lhs.tile.1 = 1;
+
+        self.rhs.tile.0 = 4;
+        self.rhs.tile.1 = 1;
+    }
+
     pub fn random(rng: &mut ThreadRng) -> Piece {
         let tile = Pos(3, 1);
         let lhs = Dot::random_good(rng, tile);
 
         let tile = Pos(4, 1);
+        let rhs = Dot::random_good(rng, tile);
+
+        Piece {
+            lhs,
+            rhs,
+            rotation: 0,
+            landed: false,
+        }
+    }
+
+    pub fn random_on_deck(rng: &mut ThreadRng) -> Piece {
+        let tile = Pos(-1, 0);
+        let lhs = Dot::random_good(rng, tile);
+
+        let tile = Pos(0, 0);
         let rhs = Dot::random_good(rng, tile);
 
         Piece {

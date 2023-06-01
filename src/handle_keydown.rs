@@ -67,7 +67,6 @@ pub fn handle_keydown(
         cmds.push(cmd);
     }
 
-    println!("y: {y} - {}, {:#?}", keys.enabled.y, state);
     if y && keys.enabled.y && *state == GameState::Victory {
         return Msg::NewGame;
     }

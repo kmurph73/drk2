@@ -67,9 +67,10 @@ fn main() {
 
     let square_size = SCREEN_WIDTH / 10;
 
-    let num_bad_guys = 1;
+    let num_bad_guys = 20;
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, num_bad_guys);
+    let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
     let mut state = GameState::Normal;
@@ -100,6 +101,7 @@ fn main() {
                 squares = random_scenario(&mut rng, num_bad_guys);
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
+                on_deck_piece = Some(Piece::random_on_deck(&mut rng));
                 state = GameState::Normal;
                 continue;
             }
@@ -198,7 +200,11 @@ fn main() {
                     if indexes_to_remove.is_empty() {
                         let has_bad = squares.iter().flatten().any(|s| s.is_bad());
                         if has_bad {
-                            current_piece = Some(Piece::random(&mut rng));
+                            if let Some(piece) = &mut on_deck_piece {
+                                piece.originate_mut();
+                                current_piece = Some(piece.clone());
+                                on_deck_piece = Some(Piece::random_on_deck(&mut rng));
+                            }
                             state = GameState::Normal;
                         } else {
                             state = GameState::Victory;
@@ -247,6 +253,11 @@ fn main() {
 
         draw_grid(&sdl, square_size);
         draw_dots(&sdl, &squares, square_size, img_divisor);
+
+        if let Some(piece) = &on_deck_piece {
+            draw_piece(piece, &sdl, square_size, img_divisor);
+        }
+
         if let Some(piece) = &current_piece {
             draw_piece(piece, &sdl, square_size, img_divisor);
         }
