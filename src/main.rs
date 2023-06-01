@@ -59,6 +59,13 @@ pub enum GameState {
     DroppingDots(u128),
     DotsLanded(u128),
     Victory,
+    Defeat,
+}
+
+impl GameState {
+    pub fn pending_response(&self) -> bool {
+        *self == GameState::Victory || *self == GameState::Defeat
+    }
 }
 
 fn main() {
@@ -200,12 +207,20 @@ fn main() {
                     if indexes_to_remove.is_empty() {
                         let has_bad = squares.iter().flatten().any(|s| s.is_bad());
                         if has_bad {
-                            if let Some(piece) = &mut on_deck_piece {
-                                piece.originate_mut();
-                                current_piece = Some(piece.clone());
-                                on_deck_piece = Some(Piece::random_on_deck(&mut rng));
+                            let has_piece_above_grid =
+                                squares.iter().flatten().any(|d| d.above_grid());
+
+                            if has_piece_above_grid {
+                                state = GameState::Defeat;
+                            } else {
+                                if let Some(piece) = &mut on_deck_piece {
+                                    piece.originate_mut();
+                                    current_piece = Some(piece.clone());
+                                    on_deck_piece = Some(Piece::random_on_deck(&mut rng));
+                                }
+
+                                state = GameState::Normal;
                             }
-                            state = GameState::Normal;
                         } else {
                             state = GameState::Victory;
                         }
@@ -239,6 +254,7 @@ fn main() {
             }
             GameState::Normal => {}
             GameState::Victory => {}
+            GameState::Defeat => {}
         }
 
         // let current_time = get_current_timestamp();
@@ -266,6 +282,8 @@ fn main() {
 
         if state == GameState::Victory {
             sdl.draw_victory_text();
+        } else if state == GameState::Defeat {
+            sdl.draw_defeat_text();
         }
 
         sdl.present();

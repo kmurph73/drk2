@@ -10,7 +10,7 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
 
     let mut ignores: Vec<usize> = Vec::new();
 
-    while y > 0 {
+    while y >= 0 {
         for x in 0..COLS {
             let idx = map_idx(x, y);
 

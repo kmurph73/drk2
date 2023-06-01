@@ -146,6 +146,15 @@ impl MySdl {
         self.blit(texture, x, y);
     }
 
+    pub fn draw_defeat_text(&self) {
+        let str = String::from("DEFEAT! PLAY AGAIN OR YOU HAD ENOUGH? [y/n]");
+        let text = CString::new(str).expect("CString::new failed");
+        let texture = self.get_text(text.as_ptr());
+        let x = SCREEN_WIDTH / 4;
+        let y = SQUARE_SIZE / 2;
+        self.blit(texture, x, y);
+    }
+
     pub fn draw_num_bad_guys(&self, n: usize) {
         let str = format!("{:#?}", n);
         let text = CString::new(str).expect("CString::new failed");

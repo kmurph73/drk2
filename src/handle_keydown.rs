@@ -67,11 +67,11 @@ pub fn handle_keydown(
         cmds.push(cmd);
     }
 
-    if y && keys.enabled.y && *state == GameState::Victory {
+    if y && keys.enabled.y && state.pending_response() {
         return Msg::NewGame;
     }
 
-    if n && keys.enabled.n && *state == GameState::Victory {
+    if n && keys.enabled.n && state.pending_response() {
         return Msg::Quit;
     }
 

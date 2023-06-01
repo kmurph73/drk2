@@ -87,6 +87,10 @@ impl Dot {
         idx < NUM_SQUARES_USIZE && (ignores.contains(&idx) || squares[idx].is_none())
     }
 
+    pub fn above_grid(&self) -> bool {
+        self.tile.1 < 2
+    }
+
     pub fn is_good(&self) -> bool {
         self.kind == DotType::Good
     }
