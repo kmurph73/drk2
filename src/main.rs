@@ -6,7 +6,7 @@ use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
-use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH};
+use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
 use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
@@ -43,6 +43,7 @@ mod prelude {
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const DROP_RATE_MS: u128 = 34;
     pub const LANDED_DELAY_MS: u128 = 200;
+    pub const TICK_RATE_MS: u128 = 1000;
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -54,10 +55,10 @@ pub enum Msg {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum GameState {
-    Normal,
     PieceLanded(u128),
     DroppingDots(u128),
     DotsLanded(u128),
+    Normal(u128),
     Victory,
     Defeat,
 }
@@ -80,7 +81,7 @@ fn main() {
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
-    let mut state = GameState::Normal;
+    let mut state = GameState::Normal(get_current_timestamp_millis());
 
     // let initial_time = get_current_timestamp();
 
@@ -100,6 +101,8 @@ fn main() {
 
         let msg = handle_events(&mut keys, &mut new_cmds, &state);
 
+        let current_ts = get_current_timestamp_millis();
+
         match msg {
             Msg::Quit => {
                 break 'running;
@@ -109,20 +112,10 @@ fn main() {
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
                 on_deck_piece = Some(Piece::random_on_deck(&mut rng));
-                state = GameState::Normal;
+                state = GameState::Normal(current_ts);
                 continue;
             }
             Msg::Nada => {}
-        }
-
-        if state == GameState::Normal {
-            if let Some(piece) = &mut current_piece {
-                let land_piece = handle_cmds(&new_cmds, piece, &squares);
-
-                if land_piece {
-                    state = GameState::PieceLanded(get_current_timestamp_millis());
-                }
-            }
         }
 
         match state {
@@ -163,13 +156,12 @@ fn main() {
                 state = GameState::DroppingDots(land_time);
             }
             GameState::DroppingDots(last_drop) => {
-                let ts = get_current_timestamp_millis();
-                let delta = ts - last_drop;
+                let delta = current_ts - last_drop;
 
                 if delta > DROP_RATE_MS {
                     let to_drop = calc_dots_to_drop(&squares, &pieces);
                     if to_drop.is_empty() {
-                        state = GameState::DotsLanded(ts);
+                        state = GameState::DotsLanded(current_ts);
                     } else {
                         for idx in &to_drop {
                             let result = if let Some(dot) = &squares[*idx] {
@@ -195,7 +187,7 @@ fn main() {
                             }
                         }
 
-                        state = GameState::DroppingDots(ts);
+                        state = GameState::DroppingDots(current_ts);
                     }
                 }
             }
@@ -219,7 +211,7 @@ fn main() {
                                     on_deck_piece = Some(Piece::random_on_deck(&mut rng));
                                 }
 
-                                state = GameState::Normal;
+                                state = GameState::Normal(current_ts);
                             }
                         } else {
                             state = GameState::Victory;
@@ -252,7 +244,24 @@ fn main() {
                     }
                 }
             }
-            GameState::Normal => {}
+            GameState::Normal(last_tick) => {
+                if let Some(piece) = &mut current_piece {
+                    let land_piece = handle_cmds(&new_cmds, piece, &squares);
+
+                    if land_piece {
+                        state = GameState::PieceLanded(get_current_timestamp_millis());
+                    }
+
+                    let delta = current_ts - last_tick;
+
+                    if delta > TICK_RATE_MS {
+                        if piece.can_lower(&squares) {
+                            piece.lower_mut();
+                        }
+                        state = GameState::Normal(current_ts);
+                    }
+                }
+            }
             GameState::Victory => {}
             GameState::Defeat => {}
         }

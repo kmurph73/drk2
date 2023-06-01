@@ -68,6 +68,13 @@ impl Piece {
         self.rhs.tile.1 += 1;
     }
 
+    pub fn can_lower(&self, squares: &[Option<Dot>]) -> bool {
+        let lhs_index = self.lhs.idx();
+        let rhs_index = self.rhs.idx();
+
+        self.lhs.can_drop2(squares, rhs_index) && self.rhs.can_drop2(squares, lhs_index)
+    }
+
     pub fn has_idx(&self, idx: usize) -> bool {
         self.lhs.idx() == idx || self.rhs.idx() == idx
     }
@@ -90,7 +97,7 @@ impl Piece {
     pub fn attempt_drop2(
         &self,
         squares: &[Option<Dot>],
-        ignores: &Vec<usize>,
+        ignores: &[usize],
     ) -> Option<(usize, usize)> {
         let lhs_index = self.lhs.idx();
         let rhs_index = self.rhs.idx();

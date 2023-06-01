@@ -74,14 +74,14 @@ impl Dot {
         idx < NUM_SQUARES_USIZE && (idx == ignore || squares[idx].is_none())
     }
 
-    pub fn can_drop3(&self, squares: &[Option<Dot>], ignore: usize, ignores: &Vec<usize>) -> bool {
+    pub fn can_drop3(&self, squares: &[Option<Dot>], ignore: usize, ignores: &[usize]) -> bool {
         let idx = self.tile.add_y(1).idx();
 
         idx < NUM_SQUARES_USIZE
             && (idx == ignore || ignores.contains(&idx) || squares[idx].is_none())
     }
 
-    pub fn can_drop4(&self, squares: &[Option<Dot>], ignores: &Vec<usize>) -> bool {
+    pub fn can_drop4(&self, squares: &[Option<Dot>], ignores: &[usize]) -> bool {
         let idx = self.tile.add_y(1).idx();
 
         idx < NUM_SQUARES_USIZE && (ignores.contains(&idx) || squares[idx].is_none())
