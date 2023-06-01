@@ -11,7 +11,7 @@ const SDL_WHITE: SDL_Color = SDL_Color {
     a: 255,
 };
 
-use crate::prelude::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::prelude::{SCREEN_HEIGHT, SCREEN_WIDTH, SQUARE_SIZE};
 
 #[allow(clippy::all)]
 #[allow(warnings, unused)]
@@ -130,6 +130,24 @@ impl MySdl {
 
     pub fn draw_fps(&self, fps: u64) {
         let str = format!("{:#?}", fps);
+        let text = CString::new(str).expect("CString::new failed");
+        let texture = self.get_text(text.as_ptr());
+        let x = 0;
+        let y = 0;
+        self.blit(texture, x, y);
+    }
+
+    pub fn draw_victory_text(&self) {
+        let str = String::from("VICTORY! PLAY AGAIN? [y/n]");
+        let text = CString::new(str).expect("CString::new failed");
+        let texture = self.get_text(text.as_ptr());
+        let x = SCREEN_WIDTH / 4;
+        let y = SQUARE_SIZE;
+        self.blit(texture, x, y);
+    }
+
+    pub fn draw_num_bad_guys(&self, n: usize) {
+        let str = format!("{:#?}", n);
         let text = CString::new(str).expect("CString::new failed");
         let texture = self.get_text(text.as_ptr());
         let x = 0;

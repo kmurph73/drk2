@@ -7,7 +7,6 @@ use keyboard::{Keyboard, KeyboardState};
 use my_sdl::MySdl;
 use piece::Piece;
 use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH};
-use test_scenario::{test_scenario2, test_scenario3};
 use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
@@ -33,7 +32,6 @@ use crate::draw_game::draw_dots;
 use crate::draw_grid::draw_grid;
 use crate::get_indexes_to_remove::get_indexes_to_remove;
 use crate::handle_events::handle_events;
-use crate::test_scenario::test_scenario;
 
 mod prelude {
     pub const SCREEN_WIDTH: i32 = 600;
@@ -41,22 +39,26 @@ mod prelude {
     pub const COLS: i32 = 8;
     pub const ROWS: i32 = 16;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
+    pub const SQUARE_SIZE: i32 = SCREEN_WIDTH / (COLS + 2);
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
-    pub const DROP_RATE_MS: u128 = 40;
-    pub const LANDED_DELAY_MS: u128 = 300;
+    pub const DROP_RATE_MS: u128 = 34;
+    pub const LANDED_DELAY_MS: u128 = 200;
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum Msg {
+    NewGame,
     Nada,
     Quit,
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum GameState {
     Normal,
     PieceLanded(u128),
     DroppingDots(u128),
     DotsLanded(u128),
+    Victory,
 }
 
 fn main() {
@@ -65,9 +67,10 @@ fn main() {
 
     let square_size = SCREEN_WIDTH / 10;
 
+    let num_bad_guys = 1;
     let mut rng = rand::thread_rng();
-    let mut squares = random_scenario(&mut rng);
-    let mut current_piece = Some(Piece::custom());
+    let mut squares = random_scenario(&mut rng, num_bad_guys);
+    let mut current_piece = Some(Piece::random(&mut rng));
 
     let mut state = GameState::Normal;
 
@@ -87,10 +90,20 @@ fn main() {
 
         let mut new_cmds: Vec<Cmd> = Vec::new();
 
-        let msg = handle_events(&mut keys, &mut new_cmds);
+        let msg = handle_events(&mut keys, &mut new_cmds, &state);
 
-        if let Msg::Quit = msg {
-            break 'running;
+        match msg {
+            Msg::Quit => {
+                break 'running;
+            }
+            Msg::NewGame => {
+                squares = random_scenario(&mut rng, num_bad_guys);
+                pieces.clear();
+                current_piece = Some(Piece::random(&mut rng));
+                state = GameState::Normal;
+                continue;
+            }
+            Msg::Nada => {}
         }
 
         if state == GameState::Normal {
@@ -183,8 +196,13 @@ fn main() {
                     let indexes_to_remove = get_indexes_to_remove(&squares);
 
                     if indexes_to_remove.is_empty() {
-                        current_piece = Some(Piece::random(&mut rng));
-                        state = GameState::Normal;
+                        let has_bad = squares.iter().flatten().any(|s| s.is_bad());
+                        if has_bad {
+                            current_piece = Some(Piece::random(&mut rng));
+                            state = GameState::Normal;
+                        } else {
+                            state = GameState::Victory;
+                        }
                     } else {
                         for idx in &indexes_to_remove {
                             squares[*idx] = None;
@@ -203,11 +221,18 @@ fn main() {
                             retain
                         });
 
-                        state = GameState::DroppingDots(last_drop)
+                        let has_bad = squares.iter().flatten().any(|s| s.is_bad());
+
+                        if has_bad {
+                            state = GameState::DroppingDots(last_drop)
+                        } else {
+                            state = GameState::Victory;
+                        }
                     }
                 }
             }
             GameState::Normal => {}
+            GameState::Victory => {}
         }
 
         // let current_time = get_current_timestamp();
@@ -227,6 +252,10 @@ fn main() {
         }
 
         draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
+
+        if state == GameState::Victory {
+            sdl.draw_victory_text();
+        }
 
         sdl.present();
     }

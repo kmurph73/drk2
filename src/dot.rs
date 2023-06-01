@@ -78,6 +78,10 @@ impl Dot {
         self.kind == DotType::Good
     }
 
+    pub fn is_bad(&self) -> bool {
+        self.kind == DotType::Bad
+    }
+
     pub fn idx(&self) -> usize {
         let Pos(x, y) = self.tile;
 

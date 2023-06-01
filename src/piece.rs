@@ -35,8 +35,6 @@ fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
         _ => panic!("{attempt} should be 0..2"),
     };
 
-    println!("attempt: {attempt}; {is_even}");
-
     let (lhs, rhs) = if rotation > 1 { (rhs, lhs) } else { (lhs, rhs) };
 
     Rotation {
