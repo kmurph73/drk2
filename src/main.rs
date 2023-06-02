@@ -257,8 +257,11 @@ fn main() {
                     if delta > TICK_RATE_MS {
                         if piece.can_lower(&squares) {
                             piece.lower_mut();
+
+                            state = GameState::Normal(current_ts);
+                        } else {
+                            state = GameState::PieceLanded(get_current_timestamp_millis());
                         }
-                        state = GameState::Normal(current_ts);
                     }
                 }
             }

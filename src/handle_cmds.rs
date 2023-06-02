@@ -1,4 +1,8 @@
-use crate::{cmd::Cmd, dot::Dot, piece::Piece};
+use crate::{
+    cmd::{Cmd, Direction},
+    dot::Dot,
+    piece::Piece,
+};
 
 pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> bool {
     for cmd in cmds {
@@ -7,6 +11,8 @@ pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> 
                 if let Some(new_pos) = piece.attempt_move(dir, squares) {
                     let (lhs, rhs) = new_pos;
                     piece.set_pos(lhs, rhs);
+                } else if *dir == Direction::Down {
+                    return true;
                 }
             }
             Cmd::Rotate => {
