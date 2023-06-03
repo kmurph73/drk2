@@ -4,12 +4,7 @@ use std::{
     ptr,
 };
 
-const SDL_WHITE: SDL_Color = SDL_Color {
-    r: 255,
-    g: 255,
-    b: 255,
-    a: 255,
-};
+use crate::colors::{SDL_BLACK, SDL_WHITE};
 
 use crate::prelude::{SCREEN_HEIGHT, SCREEN_WIDTH, SQUARE_SIZE};
 
@@ -26,12 +21,12 @@ pub use self::bindings::{
     SDL_CreateWindow, SDL_Delay, SDL_DestroyRenderer, SDL_DestroyWindow, SDL_Event,
     SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_QUIT, SDL_FreeSurface,
     SDL_GetError, SDL_Init, SDL_PollEvent, SDL_QueryTexture, SDL_Quit, SDL_Rect, SDL_RenderClear,
-    SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderPresent, SDL_RenderSetScale, SDL_Renderer,
-    SDL_RendererFlags_SDL_RENDERER_ACCELERATED, SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC,
-    SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint, SDL_SetRenderDrawBlendMode,
-    SDL_SetRenderDrawColor, SDL_Texture, SDL_Window, SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI,
-    TTF_Init, TTF_OpenFont, TTF_RenderUTF8_Blended, _TTF_Font, SDL_INIT_VIDEO,
-    SDL_WINDOWPOS_UNDEFINED_MASK,
+    SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderDrawRect, SDL_RenderFillRect, SDL_RenderPresent,
+    SDL_RenderSetScale, SDL_Renderer, SDL_RendererFlags_SDL_RENDERER_ACCELERATED,
+    SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC, SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint,
+    SDL_SetRenderDrawBlendMode, SDL_SetRenderDrawColor, SDL_SetWindowModalFor, SDL_Texture,
+    SDL_Window, SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI, TTF_Init, TTF_OpenFont,
+    TTF_RenderUTF8_Blended, _TTF_Font, SDL_INIT_VIDEO, SDL_WINDOWPOS_UNDEFINED_MASK,
 };
 
 pub struct MySdl {
@@ -162,6 +157,21 @@ impl MySdl {
         let x = 0;
         let y = 0;
         self.blit(texture, x, y);
+    }
+
+    pub fn draw_help_modal(&self) {
+        let rect = SDL_Rect {
+            x: 0,
+            y: 0,
+            w: SCREEN_WIDTH,
+            h: SCREEN_HEIGHT,
+        };
+
+        unsafe {
+            let SDL_Color { r, g, b, .. } = SDL_BLACK;
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, 100);
+            SDL_RenderFillRect(self.renderer, &rect);
+        }
     }
 
     fn get_text(&self, text: *const i8) -> *mut SDL_Texture {

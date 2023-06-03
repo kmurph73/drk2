@@ -10,6 +10,7 @@ use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
 use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
+pub mod colors;
 pub mod dot;
 pub mod draw_game;
 pub mod draw_grid;
@@ -43,7 +44,7 @@ mod prelude {
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const DROP_RATE_MS: u128 = 34;
     pub const LANDED_DELAY_MS: u128 = 200;
-    pub const TICK_RATE_MS: u128 = 1000;
+    pub const TICK_RATE_MS: u128 = 800;
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -297,6 +298,8 @@ fn main() {
         } else if state == GameState::Defeat {
             sdl.draw_defeat_text();
         }
+
+        sdl.draw_help_modal();
 
         sdl.present();
     }
