@@ -23,6 +23,7 @@ pub mod handle_keyup;
 pub mod img_consts;
 pub mod keyboard;
 pub mod my_sdl;
+pub mod my_sdl_rect;
 pub mod piece;
 pub mod pos;
 pub mod random_scenario;
@@ -49,6 +50,8 @@ mod prelude {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Msg {
+    PauseGame,
+    ResumeGame,
     NewGame,
     Nada,
     Quit,
@@ -62,11 +65,20 @@ pub enum GameState {
     Normal(u128),
     Victory,
     Defeat,
+    Paused,
 }
 
 impl GameState {
     pub fn pending_response(&self) -> bool {
         *self == GameState::Victory || *self == GameState::Defeat
+    }
+
+    pub fn is_paused(&self) -> bool {
+        *self == GameState::Paused
+    }
+
+    pub fn is_normal(&self) -> bool {
+        matches!(*self, GameState::Normal(_))
     }
 }
 
@@ -117,6 +129,10 @@ fn main() {
                 continue;
             }
             Msg::Nada => {}
+            Msg::PauseGame => {
+                state = GameState::Paused;
+            }
+            Msg::ResumeGame => state = GameState::Normal(current_ts),
         }
 
         match state {
@@ -268,6 +284,7 @@ fn main() {
             }
             GameState::Victory => {}
             GameState::Defeat => {}
+            GameState::Paused => {}
         }
 
         // let current_time = get_current_timestamp();
@@ -299,7 +316,9 @@ fn main() {
             sdl.draw_defeat_text();
         }
 
-        sdl.draw_help_modal();
+        if state == GameState::Paused {
+            sdl.draw_help_modal();
+        }
 
         sdl.present();
     }

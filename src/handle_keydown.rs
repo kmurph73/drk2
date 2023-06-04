@@ -14,6 +14,8 @@ pub const DOWN: u8 = 81;
 pub const LEFT: u8 = 80;
 pub const RIGHT: u8 = 79;
 pub const SPACE: u8 = 44;
+pub const P: u8 = 19;
+pub const R: u8 = 21;
 
 pub fn handle_keydown(
     key: u8,
@@ -32,6 +34,8 @@ pub fn handle_keydown(
         SPACE => keys.pressed.space = true,
         Y => keys.pressed.y = true,
         N => keys.pressed.n = true,
+        P => keys.pressed.p = true,
+        R => keys.pressed.r = true,
         _ => {}
     }
 
@@ -44,6 +48,7 @@ pub fn handle_keydown(
         down,
         y,
         n,
+        p,
         space,
         ..
     } = keys.pressed;
@@ -65,6 +70,14 @@ pub fn handle_keydown(
     } {
         let cmd = Cmd::Move(dir);
         cmds.push(cmd);
+    }
+
+    if p && keys.enabled.p {
+        if state.is_normal() {
+            return Msg::PauseGame;
+        } else if state.is_paused() {
+            return Msg::ResumeGame;
+        }
     }
 
     if y && keys.enabled.y && state.pending_response() {

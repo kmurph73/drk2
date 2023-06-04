@@ -5,6 +5,8 @@ pub struct Keyboard {
     pub y: bool,
     pub n: bool,
     pub up: bool,
+    pub p: bool,
+    pub r: bool,
     pub right: bool,
     pub down: bool,
     pub left: bool,
@@ -27,6 +29,8 @@ impl Keyboard {
             left: default,
             y: default,
             n: default,
+            p: default,
+            r: default,
             space: default,
         }
     }

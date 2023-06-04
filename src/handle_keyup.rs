@@ -1,5 +1,5 @@
 use crate::{
-    handle_keydown::{C, DOWN, LEFT, N, RIGHT, SPACE, UP, X, Y},
+    handle_keydown::{C, DOWN, LEFT, N, P, R, RIGHT, SPACE, UP, X, Y},
     keyboard::KeyboardState,
 };
 
@@ -20,6 +20,8 @@ pub fn handle_keyup(key: u8, keys: &mut KeyboardState) {
         SPACE => keys.pressed.space = false,
         Y => keys.pressed.y = false,
         N => keys.pressed.n = false,
+        R => keys.pressed.r = false,
+        P => keys.pressed.p = false,
         _ => {}
     };
 }

@@ -160,17 +160,47 @@ impl MySdl {
     }
 
     pub fn draw_help_modal(&self) {
-        let rect = SDL_Rect {
-            x: 0,
-            y: 0,
-            w: SCREEN_WIDTH,
-            h: SCREEN_HEIGHT,
-        };
-
         unsafe {
             let SDL_Color { r, g, b, .. } = SDL_BLACK;
-            SDL_SetRenderDrawColor(self.renderer, r, g, b, 100);
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, 150);
+
+            let rect = SDL_Rect {
+                x: 0,
+                y: 0,
+                w: SCREEN_WIDTH,
+                h: SCREEN_HEIGHT,
+            };
             SDL_RenderFillRect(self.renderer, &rect);
+
+            let SDL_Color { r, g, b, .. } = SDL_WHITE;
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, 255);
+
+            let s2 = SQUARE_SIZE * 2;
+            let rect = SDL_Rect {
+                x: s2,
+                y: s2,
+                w: SCREEN_WIDTH - s2 * 2,
+                h: SCREEN_HEIGHT - s2 * 2,
+            };
+            SDL_RenderFillRect(self.renderer, &rect);
+
+            let SDL_Color { r, g, b, .. } = SDL_BLACK;
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, 255);
+
+            let rect = rect.shrink(5);
+
+            SDL_RenderFillRect(self.renderer, &rect);
+
+            let str = String::from("PAUSED!");
+            let text = CString::new(str).expect("CString::new failed");
+            let texture = self.get_text(text.as_ptr());
+            let x = rect.x + 140;
+            let y = rect.y + 5;
+            self.blit(texture, x, y);
+
+            self.draw_help_button(String::from("RESUME"), y + 50);
+            self.draw_help_button(String::from("NEW GAME"), y + 150);
+            self.draw_help_button(String::from("MENU"), y + 250);
         }
     }
 
@@ -199,6 +229,37 @@ impl MySdl {
             );
 
             SDL_RenderCopy(self.renderer, texture, ptr::null(), &dest);
+        }
+    }
+
+    fn draw_help_button(&self, string: String, y: i32) {
+        unsafe {
+            let SDL_Color { r, g, b, .. } = SDL_WHITE;
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, 255);
+
+            let s2 = SQUARE_SIZE * 2;
+            let x = s2 + 75;
+            let rect = SDL_Rect {
+                x,
+                y,
+                w: 200,
+                h: SQUARE_SIZE,
+            };
+            SDL_RenderFillRect(self.renderer, &rect);
+
+            let SDL_Color { r, g, b, .. } = SDL_BLACK;
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, 255);
+
+            let rect = rect.shrink(2);
+
+            SDL_RenderFillRect(self.renderer, &rect);
+
+            let text = CString::new(string).expect("CString::new failed");
+            let texture = self.get_text(text.as_ptr());
+            let x = rect.x + 60;
+            let y = rect.y + 15;
+
+            self.blit(texture, x, y);
         }
     }
 }
