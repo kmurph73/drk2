@@ -20,6 +20,7 @@ pub mod handle_cmds;
 pub mod handle_events;
 pub mod handle_keydown;
 pub mod handle_keyup;
+pub mod handle_mousedown;
 pub mod img_consts;
 pub mod keyboard;
 pub mod my_sdl;

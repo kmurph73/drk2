@@ -4,10 +4,11 @@ use crate::{
     cmd::Cmd,
     handle_keydown::handle_keydown,
     handle_keyup::handle_keyup,
+    handle_mousedown::handle_mousedown,
     keyboard::KeyboardState,
     my_sdl::{
-        SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_QUIT,
-        SDL_PollEvent,
+        SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
+        SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_QUIT, SDL_PollEvent,
     },
     GameState, Msg,
 };
@@ -33,6 +34,11 @@ pub fn handle_events(keys: &mut KeyboardState, cmds: &mut Vec<Cmd>, state: &Game
                 }
                 SDL_EventType_SDL_KEYUP => {
                     handle_keyup(button.button, keys);
+                }
+                SDL_EventType_SDL_MOUSEBUTTONDOWN => {
+                    let is_right_click = button.button == 3;
+
+                    handle_mousedown(button.x, button.y, keys, state, is_right_click);
                 }
                 SDL_EventType_SDL_QUIT => {
                     return Msg::Quit;
