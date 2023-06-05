@@ -161,7 +161,30 @@ impl MySdl {
         self.blit(texture, x, y);
     }
 
-    pub fn draw_help_modal(&self, buttons: &Vec<Button>) {
+    pub fn draw_menu(&self, buttons: &Vec<Button>) {
+        let str = String::from("Dr. Kodama");
+        let text = CString::new(str).expect("CString::new failed");
+
+        let (width, height) = self.get_text_size(&text);
+
+        let rect = SDL_Rect {
+            x: 0,
+            y: 0,
+            w: SCREEN_WIDTH,
+            h: SCREEN_HEIGHT,
+        };
+
+        let (x, _y) = rect.center(width, height);
+
+        let texture = self.get_text(text.as_ptr());
+        self.blit(texture, x, 20);
+
+        for button in buttons {
+            self.draw_button(button);
+        }
+    }
+
+    pub fn draw_modal(&self, buttons: &Vec<Button>, title: String) {
         unsafe {
             let SDL_Color { r, g, b, .. } = SDL_BLACK;
             SDL_SetRenderDrawColor(self.renderer, r, g, b, 150);
@@ -188,7 +211,7 @@ impl MySdl {
 
             SDL_RenderFillRect(self.renderer, &rect);
 
-            let str = String::from("PAUSED!");
+            let str = String::from(title);
             let text = CString::new(str).expect("CString::new failed");
 
             let texture = self.get_text(text.as_ptr());
@@ -197,7 +220,7 @@ impl MySdl {
             self.blit(texture, x, y);
 
             for button in buttons {
-                self.draw_help_button_real(button);
+                self.draw_button(button);
             }
         }
     }
@@ -230,7 +253,7 @@ impl MySdl {
         }
     }
 
-    fn draw_help_button_real(&self, button: &Button) {
+    fn draw_button(&self, button: &Button) {
         unsafe {
             let SDL_Color { r, g, b, .. } = SDL_WHITE;
             SDL_SetRenderDrawColor(self.renderer, r, g, b, 255);
@@ -262,7 +285,7 @@ impl MySdl {
         (w, h)
     }
 
-    pub fn gen_buttons(&self) -> Vec<Button> {
+    pub fn gen_help_buttons(&self) -> Vec<Button> {
         let mut buttons: Vec<Button> = Vec::with_capacity(3);
 
         let (x, y, w, h) = HELP_MODAL;
@@ -315,6 +338,131 @@ impl MySdl {
 
         let new_game = Button {
             kind: ButtonKind::Menu,
+            text,
+            rect,
+            text_pos: rect.center(width, height),
+        };
+
+        buttons.push(new_game);
+
+        let y = y + offset_y;
+
+        let rect = SDL_Rect { x, y, w, h };
+
+        let text = String::from("F THIS GAME");
+        let text = CString::new(text).expect("CString::new failed");
+        let (width, height) = self.get_text_size(&text);
+
+        let new_game = Button {
+            kind: ButtonKind::Quit,
+            text,
+            rect,
+            text_pos: rect.center(width, height),
+        };
+
+        buttons.push(new_game);
+
+        buttons
+    }
+
+    pub fn gen_endgame_buttons(&self) -> Vec<Button> {
+        let mut buttons: Vec<Button> = Vec::with_capacity(2);
+
+        let (x, y, w, h) = HELP_MODAL;
+        let modal_rect = SDL_Rect { x, y, w, h };
+
+        let offset_y = 90;
+
+        let y = modal_rect.y + offset_y;
+        let x = modal_rect.x + SQUARE_SIZE;
+        let w = modal_rect.w - SQUARE_SIZE * 2;
+        let h = 60;
+
+        let text = String::from("PLAY AGAIN");
+        let text = CString::new(text).expect("CString::new failed");
+        let (width, height) = self.get_text_size(&text);
+        let rect = SDL_Rect { x, y, w, h };
+
+        let resume = Button {
+            kind: ButtonKind::NewGame,
+            text,
+            rect,
+            text_pos: rect.center(width, height),
+        };
+
+        buttons.push(resume);
+
+        let y = y + offset_y;
+
+        let rect = SDL_Rect { x, y, w, h };
+
+        let text = String::from("MENU");
+        let text = CString::new(text).expect("CString::new failed");
+        let (width, height) = self.get_text_size(&text);
+        let new_game = Button {
+            kind: ButtonKind::Menu,
+            text,
+            rect,
+            text_pos: rect.center(width, height),
+        };
+
+        buttons.push(new_game);
+
+        let y = y + offset_y;
+
+        let rect = SDL_Rect { x, y, w, h };
+
+        let text = String::from("I'M DONESKY");
+        let text = CString::new(text).expect("CString::new failed");
+        let (width, height) = self.get_text_size(&text);
+        let new_game = Button {
+            kind: ButtonKind::Quit,
+            text,
+            rect,
+            text_pos: rect.center(width, height),
+        };
+
+        buttons.push(new_game);
+
+        buttons
+    }
+
+    pub fn gen_menu_buttons(&self) -> Vec<Button> {
+        let mut buttons: Vec<Button> = Vec::with_capacity(2);
+
+        let (x, y, w, h) = HELP_MODAL;
+        let modal_rect = SDL_Rect { x, y, w, h };
+
+        let offset_y = 90;
+
+        let y = modal_rect.y + offset_y;
+        let x = modal_rect.x + SQUARE_SIZE;
+        let w = modal_rect.w - SQUARE_SIZE * 2;
+        let h = 60;
+
+        let text = String::from("PLAY");
+        let text = CString::new(text).expect("CString::new failed");
+        let (width, height) = self.get_text_size(&text);
+        let rect = SDL_Rect { x, y, w, h };
+
+        let resume = Button {
+            kind: ButtonKind::NewGame,
+            text,
+            rect,
+            text_pos: rect.center(width, height),
+        };
+
+        buttons.push(resume);
+
+        let y = y + offset_y;
+
+        let rect = SDL_Rect { x, y, w, h };
+
+        let text = String::from("QUIT");
+        let text = CString::new(text).expect("CString::new failed");
+        let (width, height) = self.get_text_size(&text);
+        let new_game = Button {
+            kind: ButtonKind::Quit,
             text,
             rect,
             text_pos: rect.center(width, height),

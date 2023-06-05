@@ -22,7 +22,7 @@ impl SDL_Rect {
     }
 
     // https://stackoverflow.com/a/40687799/548170
-    pub fn within(&self, x: i32, y: i32) -> bool {
+    pub fn contains(&self, x: i32, y: i32) -> bool {
         self.x <= x && x < self.x + self.w && self.y <= y && y < self.y + self.h
     }
 }

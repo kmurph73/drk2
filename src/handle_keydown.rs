@@ -80,11 +80,11 @@ pub fn handle_keydown(
         }
     }
 
-    if y && keys.enabled.y && state.pending_response() {
+    if y && keys.enabled.y && state.is_endgame() {
         return Msg::NewGame;
     }
 
-    if n && keys.enabled.n && state.pending_response() {
+    if n && keys.enabled.n && state.is_endgame() {
         return Msg::Quit;
     }
 

@@ -61,6 +61,7 @@ pub enum ButtonKind {
     Resume,
     NewGame,
     Menu,
+    Quit,
 }
 
 pub struct Button {
@@ -77,6 +78,7 @@ pub enum Msg {
     NewGame,
     Nada,
     Quit,
+    Menu,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -88,10 +90,11 @@ pub enum GameState {
     Victory,
     Defeat,
     Paused,
+    Menu,
 }
 
 impl GameState {
-    pub fn pending_response(&self) -> bool {
+    pub fn is_endgame(&self) -> bool {
         *self == GameState::Victory || *self == GameState::Defeat
     }
 
@@ -102,12 +105,18 @@ impl GameState {
     pub fn is_normal(&self) -> bool {
         matches!(*self, GameState::Normal(_))
     }
+
+    pub fn is_menu(&self) -> bool {
+        *self == GameState::Menu
+    }
 }
 
 fn main() {
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
-    let buttons = sdl.gen_buttons();
+    let help_buttons = sdl.gen_help_buttons();
+    let endgame_buttons = sdl.gen_endgame_buttons();
+    let menu_buttons = sdl.gen_menu_buttons();
 
     let square_size = SCREEN_WIDTH / 10;
 
@@ -117,7 +126,8 @@ fn main() {
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
-    let mut state = GameState::Normal(get_current_timestamp_millis());
+    // let mut state = GameState::Normal(get_current_timestamp_millis());
+    let mut state = GameState::Menu;
 
     // let initial_time = get_current_timestamp();
 
@@ -135,7 +145,14 @@ fn main() {
 
         let mut new_cmds: Vec<Cmd> = Vec::new();
 
-        let msg = handle_events(&mut keys, &mut new_cmds, &state, &buttons);
+        let msg = handle_events(
+            &mut keys,
+            &mut new_cmds,
+            &state,
+            &help_buttons,
+            &endgame_buttons,
+            &menu_buttons,
+        );
 
         let current_ts = get_current_timestamp_millis();
 
@@ -150,6 +167,9 @@ fn main() {
                 on_deck_piece = Some(Piece::random_on_deck(&mut rng));
                 state = GameState::Normal(current_ts);
                 continue;
+            }
+            Msg::Menu => {
+                state = GameState::Menu;
             }
             Msg::Nada => {}
             Msg::PauseGame => {
@@ -308,6 +328,7 @@ fn main() {
             GameState::Victory => {}
             GameState::Defeat => {}
             GameState::Paused => {}
+            GameState::Menu => {}
         }
 
         // let current_time = get_current_timestamp();
@@ -320,25 +341,29 @@ fn main() {
         //     sdl.draw_fps(fps);
         // }
 
-        draw_grid(&sdl, square_size);
-        draw_dots(&sdl, &squares, square_size, img_divisor);
+        if state.is_menu() {
+            sdl.draw_menu(&menu_buttons);
+        } else {
+            draw_grid(&sdl, square_size);
+            draw_dots(&sdl, &squares, square_size, img_divisor);
 
-        if let Some(piece) = &on_deck_piece {
-            draw_piece(piece, &sdl, square_size, img_divisor);
-        }
+            if let Some(piece) = &on_deck_piece {
+                draw_piece(piece, &sdl, square_size, img_divisor);
+            }
 
-        if let Some(piece) = &current_piece {
-            draw_piece(piece, &sdl, square_size, img_divisor);
-        }
+            if let Some(piece) = &current_piece {
+                draw_piece(piece, &sdl, square_size, img_divisor);
+            }
 
-        draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
+            draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
-        if state == GameState::Victory {
-            sdl.draw_victory_text();
-        } else if state == GameState::Defeat {
-            sdl.draw_defeat_text();
-        } else if state == GameState::Paused {
-            sdl.draw_help_modal(&buttons);
+            if state == GameState::Victory {
+                sdl.draw_modal(&endgame_buttons, String::from("VICTORY!"));
+            } else if state == GameState::Defeat {
+                sdl.draw_modal(&endgame_buttons, String::from("DEFEAT"));
+            } else if state == GameState::Paused {
+                sdl.draw_modal(&help_buttons, String::from("PAUSED"));
+            }
         }
 
         sdl.present();
