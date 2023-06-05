@@ -1,10 +1,12 @@
+use std::ffi::CString;
+
 use crate::random_scenario::random_scenario;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
-use my_sdl::MySdl;
+use my_sdl::{MySdl, SDL_Rect};
 use piece::Piece;
 use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
 use util::{contains2, get_current_timestamp_millis, is_mac};
@@ -43,10 +45,29 @@ mod prelude {
     pub const ROWS: i32 = 16;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
     pub const SQUARE_SIZE: i32 = SCREEN_WIDTH / (COLS + 2);
+    pub const HELP_MODAL: (i32, i32, i32, i32) = (
+        SQUARE_SIZE * 2,
+        SQUARE_SIZE * 2,
+        SCREEN_WIDTH - SQUARE_SIZE * 4,
+        SCREEN_HEIGHT - SQUARE_SIZE * 4,
+    );
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const DROP_RATE_MS: u128 = 34;
     pub const LANDED_DELAY_MS: u128 = 200;
     pub const TICK_RATE_MS: u128 = 800;
+}
+
+pub enum ButtonKind {
+    Resume,
+    NewGame,
+    Menu,
+}
+
+pub struct Button {
+    pub kind: ButtonKind,
+    pub text: CString,
+    pub rect: SDL_Rect,
+    pub text_pos: (i32, i32),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -86,6 +107,7 @@ impl GameState {
 fn main() {
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
+    let buttons = sdl.gen_buttons();
 
     let square_size = SCREEN_WIDTH / 10;
 
@@ -113,7 +135,7 @@ fn main() {
 
         let mut new_cmds: Vec<Cmd> = Vec::new();
 
-        let msg = handle_events(&mut keys, &mut new_cmds, &state);
+        let msg = handle_events(&mut keys, &mut new_cmds, &state, &buttons);
 
         let current_ts = get_current_timestamp_millis();
 
@@ -315,10 +337,8 @@ fn main() {
             sdl.draw_victory_text();
         } else if state == GameState::Defeat {
             sdl.draw_defeat_text();
-        }
-
-        if state == GameState::Paused {
-            sdl.draw_help_modal();
+        } else if state == GameState::Paused {
+            sdl.draw_help_modal(&buttons);
         }
 
         sdl.present();

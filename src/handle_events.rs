@@ -10,11 +10,16 @@ use crate::{
         SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
         SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_QUIT, SDL_PollEvent,
     },
-    GameState, Msg,
+    Button, GameState, Msg,
 };
 
 #[allow(non_upper_case_globals)]
-pub fn handle_events(keys: &mut KeyboardState, cmds: &mut Vec<Cmd>, state: &GameState) -> Msg {
+pub fn handle_events(
+    keys: &mut KeyboardState,
+    cmds: &mut Vec<Cmd>,
+    state: &GameState,
+    buttons: &[Button],
+) -> Msg {
     unsafe {
         let mut _event: *mut SDL_Event = null_mut();
 
@@ -38,7 +43,12 @@ pub fn handle_events(keys: &mut KeyboardState, cmds: &mut Vec<Cmd>, state: &Game
                 SDL_EventType_SDL_MOUSEBUTTONDOWN => {
                     let is_right_click = button.button == 3;
 
-                    handle_mousedown(button.x, button.y, keys, state, is_right_click);
+                    let msg = handle_mousedown(button.x, button.y, state, is_right_click, buttons);
+
+                    match msg {
+                        Msg::Nada => {}
+                        _ => return msg,
+                    }
                 }
                 SDL_EventType_SDL_QUIT => {
                     return Msg::Quit;
