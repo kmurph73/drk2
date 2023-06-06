@@ -177,12 +177,7 @@ pub fn gen_menu_buttons(sdl: &MySdl) -> Vec<TextButton> {
 
     text_buttons.push(resume);
 
-    let srcrect = tuple_to_rect(MINUS_SQUARE_IMG);
-    // let SDL_Rect { w, h, .. } = srcrect;
-
     let y = y + 200;
-
-    // here
 
     let rect = SDL_Rect { x, y, w, h };
 
@@ -201,7 +196,7 @@ pub fn gen_menu_buttons(sdl: &MySdl) -> Vec<TextButton> {
     text_buttons
 }
 
-pub fn gen_image_menu_buttons(sdl: &MySdl, y: i32) -> Vec<ImageButton> {
+pub fn gen_image_menu_buttons(y: i32) -> Vec<ImageButton> {
     let mut image_buttons: Vec<ImageButton> = Vec::with_capacity(2);
 
     let srcrect = tuple_to_rect(MINUS_SQUARE_IMG);
@@ -231,7 +226,7 @@ pub fn gen_image_menu_buttons(sdl: &MySdl, y: i32) -> Vec<ImageButton> {
     };
 
     let btn = ImageButton {
-        kind: ButtonKind::LevelDown,
+        kind: ButtonKind::LevelUp,
         srcrect,
         dstrect,
     };

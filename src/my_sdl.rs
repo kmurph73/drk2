@@ -171,6 +171,7 @@ impl MySdl {
         self.blit(texture, x, y);
     }
 
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     pub fn get_text(&self, text: *const i8) -> *mut SDL_Texture {
         let font = self.font;
 
@@ -184,6 +185,7 @@ impl MySdl {
         }
     }
 
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     pub fn blit(&self, texture: *mut SDL_Texture, x: i32, y: i32) {
         let mut dest = SDL_Rect { x, y, w: 0, h: 0 };
         unsafe {

@@ -4,7 +4,9 @@ use crate::random_scenario::random_scenario;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
-use gen_buttons::{gen_endgame_buttons, gen_help_buttons, gen_menu_buttons};
+use gen_buttons::{
+    gen_endgame_buttons, gen_help_buttons, gen_image_menu_buttons, gen_menu_buttons,
+};
 use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
@@ -131,12 +133,14 @@ fn main() {
     let help_buttons = gen_help_buttons(&sdl);
     let endgame_buttons = gen_endgame_buttons(&sdl);
     let menu_buttons = gen_menu_buttons(&sdl);
+    let y = menu_buttons[0].rect.y + 80;
+    let image_menu_buttons = gen_image_menu_buttons(y);
 
-    let mut level: u32 = 10;
+    let mut level: usize = 10;
 
     let square_size = SCREEN_WIDTH / 10;
 
-    let num_bad_guys = 20;
+    let num_bad_guys = level * 3;
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, num_bad_guys);
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
@@ -168,6 +172,7 @@ fn main() {
             &help_buttons,
             &endgame_buttons,
             &menu_buttons,
+            &image_menu_buttons,
         );
 
         let current_ts = get_current_timestamp_millis();
@@ -177,7 +182,7 @@ fn main() {
                 break 'running;
             }
             Msg::NewGame => {
-                squares = random_scenario(&mut rng, num_bad_guys);
+                squares = random_scenario(&mut rng, level * 3);
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
                 on_deck_piece = Some(Piece::random_on_deck(&mut rng));
@@ -369,7 +374,7 @@ fn main() {
         // }
 
         if state.is_menu() {
-            draw_menu(&sdl, &menu_buttons, level);
+            draw_menu(&sdl, &menu_buttons, &image_menu_buttons, level);
         } else {
             draw_grid(&sdl, square_size);
             draw_dots(&sdl, &squares, square_size, img_divisor);

@@ -10,7 +10,7 @@ use crate::{
         SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
         SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_QUIT, SDL_PollEvent,
     },
-    GameState, Msg, TextButton,
+    GameState, ImageButton, Msg, TextButton,
 };
 
 #[allow(non_upper_case_globals)]
@@ -21,6 +21,7 @@ pub fn handle_events(
     help_buttons: &[TextButton],
     endgame_buttons: &[TextButton],
     menu_buttons: &[TextButton],
+    image_buttons: &[ImageButton],
 ) -> Msg {
     unsafe {
         let mut _event: *mut SDL_Event = null_mut();
@@ -53,6 +54,7 @@ pub fn handle_events(
                         help_buttons,
                         endgame_buttons,
                         menu_buttons,
+                        image_buttons,
                     );
 
                     match msg {

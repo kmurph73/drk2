@@ -4,7 +4,7 @@ const out = "imgs";
 const hidpi = true; //Deno.build.vendor === "apple";
 const size = 56;
 const connectorSize = 20;
-const btnSize = 40;
+const btnSize = 160;
 const btnDims = `${btnSize}x${btnSize}`;
 
 const dotSize = size * 2;
@@ -23,9 +23,9 @@ const getDimensions = (name: string): string => {
 };
 
 const main = async () => {
-  const hidpi = true; //Deno.build.vendor === "apple";
+  // const hidpi = true; //Deno.build.vendor === "apple";
 
-  await Deno.remove(out);
+  await Deno.remove(out, { recursive: true });
   await Deno.mkdir(out);
 
   const files = Deno.readDirSync("bigimgs");

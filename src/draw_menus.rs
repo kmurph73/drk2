@@ -3,11 +3,9 @@ use std::ffi::CString;
 use crate::{
     colors::{SDL_BLACK, SDL_WHITE},
     draw_game::draw_image,
-    img_consts::{MINUS_SQUARE_IMG, PLUS_SQUARE_IMG},
     my_sdl::{MySdl, SDL_Color, SDL_Rect, SDL_RenderFillRect, SDL_SetRenderDrawColor},
-    prelude::{HELP_MODAL, SCREEN_HEIGHT, SCREEN_WIDTH, SQUARE_SIZE},
-    util::tuple_to_rect,
-    TextButton,
+    prelude::{HELP_MODAL, SCREEN_HEIGHT, SCREEN_WIDTH},
+    ImageButton, TextButton,
 };
 
 pub fn draw_modal(sdl: &MySdl, buttons: &Vec<TextButton>, title: String) {
@@ -37,8 +35,7 @@ pub fn draw_modal(sdl: &MySdl, buttons: &Vec<TextButton>, title: String) {
 
         SDL_RenderFillRect(sdl.renderer, &rect);
 
-        let str = String::from(title);
-        let text = CString::new(str).expect("CString::new failed");
+        let text = CString::new(title).expect("CString::new failed");
 
         let texture = sdl.get_text(text.as_ptr());
         let x = rect.x + 140;
@@ -51,7 +48,13 @@ pub fn draw_modal(sdl: &MySdl, buttons: &Vec<TextButton>, title: String) {
     }
 }
 
-pub fn draw_menu(sdl: &MySdl, buttons: &Vec<TextButton>, level: u32) {
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
+pub fn draw_menu(
+    sdl: &MySdl,
+    buttons: &Vec<TextButton>,
+    image_buttons: &Vec<ImageButton>,
+    level: usize,
+) {
     let str = String::from("Dr. Kodama");
     let text = CString::new(str).expect("CString::new failed");
 
@@ -81,5 +84,12 @@ pub fn draw_menu(sdl: &MySdl, buttons: &Vec<TextButton>, level: u32) {
 
     for button in buttons {
         sdl.draw_button(button);
+    }
+
+    for ImageButton {
+        srcrect, dstrect, ..
+    } in image_buttons
+    {
+        draw_image(srcrect, dstrect, sdl);
     }
 }
