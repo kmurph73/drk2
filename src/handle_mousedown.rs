@@ -1,13 +1,13 @@
-use crate::{Button, ButtonKind, GameState, Msg};
+use crate::{ButtonKind, GameState, Msg, TextButton};
 
 pub fn handle_mousedown(
     x: i32,
     y: i32,
     state: &GameState,
     is_right_click: bool,
-    help_buttons: &[Button],
-    endgame_buttons: &[Button],
-    menu_buttons: &[Button],
+    help_buttons: &[TextButton],
+    endgame_buttons: &[TextButton],
+    menu_buttons: &[TextButton],
 ) -> Msg {
     if is_right_click {
         return Msg::Nada;
@@ -20,6 +20,7 @@ pub fn handle_mousedown(
                 ButtonKind::NewGame => return Msg::NewGame,
                 ButtonKind::Menu => return Msg::Menu,
                 ButtonKind::Quit => return Msg::Quit,
+                _ => {}
             }
         };
     } else if state.is_endgame() {
@@ -29,6 +30,7 @@ pub fn handle_mousedown(
                 ButtonKind::NewGame => return Msg::NewGame,
                 ButtonKind::Menu => return Msg::Menu,
                 ButtonKind::Quit => return Msg::Quit,
+                _ => {}
             }
         };
     } else if state.is_menu() {
@@ -38,6 +40,8 @@ pub fn handle_mousedown(
                 ButtonKind::NewGame => return Msg::NewGame,
                 ButtonKind::Menu => {}
                 ButtonKind::Quit => return Msg::Quit,
+                ButtonKind::LevelUp => return Msg::LevelUp,
+                ButtonKind::LevelDown => return Msg::LevelDown,
             }
         };
     }
