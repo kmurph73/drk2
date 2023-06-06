@@ -3,6 +3,8 @@ use std::ffi::CString;
 use crate::random_scenario::random_scenario;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
+use draw_menus::{draw_menu, draw_modal};
+use gen_buttons::{gen_endgame_buttons, gen_help_buttons, gen_menu_buttons};
 use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
@@ -16,6 +18,8 @@ pub mod colors;
 pub mod dot;
 pub mod draw_game;
 pub mod draw_grid;
+pub mod draw_menus;
+pub mod gen_buttons;
 pub mod get_dots_to_drop;
 pub mod get_indexes_to_remove;
 pub mod handle_cmds;
@@ -58,21 +62,31 @@ mod prelude {
 }
 
 pub enum ButtonKind {
+    LevelUp,
+    LevelDown,
     Resume,
     NewGame,
     Menu,
     Quit,
 }
 
-pub struct Button {
+pub struct TextButton {
     pub kind: ButtonKind,
     pub text: CString,
     pub rect: SDL_Rect,
     pub text_pos: (i32, i32),
 }
 
+pub struct ImageButton {
+    pub kind: ButtonKind,
+    pub srcrect: SDL_Rect,
+    pub dstrect: SDL_Rect,
+}
+
 #[derive(Debug, Eq, PartialEq)]
 pub enum Msg {
+    LevelUp,
+    LevelDown,
     PauseGame,
     ResumeGame,
     NewGame,
@@ -114,9 +128,11 @@ impl GameState {
 fn main() {
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
-    let help_buttons = sdl.gen_help_buttons();
-    let endgame_buttons = sdl.gen_endgame_buttons();
-    let menu_buttons = sdl.gen_menu_buttons();
+    let help_buttons = gen_help_buttons(&sdl);
+    let endgame_buttons = gen_endgame_buttons(&sdl);
+    let menu_buttons = gen_menu_buttons(&sdl);
+
+    let mut level: u32 = 10;
 
     let square_size = SCREEN_WIDTH / 10;
 
@@ -176,6 +192,17 @@ fn main() {
                 state = GameState::Paused;
             }
             Msg::ResumeGame => state = GameState::Normal(current_ts),
+            Msg::LevelDown => {
+                if level > 1 {
+                    level -= 1
+                }
+            }
+
+            Msg::LevelUp => {
+                if level < 20 {
+                    level += 1
+                }
+            }
         }
 
         match state {
@@ -342,7 +369,7 @@ fn main() {
         // }
 
         if state.is_menu() {
-            sdl.draw_menu(&menu_buttons);
+            draw_menu(&sdl, &menu_buttons, level);
         } else {
             draw_grid(&sdl, square_size);
             draw_dots(&sdl, &squares, square_size, img_divisor);
@@ -358,11 +385,11 @@ fn main() {
             draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
             if state == GameState::Victory {
-                sdl.draw_modal(&endgame_buttons, String::from("VICTORY!"));
+                draw_modal(&sdl, &endgame_buttons, String::from("VICTORY!"));
             } else if state == GameState::Defeat {
-                sdl.draw_modal(&endgame_buttons, String::from("DEFEAT"));
+                draw_modal(&sdl, &endgame_buttons, String::from("DEFEAT"));
             } else if state == GameState::Paused {
-                sdl.draw_modal(&help_buttons, String::from("PAUSED"));
+                draw_modal(&sdl, &help_buttons, String::from("PAUSED"));
             }
         }
 

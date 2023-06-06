@@ -1,4 +1,3 @@
-import * as mod from "https://deno.land/std@0.185.0/fs/mod.ts";
 const bigDir = "bigimgs";
 const out = "imgs";
 
@@ -8,11 +7,8 @@ const connectorSize = 20;
 const main = async () => {
   const hidpi = true; //Deno.build.vendor === "apple";
 
-  const outDirExists = mod.existsSync(out);
-
-  if (!outDirExists) {
-    await Deno.mkdir(out);
-  }
+  await Deno.remove(out);
+  await Deno.mkdir(out);
 
   const files = Deno.readDirSync("bigimgs");
 

@@ -7,6 +7,21 @@ use crate::{
     util::tuple_to_rect,
 };
 
+pub fn draw_image(srcrect: &SDL_Rect, dstrect: &SDL_Rect, sdl: &MySdl) {
+    // let SDL_Rect { w, h, .. } = srcrect;
+
+    // let dest = SDL_Rect {
+    //     x,
+    //     y,
+    //     w: w / 2,
+    //     h: h / 2,
+    // };
+
+    unsafe {
+        SDL_RenderCopy(sdl.renderer, sdl.texture, srcrect, dstrect);
+    }
+}
+
 fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
     let srcrect = dot.img_rect();
     let SDL_Rect { w, h, .. } = srcrect;
