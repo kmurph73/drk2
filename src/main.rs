@@ -133,7 +133,7 @@ fn main() {
 
     let mut pieces: Vec<Piece> = Vec::new();
 
-    let img_divisor = if is_mac { 2 } else { 1 };
+    let img_divisor = 2; // if is_mac { 2 } else { 1 };
 
     let mut keys = KeyboardState {
         pressed: Keyboard::init(false),
