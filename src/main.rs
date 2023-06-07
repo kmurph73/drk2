@@ -10,6 +10,7 @@ use gen_buttons::{
 use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use keyboard::{Keyboard, KeyboardState};
+use load_save_settings::{load_settings, save_settings};
 use my_sdl::{MySdl, SDL_Rect};
 use piece::Piece;
 use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
@@ -31,6 +32,7 @@ pub mod handle_keyup;
 pub mod handle_mousedown;
 pub mod img_consts;
 pub mod keyboard;
+pub mod load_save_settings;
 pub mod my_sdl;
 pub mod my_sdl_rect;
 pub mod piece;
@@ -61,6 +63,9 @@ mod prelude {
     pub const DROP_RATE_MS: u128 = 34;
     pub const LANDED_DELAY_MS: u128 = 200;
     pub const TICK_RATE_MS: u128 = 800;
+    pub const LEVEL_DEFAULT: usize = 10;
+    pub const SPEED_DEFAULT: usize = 800;
+    pub const SETTINGS_PATH: &str = "./resources/settings.json";
 }
 
 pub enum ButtonKind {
@@ -128,6 +133,8 @@ impl GameState {
 }
 
 fn main() {
+    let mut settings = load_settings();
+
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
     let help_buttons = gen_help_buttons(&sdl);
@@ -136,11 +143,9 @@ fn main() {
     let y = menu_buttons[0].rect.y + 80;
     let image_menu_buttons = gen_image_menu_buttons(y);
 
-    let mut level: usize = 10;
-
     let square_size = SCREEN_WIDTH / 10;
 
-    let num_bad_guys = level * 3;
+    let num_bad_guys = settings.level * 3;
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, num_bad_guys);
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
@@ -182,7 +187,7 @@ fn main() {
                 break 'running;
             }
             Msg::NewGame => {
-                squares = random_scenario(&mut rng, level * 3);
+                squares = random_scenario(&mut rng, settings.level * 3);
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
                 on_deck_piece = Some(Piece::random_on_deck(&mut rng));
@@ -198,14 +203,14 @@ fn main() {
             }
             Msg::ResumeGame => state = GameState::Normal(current_ts),
             Msg::LevelDown => {
-                if level > 1 {
-                    level -= 1
+                if settings.level > 1 {
+                    settings.level -= 1
                 }
             }
 
             Msg::LevelUp => {
-                if level < 20 {
-                    level += 1
+                if settings.level < 20 {
+                    settings.level += 1
                 }
             }
         }
@@ -374,7 +379,7 @@ fn main() {
         // }
 
         if state.is_menu() {
-            draw_menu(&sdl, &menu_buttons, &image_menu_buttons, level);
+            draw_menu(&sdl, &menu_buttons, &image_menu_buttons, settings.level);
         } else {
             draw_grid(&sdl, square_size);
             draw_dots(&sdl, &squares, square_size, img_divisor);
@@ -400,6 +405,8 @@ fn main() {
 
         sdl.present();
     }
+
+    save_settings(&settings);
 
     sdl.quit();
 }
