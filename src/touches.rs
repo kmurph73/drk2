@@ -10,14 +10,15 @@ pub struct Touches {
 
 impl Touches {
     pub fn process(&self) -> Vec<Cmd> {
+        let diff = 50;
         let mut cmds = Vec::new();
-        let Pos(x, _y) = if let Some(down) = self.down {
+        let Pos(x, y) = if let Some(down) = self.down {
             down
         } else {
             return cmds;
         };
 
-        let Pos(current_x, _current_y) = if let Some(current) = self.current {
+        let Pos(current_x, current_y) = if let Some(current) = self.current {
             current
         } else {
             return cmds;
@@ -25,13 +26,18 @@ impl Touches {
 
         let delta_x = current_x - x;
 
-        println!("delta_x: {delta_x}");
-
-        if delta_x > 50 {
+        if delta_x > diff {
             let cmd = Cmd::Move(Direction::Right);
             cmds.push(cmd);
-        } else if delta_x < -50 {
+        } else if delta_x < -diff {
             let cmd = Cmd::Move(Direction::Left);
+            cmds.push(cmd);
+        }
+
+        let delta_y = current_y - y;
+
+        if delta_y > diff {
+            let cmd = Cmd::Move(Direction::Down);
             cmds.push(cmd);
         }
 
@@ -51,7 +57,6 @@ impl Touches {
     }
 
     pub fn clear(&mut self) {
-        println!("clear");
         self.down = None;
         self.current = None;
     }
