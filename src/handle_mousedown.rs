@@ -1,9 +1,10 @@
-use crate::{ButtonKind, GameState, ImageButton, Msg, TextButton};
+use crate::{touches::Touches, ButtonKind, GameState, ImageButton, Msg, TextButton};
 
 pub fn handle_mousedown(
     x: i32,
     y: i32,
     state: &GameState,
+    touches: &mut Touches,
     is_right_click: bool,
     help_buttons: &[TextButton],
     endgame_buttons: &[TextButton],
@@ -48,6 +49,8 @@ pub fn handle_mousedown(
                 _ => {}
             }
         }
+    } else if state.is_normal() {
+        touches.assign_down(x, y);
     }
 
     Msg::Nada

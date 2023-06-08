@@ -8,8 +8,10 @@ use crate::{
     keyboard::KeyboardState,
     my_sdl::{
         SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
-        SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_QUIT, SDL_PollEvent,
+        SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_MOUSEBUTTONUP,
+        SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT, SDL_PollEvent,
     },
+    touches::Touches,
     GameState, ImageButton, Msg, TextButton,
 };
 
@@ -17,6 +19,7 @@ use crate::{
 pub fn handle_events(
     keys: &mut KeyboardState,
     cmds: &mut Vec<Cmd>,
+    touches: &mut Touches,
     state: &GameState,
     help_buttons: &[TextButton],
     endgame_buttons: &[TextButton],
@@ -50,6 +53,7 @@ pub fn handle_events(
                         button.x,
                         button.y,
                         state,
+                        touches,
                         is_right_click,
                         help_buttons,
                         endgame_buttons,
@@ -61,6 +65,12 @@ pub fn handle_events(
                         Msg::Nada => {}
                         _ => return msg,
                     }
+                }
+                SDL_EventType_SDL_MOUSEMOTION => {
+                    touches.assign_motion(button.x, button.y);
+                }
+                SDL_EventType_SDL_MOUSEBUTTONUP => {
+                    touches.clear();
                 }
                 SDL_EventType_SDL_QUIT => {
                     return Msg::Quit;

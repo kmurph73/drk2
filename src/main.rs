@@ -14,6 +14,7 @@ use load_save_settings::{load_settings, save_settings};
 use my_sdl::{MySdl, SDL_Rect};
 use piece::Piece;
 use prelude::{DROP_RATE_MS, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
+use touches::Touches;
 use util::{contains2, get_current_timestamp_millis, is_mac};
 
 pub mod cmd;
@@ -39,6 +40,7 @@ pub mod piece;
 pub mod pos;
 pub mod random_scenario;
 pub mod test_scenario;
+pub mod touches;
 pub mod util;
 
 use crate::draw_game::draw_dots;
@@ -144,6 +146,10 @@ fn main() {
     let image_menu_buttons = gen_image_menu_buttons(y);
 
     let square_size = SCREEN_WIDTH / 10;
+    let mut touches = Touches {
+        down: None,
+        current: None,
+    };
 
     let num_bad_guys = settings.level * 3;
     let mut rng = rand::thread_rng();
@@ -173,12 +179,21 @@ fn main() {
         let msg = handle_events(
             &mut keys,
             &mut new_cmds,
+            &mut touches,
             &state,
             &help_buttons,
             &endgame_buttons,
             &menu_buttons,
             &image_menu_buttons,
         );
+
+        let touch_cmds = touches.process();
+        if !touch_cmds.is_empty() {
+            touches.recenter();
+            for cmd in touch_cmds {
+                new_cmds.push(cmd);
+            }
+        }
 
         let current_ts = get_current_timestamp_millis();
 
@@ -207,7 +222,6 @@ fn main() {
                     settings.level -= 1
                 }
             }
-
             Msg::LevelUp => {
                 if settings.level < 20 {
                     settings.level += 1
