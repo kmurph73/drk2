@@ -5,6 +5,7 @@ use crate::{
     handle_keydown::handle_keydown,
     handle_keyup::handle_keyup,
     handle_mousedown::handle_mousedown,
+    handle_mouseup::handle_mouseup,
     keyboard::KeyboardState,
     my_sdl::{
         SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
@@ -49,17 +50,7 @@ pub fn handle_events(
                 SDL_EventType_SDL_MOUSEBUTTONDOWN => {
                     let is_right_click = button.button == 3;
 
-                    let msg = handle_mousedown(
-                        button.x,
-                        button.y,
-                        state,
-                        touches,
-                        is_right_click,
-                        help_buttons,
-                        endgame_buttons,
-                        menu_buttons,
-                        image_buttons,
-                    );
+                    let msg = handle_mousedown(button.x, button.y, state, touches, is_right_click);
 
                     match msg {
                         Msg::Nada => {}
@@ -70,7 +61,25 @@ pub fn handle_events(
                     touches.assign_motion(button.x, button.y);
                 }
                 SDL_EventType_SDL_MOUSEBUTTONUP => {
-                    touches.clear();
+                    let is_right_click = button.button == 3;
+
+                    let msg = handle_mouseup(
+                        button.x,
+                        button.y,
+                        state,
+                        touches,
+                        is_right_click,
+                        help_buttons,
+                        endgame_buttons,
+                        menu_buttons,
+                        image_buttons,
+                        cmds,
+                    );
+
+                    match msg {
+                        Msg::Nada => {}
+                        _ => return msg,
+                    }
                 }
                 SDL_EventType_SDL_QUIT => {
                     return Msg::Quit;

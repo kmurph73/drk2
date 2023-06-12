@@ -31,6 +31,7 @@ pub mod handle_events;
 pub mod handle_keydown;
 pub mod handle_keyup;
 pub mod handle_mousedown;
+pub mod handle_mouseup;
 pub mod img_consts;
 pub mod keyboard;
 pub mod load_save_settings;
@@ -68,6 +69,8 @@ mod prelude {
     pub const LEVEL_DEFAULT: usize = 10;
     pub const SPEED_DEFAULT: usize = 800;
     pub const SETTINGS_PATH: &str = "./resources/settings.json";
+    pub const MENU_BTN: (i32, i32, i32, i32) =
+        (SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SQUARE_SIZE * 2);
 }
 
 pub enum ButtonKind {
@@ -134,7 +137,8 @@ impl GameState {
     }
 }
 
-fn main() {
+#[no_mangle]
+pub extern "C" fn run_the_game() {
     let mut settings = load_settings();
 
     let is_mac = is_mac();
@@ -146,12 +150,10 @@ fn main() {
     let image_menu_buttons = gen_image_menu_buttons(y);
 
     let square_size = SCREEN_WIDTH / 10;
-    let mut touches = Touches {
-        down: None,
-        current: None,
-    };
+    let mut touches = Touches::default();
 
-    let num_bad_guys = settings.level * 3;
+    let num_bad_guys = settings.level * 1;
+    println!("numbads: {num_bad_guys}");
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, num_bad_guys);
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
@@ -187,13 +189,7 @@ fn main() {
             &image_menu_buttons,
         );
 
-        let touch_cmds = touches.process();
-        if !touch_cmds.is_empty() {
-            touches.recenter();
-            for cmd in touch_cmds {
-                new_cmds.push(cmd);
-            }
-        }
+        touches.process(&mut new_cmds);
 
         let current_ts = get_current_timestamp_millis();
 
@@ -203,6 +199,7 @@ fn main() {
             }
             Msg::NewGame => {
                 squares = random_scenario(&mut rng, settings.level * 3);
+                touches.clear();
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
                 on_deck_piece = Some(Piece::random_on_deck(&mut rng));
@@ -263,6 +260,7 @@ fn main() {
                 }
 
                 current_piece = None;
+                touches.clear();
 
                 state = GameState::DroppingDots(land_time);
             }
@@ -415,6 +413,12 @@ fn main() {
             } else if state == GameState::Paused {
                 draw_modal(&sdl, &help_buttons, String::from("PAUSED"));
             }
+
+            // let (x, y, w, h) = MENU_BTN;
+            // let rect = SDL_Rect { x, y, w, h };
+            // unsafe {
+            //     SDL_RenderFillRect(sdl.renderer, &rect);
+            // }
         }
 
         sdl.present();
