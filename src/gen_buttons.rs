@@ -1,7 +1,7 @@
 use std::ffi::CString;
 
 use crate::{
-    img_consts::{MINUS_SQUARE_IMG, PLUS_SQUARE_IMG},
+    img_consts::{MINUS_SQUARE_IMG, PLAY_BTN_IMG, PLUS_SQUARE_IMG, QUIT_BTN_IMG, RESUME_BTN_IMG},
     my_sdl::{MySdl, SDL_Rect},
     prelude::{HELP_MODAL, SCREEN_WIDTH, SQUARE_SIZE},
     util::tuple_to_rect,
@@ -150,59 +150,68 @@ pub fn gen_endgame_buttons(sdl: &MySdl) -> Vec<TextButton> {
     buttons
 }
 
-pub fn gen_menu_buttons(sdl: &MySdl) -> Vec<TextButton> {
-    let mut text_buttons: Vec<TextButton> = Vec::with_capacity(2);
+pub fn gen_menu_buttons() -> Vec<ImageButton> {
+    let mut buttons: Vec<ImageButton> = Vec::with_capacity(2);
 
-    let (x, y, w, h) = HELP_MODAL;
-    let modal_rect = SDL_Rect { x, y, w, h };
+    let offset_y = 200;
 
-    let offset_y = 90;
+    let (sx, sy, sw, sh) = PLAY_BTN_IMG;
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
 
-    let y = modal_rect.y + offset_y;
-    let x = modal_rect.x + SQUARE_SIZE;
-    let w = modal_rect.w - SQUARE_SIZE * 2;
-    let h = 60;
+    // let width = sw / 2;
+    let x = (SCREEN_WIDTH - (sw / 2)) / 2;
 
-    let text = String::from("PLAY");
-    let text = CString::new(text).expect("CString::new failed");
-    let (width, height) = sdl.get_text_size(&text);
-    let rect = SDL_Rect { x, y, w, h };
+    let y = 50;
+    // let x = 100; // (w - (sw / 2)) / 2;
+    let dstrect = SDL_Rect::new(x, y, sw / 2, sh / 2);
 
-    let resume = TextButton {
+    let play = ImageButton {
         kind: ButtonKind::NewGame,
-        text,
-        rect,
-        text_pos: rect.center(width, height),
+        srcrect,
+        dstrect,
     };
 
-    text_buttons.push(resume);
+    buttons.push(play);
 
-    let y = y + 200;
+    let (sx, sy, sw, sh) = RESUME_BTN_IMG;
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
 
-    let rect = SDL_Rect { x, y, w, h };
+    let y = y + offset_y;
+    let dstrect = SDL_Rect::new(x, y, sw / 2, sh / 2);
+    let resume = ImageButton {
+        kind: ButtonKind::Resume,
+        srcrect,
+        dstrect,
+    };
 
-    let text = String::from("QUIT");
-    let text = CString::new(text).expect("CString::new failed");
-    let (width, height) = sdl.get_text_size(&text);
-    let new_game = TextButton {
+    buttons.push(resume);
+
+    let (sx, sy, sw, sh) = QUIT_BTN_IMG;
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
+
+    let y = y + 100;
+
+    let dstrect = SDL_Rect::new(x, y, sw / 2, sh / 2);
+
+    let quit = ImageButton {
         kind: ButtonKind::Quit,
-        text,
-        rect,
-        text_pos: rect.center(width, height),
+        srcrect,
+        dstrect,
     };
 
-    text_buttons.push(new_game);
+    buttons.push(quit);
 
-    text_buttons
+    buttons
 }
 
-pub fn gen_image_menu_buttons(y: i32) -> Vec<ImageButton> {
+pub fn gen_plus_minus_menu_buttons(y: i32) -> Vec<ImageButton> {
     let mut image_buttons: Vec<ImageButton> = Vec::with_capacity(2);
 
     let srcrect = tuple_to_rect(MINUS_SQUARE_IMG);
     let SDL_Rect { w, h, .. } = srcrect;
+    let x_offset = 10;
     let dstrect = SDL_Rect {
-        x: SQUARE_SIZE,
+        x: x_offset,
         y,
         w: w / 2,
         h: h / 2,
@@ -219,7 +228,7 @@ pub fn gen_image_menu_buttons(y: i32) -> Vec<ImageButton> {
     let srcrect = tuple_to_rect(PLUS_SQUARE_IMG);
     let SDL_Rect { w, h, .. } = srcrect;
     let dstrect = SDL_Rect {
-        x: SCREEN_WIDTH - SQUARE_SIZE * 2,
+        x: SCREEN_WIDTH - x_offset - (w / 2),
         y,
         w: w / 2,
         h: h / 2,

@@ -24,7 +24,7 @@ pub fn handle_events(
     state: &GameState,
     help_buttons: &[TextButton],
     endgame_buttons: &[TextButton],
-    menu_buttons: &[TextButton],
+    menu_buttons: &[ImageButton],
     image_buttons: &[ImageButton],
 ) -> Msg {
     unsafe {

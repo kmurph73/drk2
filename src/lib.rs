@@ -5,7 +5,7 @@ use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
 use gen_buttons::{
-    gen_endgame_buttons, gen_help_buttons, gen_image_menu_buttons, gen_menu_buttons,
+    gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_plus_minus_menu_buttons,
 };
 use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
@@ -50,8 +50,8 @@ use crate::get_indexes_to_remove::get_indexes_to_remove;
 use crate::handle_events::handle_events;
 
 mod prelude {
-    pub const SCREEN_WIDTH: i32 = 600;
-    pub const SCREEN_HEIGHT: i32 = 1000;
+    pub const SCREEN_WIDTH: i32 = 375;
+    pub const SCREEN_HEIGHT: i32 = 812;
     pub const COLS: i32 = 8;
     pub const ROWS: i32 = 16;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
@@ -145,15 +145,15 @@ pub extern "C" fn run_the_game() {
     let sdl = MySdl::init_sdl(is_mac);
     let help_buttons = gen_help_buttons(&sdl);
     let endgame_buttons = gen_endgame_buttons(&sdl);
-    let menu_buttons = gen_menu_buttons(&sdl);
-    let y = menu_buttons[0].rect.y + 80;
-    let image_menu_buttons = gen_image_menu_buttons(y);
+    let menu_buttons = gen_menu_buttons();
+    let y = menu_buttons[0].dstrect.y + 80;
+    let image_menu_buttons = gen_plus_minus_menu_buttons(y);
 
     let square_size = SCREEN_WIDTH / 10;
     let mut touches = Touches::default();
 
     let num_bad_guys = settings.level * 1;
-    println!("numbads: {num_bad_guys}");
+
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, num_bad_guys);
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));

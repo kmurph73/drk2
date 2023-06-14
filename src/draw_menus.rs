@@ -5,6 +5,7 @@ use crate::{
     draw_game::draw_image,
     my_sdl::{MySdl, SDL_Color, SDL_Rect, SDL_RenderFillRect, SDL_SetRenderDrawColor},
     prelude::{HELP_MODAL, SCREEN_HEIGHT, SCREEN_WIDTH},
+    util::{get_level_image, tuple_to_rect},
     ImageButton, TextButton,
 };
 
@@ -48,42 +49,35 @@ pub fn draw_modal(sdl: &MySdl, buttons: &Vec<TextButton>, title: String) {
     }
 }
 
-#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn draw_menu(
     sdl: &MySdl,
-    buttons: &Vec<TextButton>,
+    buttons: &Vec<ImageButton>,
     image_buttons: &Vec<ImageButton>,
     level: usize,
 ) {
-    let str = String::from("Dr. Kodama");
-    let text = CString::new(str).expect("CString::new failed");
-
-    let (width, height) = sdl.get_text_size(&text);
-
-    let rect = SDL_Rect {
+    let srcrect = get_level_image(level);
+    let r = &image_buttons[0].dstrect;
+    let container = SDL_Rect {
         x: 0,
-        y: 0,
+        y: r.y,
         w: SCREEN_WIDTH,
-        h: SCREEN_HEIGHT,
+        h: r.h,
     };
 
-    let (x, _y) = rect.center(width, height);
+    let (width, height) = (srcrect.w / 2, srcrect.h / 2);
 
-    let texture = sdl.get_text(text.as_ptr());
-    sdl.blit(texture, x, 20);
+    let (x, y) = container.center(width, height);
 
-    let y = buttons[0].rect.y;
+    let dstrect = SDL_Rect::new(x, y, width, height);
 
-    let text = format!("LEVEL: {}", level);
-    let text = CString::new(text).expect("CString::new failed");
-    let (width, height) = sdl.get_text_size(&text);
-    let (x, _y) = rect.center(width, height);
-    let texture = sdl.get_text(text.as_ptr());
-    let y = y + 110;
-    sdl.blit(texture, x, y);
+    draw_image(&srcrect, &dstrect, sdl);
 
-    for button in buttons {
-        sdl.draw_button(button);
+    for ImageButton {
+        srcrect, dstrect, ..
+    } in buttons
+    {
+        println!("{:#?}", dstrect);
+        draw_image(srcrect, dstrect, sdl);
     }
 
     for ImageButton {

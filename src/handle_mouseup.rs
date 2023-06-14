@@ -11,7 +11,7 @@ pub fn handle_mouseup(
     is_right_click: bool,
     help_buttons: &[TextButton],
     endgame_buttons: &[TextButton],
-    menu_buttons: &[TextButton],
+    menu_buttons: &[ImageButton],
     image_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
 ) -> Msg {
@@ -40,7 +40,7 @@ pub fn handle_mouseup(
             }
         };
     } else if state.is_menu() {
-        if let Some(btn) = menu_buttons.iter().find(|b| b.rect.contains(x, y)) {
+        if let Some(btn) = menu_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
             match btn.kind {
                 ButtonKind::NewGame => return Msg::NewGame,
                 ButtonKind::Quit => return Msg::Quit,

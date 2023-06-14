@@ -1,6 +1,19 @@
 use crate::my_sdl::SDL_Rect;
 
 impl SDL_Rect {
+    pub fn new(x: i32, y: i32, w: i32, h: i32) -> SDL_Rect {
+        SDL_Rect { x, y, w, h }
+    }
+
+    pub fn src_new(sx: i32, sy: i32, sw: i32, sh: i32) -> SDL_Rect {
+        SDL_Rect {
+            x: sx,
+            y: sy,
+            w: sw,
+            h: sh,
+        }
+    }
+
     pub fn shrink(&self, n: i32) -> SDL_Rect {
         let SDL_Rect { x, y, w, h } = &self;
 
@@ -10,6 +23,10 @@ impl SDL_Rect {
             w: w - n * 2,
             h: h - n * 2,
         }
+    }
+
+    pub fn top_right(&self) -> (i32, i32) {
+        (self.x + self.w, self.y)
     }
 
     pub fn center(&self, width: i32, height: i32) -> (i32, i32) {

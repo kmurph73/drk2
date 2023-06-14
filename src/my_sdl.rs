@@ -42,6 +42,7 @@ pub struct MySdl {
 
 impl MySdl {
     pub fn init_sdl(is_mac: bool) -> Self {
+        println!("ss: {SQUARE_SIZE}");
         unsafe {
             if SDL_Init(SDL_INIT_VIDEO) < 0 {
                 panic!("failed to initialize sdl2 with video");

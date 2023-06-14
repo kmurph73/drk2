@@ -2,8 +2,8 @@ const bigDir = "bigimgs";
 const out = "imgs";
 
 const hidpi = true; //Deno.build.vendor === "apple";
-const size = 56;
-const connectorSize = 20;
+const size = 33;
+const connectorSize = 12;
 const btnSize = 160;
 const btnDims = `${btnSize}x${btnSize}`;
 
@@ -12,15 +12,19 @@ const dims = `${dotSize}x${dotSize}`;
 const conSize = hidpi ? connectorSize * 2 : connectorSize;
 const connectorDims = `${conSize}x${conSize}`;
 
-const getDimensions = (name: string): string => {
+const getDimensions = (name: string): string | null => {
   if (name === "connector.png") {
     return connectorDims;
   } else if (/plus|minus/.test(name)) {
     return btnDims;
-  } else {
+  } else if (/kodama|dot/.test(name)) {
     return dims;
   }
+
+  return null;
 };
+
+const ignore = [".DS_Store"];
 
 const main = async () => {
   // const hidpi = true; //Deno.build.vendor === "apple";
@@ -38,9 +42,20 @@ const main = async () => {
 
     const name = img.name;
 
-    const dimensions = getDimensions(name);
+    if (ignore.includes(name)) {
+      continue;
+    }
 
-    const cmd = `convert ${bigDir}/${name} -resize ${dimensions} ${out}/${name}`;
+    const cmd = (() => {
+      const dimensions = getDimensions(name);
+
+      if (dimensions) {
+        return `convert ${bigDir}/${name} -resize ${dimensions} ${out}/${name}`;
+      } else {
+        return `cp ${bigDir}/${name} ${out}/${name}`;
+      }
+    })();
+
     const c = Deno.run({ cmd: cmd.split(" ") }).status();
     cmds.push(c);
   }
