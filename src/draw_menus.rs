@@ -1,15 +1,13 @@
-use std::ffi::CString;
-
 use crate::{
     colors::{SDL_BLACK, SDL_WHITE},
     draw_game::draw_image,
     my_sdl::{MySdl, SDL_Color, SDL_Rect, SDL_RenderFillRect, SDL_SetRenderDrawColor},
     prelude::{HELP_MODAL, SCREEN_HEIGHT, SCREEN_WIDTH},
-    util::{get_level_image, tuple_to_rect},
-    ImageButton, TextButton,
+    util::get_level_image,
+    ImageButton,
 };
 
-pub fn draw_modal(sdl: &MySdl, buttons: &Vec<TextButton>, title: String) {
+pub fn draw_modal(sdl: &MySdl, buttons: &Vec<ImageButton>) {
     unsafe {
         let SDL_Color { r, g, b, .. } = SDL_BLACK;
         SDL_SetRenderDrawColor(sdl.renderer, r, g, b, 150);
@@ -36,15 +34,11 @@ pub fn draw_modal(sdl: &MySdl, buttons: &Vec<TextButton>, title: String) {
 
         SDL_RenderFillRect(sdl.renderer, &rect);
 
-        let text = CString::new(title).expect("CString::new failed");
-
-        let texture = sdl.get_text(text.as_ptr());
-        let x = rect.x + 140;
-        let y = rect.y + 5;
-        sdl.blit(texture, x, y);
-
-        for button in buttons {
-            sdl.draw_button(button);
+        for ImageButton {
+            srcrect, dstrect, ..
+        } in buttons
+        {
+            draw_image(srcrect, dstrect, sdl)
         }
     }
 }
@@ -76,7 +70,6 @@ pub fn draw_menu(
         srcrect, dstrect, ..
     } in buttons
     {
-        println!("{:#?}", dstrect);
         draw_image(srcrect, dstrect, sdl);
     }
 

@@ -13,7 +13,7 @@ use crate::{
         SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT, SDL_PollEvent,
     },
     touches::Touches,
-    GameState, ImageButton, Msg, TextButton,
+    GameState, ImageButton, Msg,
 };
 
 #[allow(non_upper_case_globals)]
@@ -22,8 +22,7 @@ pub fn handle_events(
     cmds: &mut Vec<Cmd>,
     touches: &mut Touches,
     state: &GameState,
-    help_buttons: &[TextButton],
-    endgame_buttons: &[TextButton],
+    help_buttons: &[ImageButton],
     menu_buttons: &[ImageButton],
     image_buttons: &[ImageButton],
 ) -> Msg {
@@ -70,7 +69,6 @@ pub fn handle_events(
                         touches,
                         is_right_click,
                         help_buttons,
-                        endgame_buttons,
                         menu_buttons,
                         image_buttons,
                         cmds,

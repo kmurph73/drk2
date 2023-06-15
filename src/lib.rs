@@ -57,9 +57,9 @@ mod prelude {
     pub const NUM_SQUARES: i32 = COLS * ROWS;
     pub const SQUARE_SIZE: i32 = SCREEN_WIDTH / (COLS + 2);
     pub const HELP_MODAL: (i32, i32, i32, i32) = (
+        SQUARE_SIZE,
         SQUARE_SIZE * 2,
-        SQUARE_SIZE * 2,
-        SCREEN_WIDTH - SQUARE_SIZE * 4,
+        SCREEN_WIDTH - SQUARE_SIZE * 2,
         SCREEN_HEIGHT - SQUARE_SIZE * 4,
     );
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
@@ -143,8 +143,8 @@ pub extern "C" fn run_the_game() {
 
     let is_mac = is_mac();
     let sdl = MySdl::init_sdl(is_mac);
-    let help_buttons = gen_help_buttons(&sdl);
-    let endgame_buttons = gen_endgame_buttons(&sdl);
+    let help_buttons = gen_help_buttons();
+    let endgame_buttons = gen_endgame_buttons();
     let menu_buttons = gen_menu_buttons();
     let y = menu_buttons[0].dstrect.y + 80;
     let image_menu_buttons = gen_plus_minus_menu_buttons(y);
@@ -184,7 +184,6 @@ pub extern "C" fn run_the_game() {
             &mut touches,
             &state,
             &help_buttons,
-            &endgame_buttons,
             &menu_buttons,
             &image_menu_buttons,
         );
@@ -407,11 +406,11 @@ pub extern "C" fn run_the_game() {
             draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
 
             if state == GameState::Victory {
-                draw_modal(&sdl, &endgame_buttons, String::from("VICTORY!"));
+                draw_modal(&sdl, &endgame_buttons);
             } else if state == GameState::Defeat {
-                draw_modal(&sdl, &endgame_buttons, String::from("DEFEAT"));
+                draw_modal(&sdl, &endgame_buttons);
             } else if state == GameState::Paused {
-                draw_modal(&sdl, &help_buttons, String::from("PAUSED"));
+                draw_modal(&sdl, &help_buttons);
             }
 
             // let (x, y, w, h) = MENU_BTN;
