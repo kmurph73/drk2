@@ -21,6 +21,7 @@ impl Touches {
 
     #[allow(clippy::manual_range_contains)]
     pub fn process(&mut self, cmds: &mut Vec<Cmd>) {
+        let mut cmd: Option<Cmd> = None;
         let diff = DRAG_DIFF;
         let Pos(x, y) = if let Some(down) = self.down {
             down
@@ -34,34 +35,24 @@ impl Touches {
             return;
         };
 
-        let mut moved_piece = false;
-
         let delta_x = current_x - x;
 
         if delta_x > diff {
-            let cmd = Cmd::Move(Direction::Right);
-            cmds.push(cmd);
-            moved_piece = true;
+            cmd = Some(Cmd::Move(Direction::Right));
         } else if delta_x < -diff {
-            let cmd = Cmd::Move(Direction::Left);
-            cmds.push(cmd);
-            moved_piece = true;
+            cmd = Some(Cmd::Move(Direction::Left));
         }
 
         let delta_y = current_y - y;
 
-        if !moved_piece {
-            if delta_y > diff {
-                let cmd = Cmd::Move(Direction::Down);
-                cmds.push(cmd);
-                moved_piece = true;
-            } else if delta_y < -DROP_DRAG_DIFF {
-                cmds.push(Cmd::DropPiece);
-                moved_piece = true;
-            }
+        if delta_y > diff && delta_y > delta_x.abs() {
+            cmd = Some(Cmd::Move(Direction::Down));
+        } else if delta_y < -DROP_DRAG_DIFF && cmd.is_none() {
+            cmd = Some(Cmd::DropPiece);
         }
 
-        if moved_piece {
+        if let Some(cmd) = cmd {
+            cmds.push(cmd);
             self.dragged = true;
             self.moved_piece();
         }
