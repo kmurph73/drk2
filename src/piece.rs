@@ -140,6 +140,21 @@ impl Piece {
         self.lhs.tile == *tile || self.rhs.tile == *tile
     }
 
+    pub fn add(&mut self, x: i32, y: i32) {
+        self.lhs.add(x, y);
+        self.rhs.add(x, y);
+    }
+
+    pub fn move_on_deck(&mut self) -> bool {
+        let Pos(x, _y) = self.rhs.tile;
+
+        let (dx, dy) = if x == 4 { (0, 1) } else { (1, 0) };
+
+        self.add(dx, dy);
+
+        dy == 1
+    }
+
     pub fn originate_mut(&mut self) {
         self.lhs.tile.0 = 3;
         self.lhs.tile.1 = 1;

@@ -22,33 +22,15 @@ pub fn gen_modal_text(modal: &SDL_Rect, srcrect: SDL_Rect) -> Image {
 pub fn gen_endgame_buttons() -> Vec<ImageButton> {
     let mut buttons: Vec<ImageButton> = Vec::with_capacity(3);
 
-    let (x, y, w, h) = HELP_MODAL;
-    let modal_rect = SDL_Rect { x, y, w, h };
+    let modal_rect = tuple_to_rect(HELP_MODAL);
 
-    let offset_y = 90;
-
-    let (sx, sy, sw, sh) = NEW_GAME_BTN_IMG;
-    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
-
-    // let width = sw / 2;
-    let x = (SCREEN_WIDTH - (sw / IMG_DIVISOR)) / 2;
-
-    let y = modal_rect.y + offset_y;
-    // let x = 100; // (w - (sw / 2)) / 2;
-    let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
-
-    let resume = ImageButton {
-        kind: ButtonKind::NewGame,
-        srcrect,
-        dstrect,
-    };
-
-    buttons.push(resume);
-
-    let y = y + offset_y;
+    let offset_y = 100;
 
     let (sx, sy, sw, sh) = MENU_BTN_IMG;
     let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
+
+    let x = (SCREEN_WIDTH - (sw / IMG_DIVISOR)) / 2;
+    let y = offset_y + modal_rect.y;
 
     let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
 
@@ -60,40 +42,42 @@ pub fn gen_endgame_buttons() -> Vec<ImageButton> {
 
     buttons.push(menu);
 
-    buttons
-}
+    let y = y + offset_y;
 
-pub fn gen_help_buttons() -> Vec<ImageButton> {
-    let mut buttons: Vec<ImageButton> = Vec::with_capacity(3);
-
-    let (x, y, w, h) = HELP_MODAL;
-    let modal_rect = SDL_Rect { x, y, w, h };
-
-    let offset_y = 90;
-
-    let (sx, sy, sw, sh) = RESUME_BTN_IMG;
+    let (sx, sy, sw, sh) = NEW_GAME_BTN_IMG;
     let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
 
     // let width = sw / 2;
     let x = (SCREEN_WIDTH - (sw / IMG_DIVISOR)) / 2;
 
-    let y = modal_rect.y + offset_y;
+    let y = y + offset_y;
     // let x = 100; // (w - (sw / 2)) / 2;
     let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
 
     let resume = ImageButton {
-        kind: ButtonKind::Resume,
+        kind: ButtonKind::NewGame,
         srcrect,
         dstrect,
     };
 
     buttons.push(resume);
 
-    let y = y + offset_y;
+    buttons
+}
+
+pub fn gen_help_buttons() -> Vec<ImageButton> {
+    let mut buttons: Vec<ImageButton> = Vec::with_capacity(3);
+
+    let modal_rect = tuple_to_rect(HELP_MODAL);
+
+    let offset_y = 100;
+
+    let y = modal_rect.y + offset_y;
 
     let (sx, sy, sw, sh) = NEW_GAME_BTN_IMG;
-    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
+    let x = (SCREEN_WIDTH - (sw / IMG_DIVISOR)) / 2;
 
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
     let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
 
     let new_game = ImageButton {
@@ -118,6 +102,23 @@ pub fn gen_help_buttons() -> Vec<ImageButton> {
     };
 
     buttons.push(menu);
+
+    let (sx, sy, sw, sh) = RESUME_BTN_IMG;
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
+
+    // let width = sw / 2;
+
+    let y = y + offset_y;
+    // let x = 100; // (w - (sw / 2)) / 2;
+    let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
+
+    let resume = ImageButton {
+        kind: ButtonKind::Resume,
+        srcrect,
+        dstrect,
+    };
+
+    buttons.push(resume);
 
     buttons
 }

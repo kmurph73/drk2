@@ -13,12 +13,12 @@ use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
-use load_save_settings::{load_settings, save_settings};
+use load_save_settings::load_settings;
 use my_sdl::{MySdl, SDL_Rect};
 use piece::Piece;
 use prelude::{DROP_RATE_MS, HELP_MODAL, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
 use touches::Touches;
-use util::{contains2, get_current_timestamp_millis, is_mac, tuple_to_rect};
+use util::{contains2, get_current_timestamp_millis, tuple_to_rect};
 
 pub mod cmd;
 pub mod colors;
@@ -130,6 +130,7 @@ pub enum GameState {
     DroppingDots(u128),
     DotsLanded(u128),
     Normal(u128),
+    PreppingNextPiece(u128),
     Victory,
     Defeat,
     Paused,
@@ -335,13 +336,7 @@ pub extern "C" fn run_the_game() {
                             if has_piece_above_grid {
                                 state = GameState::Defeat;
                             } else {
-                                if let Some(piece) = &mut on_deck_piece {
-                                    piece.originate_mut();
-                                    current_piece = Some(piece.clone());
-                                    on_deck_piece = Some(Piece::random_on_deck(&mut rng));
-                                }
-
-                                state = GameState::Normal(current_ts);
+                                state = GameState::PreppingNextPiece(current_ts);
                             }
                         } else {
                             state = GameState::Victory;
@@ -399,6 +394,26 @@ pub extern "C" fn run_the_game() {
             GameState::Defeat => {}
             GameState::Paused => {}
             GameState::Menu => {}
+            GameState::PreppingNextPiece(last_tick) => {
+                let delta = current_ts - last_tick;
+
+                if delta > DROP_RATE_MS {
+                    if let Some(on_deck) = &mut on_deck_piece {
+                        let finished = on_deck.move_on_deck();
+
+                        if finished {
+                            current_piece = Some(on_deck.clone());
+                            on_deck_piece = Some(Piece::random_on_deck(&mut rng));
+
+                            state = GameState::Normal(current_ts);
+                        } else {
+                            state = GameState::PreppingNextPiece(current_ts);
+                        }
+                    } else {
+                        panic!("there should be on deck piece here");
+                    }
+                }
+            }
         }
 
         // let current_time = get_current_timestamp();

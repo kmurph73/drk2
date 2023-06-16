@@ -54,6 +54,11 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn add(&mut self, x: i32, y: i32) {
+        self.tile.0 += x;
+        self.tile.1 += y;
+    }
+
     pub fn lower_than(&self, dot: &Dot) -> bool {
         self.tile.1 > dot.tile.1
     }
