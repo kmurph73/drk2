@@ -83,18 +83,7 @@ impl Piece {
         self.rotation == 0 || self.rotation == 2
     }
 
-    pub fn attempt_drop(&self, squares: &[Option<Dot>]) -> Option<(usize, usize)> {
-        let lhs_index = self.lhs.idx();
-        let rhs_index = self.rhs.idx();
-
-        if self.lhs.can_drop2(squares, rhs_index) && self.rhs.can_drop2(squares, lhs_index) {
-            Some((lhs_index, rhs_index))
-        } else {
-            None
-        }
-    }
-
-    pub fn attempt_drop2(
+    pub fn attempt_drop(
         &self,
         squares: &[Option<Dot>],
         ignores: &[usize],
@@ -105,7 +94,13 @@ impl Piece {
         if self.lhs.can_drop3(squares, rhs_index, ignores)
             && self.rhs.can_drop3(squares, lhs_index, ignores)
         {
-            Some((lhs_index, rhs_index))
+            let (lower_index, higher_index) = if self.rhs.lower_than(&self.lhs) {
+                (rhs_index, lhs_index)
+            } else {
+                (lhs_index, rhs_index)
+            };
+
+            Some((lower_index, higher_index))
         } else {
             None
         }
@@ -116,6 +111,21 @@ impl Piece {
         let lhs = Dot::green(tile);
 
         let tile = Pos(4, 2);
+        let rhs = Dot::blue(tile);
+
+        Piece {
+            lhs,
+            rhs,
+            rotation: 0,
+            landed: false,
+        }
+    }
+
+    pub fn custom_on_deck() -> Piece {
+        let tile = Pos(-1, 0);
+        let lhs = Dot::green(tile);
+
+        let tile = Pos(0, 0);
         let rhs = Dot::blue(tile);
 
         Piece {

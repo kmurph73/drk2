@@ -1,4 +1,4 @@
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::Write;
 
 use serde::{Deserialize, Serialize};
@@ -12,12 +12,10 @@ pub struct Settings {
 }
 
 pub fn load_settings() -> Settings {
-    let settings = Settings {
+    Settings {
         level: LEVEL_DEFAULT,
         speed: SPEED_DEFAULT,
-    };
-
-    settings
+    }
     // let results = fs::read_to_string(SETTINGS_PATH);
 
     // match results {

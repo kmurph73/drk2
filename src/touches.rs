@@ -1,7 +1,7 @@
 use crate::{
     cmd::{Cmd, Direction},
     pos::Pos,
-    prelude::DRAG_DIFF,
+    prelude::{DRAG_DIFF, DROP_DRAG_DIFF},
 };
 
 pub struct Touches {
@@ -55,20 +55,14 @@ impl Touches {
                 let cmd = Cmd::Move(Direction::Down);
                 cmds.push(cmd);
                 moved_piece = true;
-            } else if delta_y < -diff {
+            } else if delta_y < -DROP_DRAG_DIFF {
                 cmds.push(Cmd::DropPiece);
+                moved_piece = true;
             }
         }
 
-        if delta_x > DRAG_DIFF
-            || delta_x < -DRAG_DIFF
-            || delta_y > DRAG_DIFF
-            || delta_y < -DRAG_DIFF
-        {
-            self.dragged = true;
-        }
-
         if moved_piece {
+            self.dragged = true;
             self.moved_piece();
         }
     }

@@ -62,9 +62,9 @@ pub fn test_scenario3() -> Vec<Option<Dot>> {
 
     assign_blue(Pos(6, 15), &mut squares);
 
-    // assign_blue(Pos(6, 13), &mut squares);
-    // assign_blue(Pos(6, 14), &mut squares);
-    // assign_blue(Pos(6, 15), &mut squares);
+    assign_blue(Pos(6, 13), &mut squares);
+    assign_blue(Pos(6, 14), &mut squares);
+    assign_blue(Pos(6, 15), &mut squares);
 
     squares
 }

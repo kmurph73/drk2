@@ -35,11 +35,11 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
                     continue;
                 }
 
-                if let Some((lhs_index, rhs_index)) = piece.attempt_drop2(squares, &ignores) {
-                    ignores.push(lhs_index);
-                    ignores.push(rhs_index);
-                    tiles_to_drop.push(lhs_index);
-                    tiles_to_drop.push(rhs_index);
+                if let Some((lower_index, higher_index)) = piece.attempt_drop(squares, &ignores) {
+                    ignores.push(lower_index);
+                    ignores.push(higher_index);
+                    tiles_to_drop.push(lower_index);
+                    tiles_to_drop.push(higher_index);
                     handled_pieces.push(idx);
                 }
             } else if dot.can_drop4(squares, &ignores) {

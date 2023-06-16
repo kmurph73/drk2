@@ -63,7 +63,7 @@ pub fn handle_mouseup(
 
         if rect.contains(x, y) {
             return Msg::PauseGame;
-        } else if !touches.dragged {
+        } else if !touches.dragged && touches.down.is_some() {
             let cmd = Cmd::Rotate;
             cmds.push(cmd);
         }

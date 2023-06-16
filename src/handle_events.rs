@@ -8,9 +8,10 @@ use crate::{
     handle_mouseup::handle_mouseup,
     keyboard::KeyboardState,
     my_sdl::{
-        SDL_Event, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
-        SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_MOUSEBUTTONUP,
-        SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT, SDL_PollEvent,
+        SDL_Event, SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN,
+        SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_MOUSEBUTTONDOWN,
+        SDL_EventType_SDL_MOUSEBUTTONUP, SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT,
+        SDL_PollEvent,
     },
     touches::Touches,
     GameState, ImageButton, Msg,
@@ -60,6 +61,9 @@ pub fn handle_events(
                 SDL_EventType_SDL_MOUSEMOTION => {
                     touches.assign_motion(button.x, button.y);
                 }
+                SDL_EventType_SDL_APP_WILLENTERBACKGROUND => {
+                    return Msg::PauseGame;
+                }
                 SDL_EventType_SDL_MOUSEBUTTONUP => {
                     let is_right_click = button.button == 3;
 
@@ -78,7 +82,10 @@ pub fn handle_events(
 
                     match msg {
                         Msg::Nada => {}
-                        _ => return msg,
+                        _ => {
+                            touches.clear();
+                            return msg;
+                        }
                     }
                 }
                 SDL_EventType_SDL_QUIT => {

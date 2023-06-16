@@ -54,18 +54,16 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn lower_than(&self, dot: &Dot) -> bool {
+        self.tile.1 > dot.tile.1
+    }
+
     pub fn lower(&self) -> Dot {
         Dot {
             tile: self.tile.add_y(1),
             color: self.color.clone(),
             kind: self.kind.clone(),
         }
-    }
-
-    pub fn can_drop(&self, squares: &[Option<Dot>]) -> bool {
-        let idx = self.tile.add_y(1).idx();
-
-        idx < NUM_SQUARES_USIZE && squares[idx].is_none()
     }
 
     pub fn can_drop2(&self, squares: &[Option<Dot>], ignore: usize) -> bool {
@@ -75,10 +73,10 @@ impl Dot {
     }
 
     pub fn can_drop3(&self, squares: &[Option<Dot>], ignore: usize, ignores: &[usize]) -> bool {
-        let idx = self.tile.add_y(1).idx();
+        let tile = self.tile.add_y(1);
+        let idx = tile.idx();
 
-        idx < NUM_SQUARES_USIZE
-            && (idx == ignore || ignores.contains(&idx) || squares[idx].is_none())
+        tile.1 < ROWS && (idx == ignore || ignores.contains(&idx) || squares[idx].is_none())
     }
 
     pub fn can_drop4(&self, squares: &[Option<Dot>], ignores: &[usize]) -> bool {

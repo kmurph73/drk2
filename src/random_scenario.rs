@@ -54,7 +54,7 @@ pub fn random_scenario(rng: &mut ThreadRng, mut n: usize) -> Vec<Option<Dot>> {
             squares[*i] = None;
         }
 
-        n -= indexes.len();
+        n = indexes.len();
     }
 
     squares

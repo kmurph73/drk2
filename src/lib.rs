@@ -1,6 +1,7 @@
 use std::ffi::CString;
 
 use crate::random_scenario::random_scenario;
+// use crate::test_scenario::test_scenario;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
@@ -67,7 +68,7 @@ mod prelude {
     );
     pub const IMG_DIVISOR: i32 = 2;
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
-    pub const DROP_RATE_MS: u128 = 34;
+    pub const DROP_RATE_MS: u128 = 40;
     pub const LANDED_DELAY_MS: u128 = 200;
     pub const TICK_RATE_MS: u128 = 800;
     pub const LEVEL_DEFAULT: usize = 10;
@@ -80,7 +81,8 @@ mod prelude {
         SQUARE_SIZE * 2 + TOPSET,
     );
 
-    pub const DRAG_DIFF: i32 = 35;
+    pub const DRAG_DIFF: i32 = 30;
+    pub const DROP_DRAG_DIFF: i32 = 50;
 }
 
 pub enum ButtonKind {
@@ -162,7 +164,7 @@ pub extern "C" fn run_the_game() {
     let paused_image = gen_modal_text(&modal, tuple_to_rect(PAUSED_IMG));
 
     // let is_mac = is_mac();
-    let sdl = MySdl::init_sdl(true);
+    let sdl = MySdl::init_sdl();
     let help_buttons = gen_help_buttons();
     let endgame_buttons = gen_endgame_buttons();
     let menu_buttons = gen_menu_buttons();
@@ -172,10 +174,8 @@ pub extern "C" fn run_the_game() {
     let square_size = SCREEN_WIDTH / 10;
     let mut touches = Touches::init();
 
-    let num_bad_guys = settings.level;
-
     let mut rng = rand::thread_rng();
-    let mut squares = random_scenario(&mut rng, num_bad_guys);
+    let mut squares = random_scenario(&mut rng, settings.level * 3);
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
@@ -312,6 +312,7 @@ pub extern "C" fn run_the_game() {
                             for idx in &to_drop {
                                 if piece.has_idx(*idx) {
                                     piece.lower_mut();
+                                    break;
                                 }
                             }
                         }
