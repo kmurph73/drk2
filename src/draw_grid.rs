@@ -1,6 +1,6 @@
 use crate::{
     my_sdl::{MySdl, SDL_RenderDrawLine, SDL_SetRenderDrawColor},
-    prelude::{COLS, ROWS},
+    prelude::{COLS, ROWS, TOPSET},
 };
 
 fn draw_rows(sdl: &MySdl, square_size: i32) {
@@ -10,8 +10,8 @@ fn draw_rows(sdl: &MySdl, square_size: i32) {
     let screen_rows = ROWS + 1;
 
     for i in 2..screen_rows {
-        let y1 = i * square_size;
-        let y2 = i * square_size;
+        let y1 = i * square_size + TOPSET;
+        let y2 = i * square_size + TOPSET;
 
         unsafe {
             SDL_RenderDrawLine(sdl.renderer, x1, y1, x2, y2);
@@ -20,8 +20,8 @@ fn draw_rows(sdl: &MySdl, square_size: i32) {
 }
 
 fn draw_cols(sdl: &MySdl, square_size: i32) {
-    let y1 = square_size * 2;
-    let y2 = square_size * ROWS;
+    let y1 = square_size * 2 + TOPSET;
+    let y2 = square_size * ROWS + TOPSET;
 
     let cols = COLS + 2;
 

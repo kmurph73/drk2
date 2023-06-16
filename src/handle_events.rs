@@ -24,7 +24,8 @@ pub fn handle_events(
     state: &GameState,
     help_buttons: &[ImageButton],
     menu_buttons: &[ImageButton],
-    image_buttons: &[ImageButton],
+    endgame_buttons: &[ImageButton],
+    level_buttons: &[ImageButton],
 ) -> Msg {
     unsafe {
         let mut _event: *mut SDL_Event = null_mut();
@@ -70,7 +71,8 @@ pub fn handle_events(
                         is_right_click,
                         help_buttons,
                         menu_buttons,
-                        image_buttons,
+                        endgame_buttons,
+                        level_buttons,
                         cmds,
                     );
 

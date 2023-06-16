@@ -1,6 +1,7 @@
 use crate::{
     cmd::{Cmd, Direction},
     pos::Pos,
+    prelude::DRAG_DIFF,
 };
 
 pub struct Touches {
@@ -9,18 +10,18 @@ pub struct Touches {
     pub dragged: bool,
 }
 
-const DRAG_DIFF: i32 = 10;
-
 impl Touches {
-    pub fn default() -> Touches {
+    pub fn init() -> Touches {
         Touches {
             down: None,
             current: None,
             dragged: false,
         }
     }
+
+    #[allow(clippy::manual_range_contains)]
     pub fn process(&mut self, cmds: &mut Vec<Cmd>) {
-        let diff = 50;
+        let diff = DRAG_DIFF;
         let Pos(x, y) = if let Some(down) = self.down {
             down
         } else {
@@ -49,14 +50,14 @@ impl Touches {
 
         let delta_y = current_y - y;
 
-        if delta_y > diff {
-            let cmd = Cmd::Move(Direction::Down);
-            cmds.push(cmd);
-            moved_piece = true;
-        }
-
-        if delta_y < -diff {
-            cmds.push(Cmd::DropPiece);
+        if !moved_piece {
+            if delta_y > diff {
+                let cmd = Cmd::Move(Direction::Down);
+                cmds.push(cmd);
+                moved_piece = true;
+            } else if delta_y < -diff {
+                cmds.push(Cmd::DropPiece);
+            }
         }
 
         if delta_x > DRAG_DIFF

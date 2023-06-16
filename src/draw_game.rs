@@ -4,6 +4,7 @@ use crate::{
     my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy},
     piece::Piece,
     pos::Pos,
+    prelude::TOPSET,
     util::tuple_to_rect,
 };
 
@@ -30,7 +31,7 @@ fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
 
     let dest = SDL_Rect {
         x: x + 2,
-        y: y + 2,
+        y: y + 2 + TOPSET,
         w: w / img_divisor,
         h: h / img_divisor,
     };
@@ -41,11 +42,18 @@ fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
 }
 
 fn connector_offset(rotation: i32, square_size: i32) -> (i32, i32) {
+    let n = 5;
+    let half_square = square_size / 2;
+    let x = square_size - n;
+    let y = half_square - n;
+
+    // 0 => (square_size - 5, half_square - 5),
+
     let (x, y) = match rotation {
-        0 => (square_size - 10, 20),
-        1 => (20, -10),
-        2 => (-10, 20),
-        3 => (20, square_size - 10),
+        0 => (x, y),
+        1 => (half_square - n, -n),
+        2 => (-n, y),
+        3 => (half_square - n, square_size - n),
         _ => panic!("{rotation} should be 0..3"),
     };
 
@@ -67,7 +75,7 @@ fn draw_connector(lhs: &Dot, rotation: i32, sdl: &MySdl, square_size: i32, img_d
 
     let dstrect = SDL_Rect {
         x,
-        y,
+        y: y + TOPSET,
         w: w / img_divisor,
         h: h / img_divisor,
     };

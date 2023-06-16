@@ -4,10 +4,10 @@ use crate::{
     my_sdl::{MySdl, SDL_Color, SDL_Rect, SDL_RenderFillRect, SDL_SetRenderDrawColor},
     prelude::{HELP_MODAL, SCREEN_HEIGHT, SCREEN_WIDTH},
     util::get_level_image,
-    ImageButton,
+    Image, ImageButton,
 };
 
-pub fn draw_modal(sdl: &MySdl, buttons: &Vec<ImageButton>) {
+pub fn draw_modal(sdl: &MySdl, buttons: &Vec<ImageButton>, txt: &Image) {
     unsafe {
         let SDL_Color { r, g, b, .. } = SDL_BLACK;
         SDL_SetRenderDrawColor(sdl.renderer, r, g, b, 150);
@@ -40,6 +40,8 @@ pub fn draw_modal(sdl: &MySdl, buttons: &Vec<ImageButton>) {
         {
             draw_image(srcrect, dstrect, sdl)
         }
+
+        draw_image(&txt.srcrect, &txt.dstrect, sdl)
     }
 }
 

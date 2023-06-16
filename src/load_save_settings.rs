@@ -12,28 +12,34 @@ pub struct Settings {
 }
 
 pub fn load_settings() -> Settings {
-    let results = fs::read_to_string(SETTINGS_PATH);
+    let settings = Settings {
+        level: LEVEL_DEFAULT,
+        speed: SPEED_DEFAULT,
+    };
 
-    match results {
-        Ok(contents) => {
-            let settings: Settings = serde_json::from_str(&contents).unwrap();
+    settings
+    // let results = fs::read_to_string(SETTINGS_PATH);
 
-            settings
-        }
-        Err(_) => {
-            let settings = Settings {
-                level: LEVEL_DEFAULT,
-                speed: SPEED_DEFAULT,
-            };
+    // match results {
+    //     Ok(contents) => {
+    //         let settings: Settings = serde_json::from_str(&contents).unwrap();
 
-            let json = serde_json::to_string(&settings).unwrap();
+    //         settings
+    //     }
+    //     Err(_) => {
+    //         let settings = Settings {
+    //             level: LEVEL_DEFAULT,
+    //             speed: SPEED_DEFAULT,
+    //         };
 
-            let mut output = File::create(SETTINGS_PATH).unwrap();
-            write!(output, "{json}").unwrap();
+    //         let json = serde_json::to_string(&settings).unwrap();
 
-            settings
-        }
-    }
+    //         let mut output = File::create(SETTINGS_PATH).unwrap();
+    //         write!(output, "{json}").unwrap();
+
+    //         settings
+    //     }
+    // }
 }
 
 pub fn save_settings(settings: &Settings) {
