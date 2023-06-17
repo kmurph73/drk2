@@ -4,5 +4,4 @@ Cargo.lock
 imgs
 .DS_Store
 resources/skyline-packer-output.png
-src/img_consts.rs
 .vscode/launch.json
