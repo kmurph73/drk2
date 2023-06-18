@@ -68,7 +68,7 @@ mod prelude {
     );
     pub const IMG_DIVISOR: i32 = 2;
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
-    pub const DROP_RATE_MS: u128 = 40;
+    pub const DROP_RATE_MS: u128 = 70;
     pub const LANDED_DELAY_MS: u128 = 200;
     pub const TICK_RATE_MS: u128 = 800;
     pub const LEVEL_DEFAULT: usize = 10;
@@ -81,8 +81,8 @@ mod prelude {
         SQUARE_SIZE * 2 + TOPSET,
     );
 
-    pub const DRAG_DIFF: i32 = 30;
-    pub const DROP_DRAG_DIFF: i32 = 50;
+    pub const DRAG_DIFF: i32 = 26;
+    pub const DROP_DRAG_DIFF: i32 = 46;
 }
 
 pub enum ButtonKind {
@@ -394,24 +394,13 @@ pub extern "C" fn run_the_game() {
             GameState::Defeat => {}
             GameState::Paused => {}
             GameState::Menu => {}
-            GameState::PreppingNextPiece(last_tick) => {
-                let delta = current_ts - last_tick;
+            GameState::PreppingNextPiece(_last_tick) => {
+                if let Some(on_deck) = &mut on_deck_piece {
+                    on_deck.originate_mut();
+                    current_piece = Some(on_deck.clone());
+                    on_deck_piece = Some(Piece::random_on_deck(&mut rng));
 
-                if delta > DROP_RATE_MS {
-                    if let Some(on_deck) = &mut on_deck_piece {
-                        let finished = on_deck.move_on_deck();
-
-                        if finished {
-                            current_piece = Some(on_deck.clone());
-                            on_deck_piece = Some(Piece::random_on_deck(&mut rng));
-
-                            state = GameState::Normal(current_ts);
-                        } else {
-                            state = GameState::PreppingNextPiece(current_ts);
-                        }
-                    } else {
-                        panic!("there should be on deck piece here");
-                    }
+                    state = GameState::Normal(current_ts);
                 }
             }
         }
