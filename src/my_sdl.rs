@@ -110,4 +110,12 @@ impl MySdl {
             // SDL_Delay(32);
         }
     }
+
+    pub fn draw(&self) {
+        let rect = SDL_Rect::new(0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100);
+        unsafe {
+            SDL_SetRenderDrawColor(self.renderer, 150, 150, 150, 255);
+            SDL_RenderFillRect(self.renderer, &rect);
+        }
+    }
 }

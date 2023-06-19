@@ -13,3 +13,38 @@ pub const SDL_WHITE: SDL_Color = SDL_Color {
     b: 255,
     a: 255,
 };
+
+pub const BLUE: SDL_Color = SDL_Color {
+    r: 76,
+    g: 126,
+    b: 219,
+    a: 255,
+};
+
+pub const RED: SDL_Color = SDL_Color {
+    r: 171,
+    g: 39,
+    b: 29,
+    a: 255,
+};
+
+pub const ORANGE: SDL_Color = SDL_Color {
+    r: 255,
+    g: 176,
+    b: 30,
+    a: 255,
+};
+
+pub const YELLOW: SDL_Color = SDL_Color {
+    r: 239,
+    g: 239,
+    b: 25,
+    a: 255,
+};
+
+pub const GREEN: SDL_Color = SDL_Color {
+    r: 99,
+    g: 178,
+    b: 55,
+    a: 255,
+};

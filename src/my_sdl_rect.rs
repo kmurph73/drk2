@@ -1,4 +1,4 @@
-use crate::my_sdl::SDL_Rect;
+use crate::my_sdl::{SDL_Color, SDL_Rect};
 
 impl SDL_Rect {
     pub fn new(x: i32, y: i32, w: i32, h: i32) -> SDL_Rect {
@@ -41,5 +41,11 @@ impl SDL_Rect {
     // https://stackoverflow.com/a/40687799/548170
     pub fn contains(&self, x: i32, y: i32) -> bool {
         self.x <= x && x < self.x + self.w && self.y <= y && y < self.y + self.h
+    }
+}
+
+impl SDL_Color {
+    pub fn new(r: u8, g: u8, b: u8, a: u8) -> SDL_Color {
+        SDL_Color { r, g, b, a }
     }
 }

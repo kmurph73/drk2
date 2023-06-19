@@ -1,4 +1,4 @@
-use crate::{touches::Touches, GameState, Msg};
+use crate::{prelude::SCREEN_HEIGHT, touches::Touches, GameState, Msg};
 
 pub fn handle_mousedown(
     x: i32,
@@ -11,7 +11,9 @@ pub fn handle_mousedown(
         return Msg::Nada;
     }
 
-    if state.is_normal() {
+    let max_y = SCREEN_HEIGHT - 50;
+
+    if state.is_normal() && y < max_y {
         touches.assign_down(x, y);
     }
 
