@@ -2,6 +2,7 @@ use std::ffi::CString;
 
 use crate::random_scenario::random_scenario;
 // use crate::test_scenario::test_scenario;
+use calc_dots_to_drop::calc_dots_to_drop;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
@@ -9,7 +10,6 @@ use gen_buttons::{
     gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_modal_text,
     gen_plus_minus_menu_buttons,
 };
-use get_dots_to_drop::calc_dots_to_drop;
 use handle_cmds::handle_cmds;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
@@ -20,6 +20,7 @@ use prelude::{DROP_RATE_MS, HELP_MODAL, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE
 use touches::Touches;
 use util::{contains2, get_current_timestamp_millis, tuple_to_rect};
 
+pub mod calc_dots_to_drop;
 pub mod cmd;
 pub mod colors;
 pub mod dot;
@@ -27,7 +28,6 @@ pub mod draw_game;
 pub mod draw_grid;
 pub mod draw_menus;
 pub mod gen_buttons;
-pub mod get_dots_to_drop;
 pub mod get_indexes_to_remove;
 pub mod handle_cmds;
 pub mod handle_events;
@@ -83,6 +83,7 @@ mod prelude {
 
     pub const DRAG_DIFF: i32 = 26;
     pub const DROP_DRAG_DIFF: i32 = 46;
+    pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
 
 pub enum ButtonKind {
@@ -122,6 +123,7 @@ pub enum Msg {
     Nada,
     Quit,
     Menu,
+    MouseUp,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -180,6 +182,8 @@ pub extern "C" fn run_the_game() {
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
+    let mut current_ts = get_current_timestamp_millis();
+    let mut last_level_increment: Option<u128> = None;
     // let mut state = GameState::Normal(get_current_timestamp_millis());
     let mut state = GameState::Menu;
 
@@ -207,12 +211,11 @@ pub extern "C" fn run_the_game() {
             &help_buttons,
             &menu_buttons,
             &endgame_buttons,
-            &level_buttons,
         );
 
         touches.process(&mut new_cmds);
 
-        let current_ts = get_current_timestamp_millis();
+        current_ts = get_current_timestamp_millis();
 
         match msg {
             Msg::Quit => {
@@ -230,22 +233,44 @@ pub extern "C" fn run_the_game() {
             Msg::Menu => {
                 state = GameState::Menu;
             }
-            Msg::Nada => {}
             Msg::PauseGame => {
                 state = GameState::Paused;
             }
             Msg::ResumeGame => state = GameState::Normal(current_ts),
+            Msg::LevelDown => {}
+            Msg::LevelUp => {}
+            Msg::Nada => {}
+            Msg::MouseUp => {
+                last_level_increment = None;
+            }
+        }
+
+        if let Some(down) = touches.down {
+
+        let msg = if let Some(last_level_increment) = last_level_increment {
+            touches.check_level_increment(&level_buttons, current_ts, last_level_increment)
+        } else {
+
+        }
+
+        match msg {
             Msg::LevelDown => {
                 if settings.level > 1 {
-                    settings.level -= 1
+                    last_level_increment = Some(current_ts);
+                    settings.level -= 1;
                 }
             }
             Msg::LevelUp => {
                 if settings.level < 20 {
-                    settings.level += 1
+                    last_level_increment = Some(current_ts);
+                    settings.level += 1;
                 }
             }
+            _ => {}
         }
+
+        }
+
 
         match state {
             GameState::PieceLanded(land_time) => {

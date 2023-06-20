@@ -26,7 +26,6 @@ pub fn handle_events(
     help_buttons: &[ImageButton],
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
-    level_buttons: &[ImageButton],
 ) -> Msg {
     unsafe {
         let mut _event: *mut SDL_Event = null_mut();
@@ -51,7 +50,7 @@ pub fn handle_events(
                 SDL_EventType_SDL_MOUSEBUTTONDOWN => {
                     let is_right_click = button.button == 3;
 
-                    let msg = handle_mousedown(button.x, button.y, state, touches, is_right_click);
+                    let msg = handle_mousedown(button.x, button.y, touches, is_right_click);
 
                     match msg {
                         Msg::Nada => {}
@@ -76,7 +75,6 @@ pub fn handle_events(
                         help_buttons,
                         menu_buttons,
                         endgame_buttons,
-                        level_buttons,
                         cmds,
                     );
 

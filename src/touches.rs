@@ -1,11 +1,13 @@
 use crate::{
     cmd::{Cmd, Direction},
     pos::Pos,
-    prelude::{DRAG_DIFF, DROP_DRAG_DIFF},
+    prelude::{BTN_HOLD_DELAY_MS, DRAG_DIFF, DROP_DRAG_DIFF},
+    ButtonKind, ImageButton, Msg,
 };
 
 pub struct Touches {
     pub down: Option<Pos>,
+    pub down_at_ts: u128,
     pub current: Option<Pos>,
     pub dragged: bool,
 }
@@ -14,9 +16,42 @@ impl Touches {
     pub fn init() -> Touches {
         Touches {
             down: None,
+            down_at_ts: 0,
             current: None,
             dragged: false,
         }
+    }
+
+    pub fn check_level_increment(
+        &self,
+        level_buttons: &[ImageButton],
+        current_ts: u128,
+        last_level_increment: u128,
+    ) -> Msg {
+        let Pos(x, y) = if let Some(down) = self.down {
+            down
+        } else {
+            return Msg::Nada;
+        };
+
+        let d = current_ts - self.down_at_ts;
+        if d < 500 {
+            return Msg::Nada;
+        }
+
+        if let Some(btn) = level_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
+            let delta = current_ts - last_level_increment;
+
+            if delta > BTN_HOLD_DELAY_MS {
+                match btn.kind {
+                    ButtonKind::LevelUp => return Msg::LevelUp,
+                    ButtonKind::LevelDown => return Msg::LevelDown,
+                    _ => {}
+                }
+            }
+        }
+
+        Msg::Nada
     }
 
     #[allow(clippy::manual_range_contains)]

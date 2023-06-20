@@ -12,7 +12,6 @@ pub fn handle_mouseup(
     help_buttons: &[ImageButton],
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
-    image_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
 ) -> Msg {
     if is_right_click {
@@ -45,12 +44,6 @@ pub fn handle_mouseup(
                 ButtonKind::Quit => return Msg::Quit,
                 _ => {}
             }
-        } else if let Some(btn) = image_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
-            match btn.kind {
-                ButtonKind::LevelUp => return Msg::LevelUp,
-                ButtonKind::LevelDown => return Msg::LevelDown,
-                _ => {}
-            }
         }
     } else if state.is_normal() {
         let (rect_x, rect_y, w, h) = MENU_BTN;
@@ -71,5 +64,5 @@ pub fn handle_mouseup(
 
     touches.clear();
 
-    Msg::Nada
+    Msg::MouseUp
 }
