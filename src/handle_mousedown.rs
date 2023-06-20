@@ -1,4 +1,4 @@
-use crate::{prelude::SCREEN_HEIGHT, touches::Touches, GameState, Msg};
+use crate::{prelude::SCREEN_HEIGHT, touches::Touches, Msg};
 
 pub fn handle_mousedown(x: i32, y: i32, touches: &mut Touches, is_right_click: bool) -> Msg {
     if is_right_click {

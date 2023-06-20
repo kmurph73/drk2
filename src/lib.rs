@@ -2,10 +2,12 @@ use std::ffi::CString;
 
 use crate::random_scenario::random_scenario;
 // use crate::test_scenario::test_scenario;
+use crate::process_touches::process_touches;
 use calc_dots_to_drop::calc_dots_to_drop;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
+use game_state::{GameState, LevelChange};
 use gen_buttons::{
     gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_modal_text,
     gen_plus_minus_menu_buttons,
@@ -27,6 +29,7 @@ pub mod dot;
 pub mod draw_game;
 pub mod draw_grid;
 pub mod draw_menus;
+pub mod game_state;
 pub mod gen_buttons;
 pub mod get_indexes_to_remove;
 pub mod handle_cmds;
@@ -42,6 +45,7 @@ pub mod my_sdl;
 pub mod my_sdl_rect;
 pub mod piece;
 pub mod pos;
+pub mod process_touches;
 pub mod random_scenario;
 pub mod test_scenario;
 pub mod touches;
@@ -126,37 +130,6 @@ pub enum Msg {
     MouseUp,
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum GameState {
-    PieceLanded(u128),
-    DroppingDots(u128),
-    DotsLanded(u128),
-    Normal(u128),
-    PreppingNextPiece(u128),
-    Victory,
-    Defeat,
-    Paused,
-    Menu,
-}
-
-impl GameState {
-    pub fn is_endgame(&self) -> bool {
-        *self == GameState::Victory || *self == GameState::Defeat
-    }
-
-    pub fn is_paused(&self) -> bool {
-        *self == GameState::Paused
-    }
-
-    pub fn is_normal(&self) -> bool {
-        matches!(*self, GameState::Normal(_))
-    }
-
-    pub fn is_menu(&self) -> bool {
-        *self == GameState::Menu
-    }
-}
-
 #[no_mangle]
 pub extern "C" fn run_the_game() {
     let mut settings = load_settings();
@@ -182,10 +155,8 @@ pub extern "C" fn run_the_game() {
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
-    let mut current_ts = get_current_timestamp_millis();
-    let mut last_level_increment: Option<u128> = None;
     // let mut state = GameState::Normal(get_current_timestamp_millis());
-    let mut state = GameState::Menu;
+    let mut state = GameState::Menu(None);
 
     // let initial_time = get_current_timestamp();
 
@@ -213,9 +184,9 @@ pub extern "C" fn run_the_game() {
             &endgame_buttons,
         );
 
-        touches.process(&mut new_cmds);
+        process_touches(&mut touches, &mut new_cmds);
 
-        current_ts = get_current_timestamp_millis();
+        let current_ts = get_current_timestamp_millis();
 
         match msg {
             Msg::Quit => {
@@ -228,10 +199,9 @@ pub extern "C" fn run_the_game() {
                 current_piece = Some(Piece::random(&mut rng));
                 on_deck_piece = Some(Piece::random_on_deck(&mut rng));
                 state = GameState::Normal(current_ts);
-                continue;
             }
             Msg::Menu => {
-                state = GameState::Menu;
+                state = GameState::Menu(None);
             }
             Msg::PauseGame => {
                 state = GameState::Paused;
@@ -241,36 +211,48 @@ pub extern "C" fn run_the_game() {
             Msg::LevelUp => {}
             Msg::Nada => {}
             Msg::MouseUp => {
-                last_level_increment = None;
-            }
-        }
-
-        if let Some(down) = touches.down {
-
-        let msg = if let Some(last_level_increment) = last_level_increment {
-            touches.check_level_increment(&level_buttons, current_ts, last_level_increment)
-        } else {
-
-        }
-
-        match msg {
-            Msg::LevelDown => {
-                if settings.level > 1 {
-                    last_level_increment = Some(current_ts);
-                    settings.level -= 1;
+                if state.is_menu() {
+                    state = GameState::Menu(None);
                 }
             }
-            Msg::LevelUp => {
-                if settings.level < 20 {
-                    last_level_increment = Some(current_ts);
-                    settings.level += 1;
-                }
+        }
+
+        let msg = touches.check_level_change(&level_buttons);
+
+        let dir: Option<i32> = match msg {
+            Msg::LevelDown => Some(-1),
+            Msg::LevelUp => Some(1),
+            _ => None,
+        };
+
+        if let Some(dir) = dir {
+            if state.can_level_change(current_ts)
+                && (dir == -1 && settings.level > 1 || dir == 1 && settings.level < 20)
+            {
+                let level = settings.level as i32;
+                let level = level + dir;
+                settings.level = level as usize;
+
+                let lvl = match &state {
+                    GameState::Menu(lvl) => {
+                        if let Some(lvl) = lvl {
+                            Some(LevelChange {
+                                initial: lvl.initial,
+                                last: Some(current_ts),
+                            })
+                        } else {
+                            Some(LevelChange {
+                                initial: current_ts,
+                                last: None,
+                            })
+                        }
+                    }
+                    _ => None,
+                };
+
+                state = GameState::Menu(lvl);
             }
-            _ => {}
         }
-
-        }
-
 
         match state {
             GameState::PieceLanded(land_time) => {
@@ -418,7 +400,7 @@ pub extern "C" fn run_the_game() {
             GameState::Victory => {}
             GameState::Defeat => {}
             GameState::Paused => {}
-            GameState::Menu => {}
+            GameState::Menu(_) => {}
             GameState::PreppingNextPiece(_last_tick) => {
                 if let Some(on_deck) = &mut on_deck_piece {
                     on_deck.originate_mut();
