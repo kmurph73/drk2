@@ -1,9 +1,15 @@
-use crate::{pos::Pos, ButtonKind, ImageButton, Msg};
+use crate::{
+    cmd::{Cmd, Direction},
+    pos::Pos,
+    ButtonKind, ImageButton, Msg,
+};
 
 pub struct Touches {
     pub down: Option<Pos>,
     pub current: Option<Pos>,
     pub dragged: bool,
+    pub accum: i32,
+    pub last_move: Option<Direction>,
 }
 
 impl Touches {
@@ -12,6 +18,8 @@ impl Touches {
             down: None,
             current: None,
             dragged: false,
+            accum: 0,
+            last_move: None,
         }
     }
 
@@ -33,10 +41,18 @@ impl Touches {
         self.dragged = false;
     }
 
-    pub fn moved_piece(&mut self) {
+    pub fn moved_piece(&mut self, cmd: &Cmd) {
         self.down = self.current;
         self.current = None;
         self.dragged = true;
+
+        match cmd {
+            Cmd::Move(dir) => if Some(dir) == self.last_move {},
+            _ => {
+                self.accum = 0;
+                self.last_move = None;
+            }
+        }
     }
 
     pub fn check_level_change(&self, btns: &[ImageButton]) -> Msg {

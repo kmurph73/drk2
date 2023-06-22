@@ -22,14 +22,15 @@ pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>) {
     };
 
     let delta_x = current_x - x;
-
-    if delta_x > diff {
-        cmd = Some(Cmd::Move(Direction::Right));
-    } else if delta_x < -diff {
-        cmd = Some(Cmd::Move(Direction::Left));
-    }
-
     let delta_y = current_y - y;
+
+    if delta_x.abs() > delta_y.abs() {
+        if delta_x > diff {
+            cmd = Some(Cmd::Move(Direction::Right));
+        } else if delta_x < -diff {
+            cmd = Some(Cmd::Move(Direction::Left));
+        }
+    }
 
     if delta_y > diff && delta_y > delta_x.abs() {
         cmd = Some(Cmd::Move(Direction::Down));

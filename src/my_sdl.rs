@@ -38,7 +38,8 @@ impl MySdl {
                 panic!("failed to initialize sdl2 with video");
             };
 
-            let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI; //| SDL_WindowFlags_SDL_WINDOW_BORDERLESS;
+            let window_flags =
+                SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags_SDL_WINDOW_BORDERLESS;
 
             let title = CString::new("Dr K Dos").expect("CString::new failed");
 

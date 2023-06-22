@@ -4,10 +4,11 @@ use crate::random_scenario::random_scenario;
 // use crate::test_scenario::test_scenario;
 use crate::process_touches::process_touches;
 use calc_dots_to_drop::calc_dots_to_drop;
+use check_level_change::check_level_change;
 use cmd::Cmd;
 use draw_game::{draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
-use game_state::{GameState, LevelChange};
+use game_state::GameState;
 use gen_buttons::{
     gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_modal_text,
     gen_plus_minus_menu_buttons,
@@ -23,6 +24,7 @@ use touches::Touches;
 use util::{contains2, get_current_timestamp_millis, tuple_to_rect};
 
 pub mod calc_dots_to_drop;
+pub mod check_level_change;
 pub mod cmd;
 pub mod colors;
 pub mod dot;
@@ -86,7 +88,9 @@ mod prelude {
     );
 
     pub const DRAG_DIFF: i32 = 26;
-    pub const DROP_DRAG_DIFF: i32 = 46;
+    pub const ACCUM_THRESHOLD: i32 = 100;
+    pub const ACCUM_MS: i32 = 500;
+    pub const DROP_DRAG_DIFF: i32 = 40;
     pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
 
@@ -184,7 +188,9 @@ pub extern "C" fn run_the_game() {
             &endgame_buttons,
         );
 
-        process_touches(&mut touches, &mut new_cmds);
+        if state.is_normal() {
+            process_touches(&mut touches, &mut new_cmds);
+        }
 
         let current_ts = get_current_timestamp_millis();
 
@@ -214,43 +220,6 @@ pub extern "C" fn run_the_game() {
                 if state.is_menu() {
                     state = GameState::Menu(None);
                 }
-            }
-        }
-
-        let msg = touches.check_level_change(&level_buttons);
-
-        let dir: Option<i32> = match msg {
-            Msg::LevelDown => Some(-1),
-            Msg::LevelUp => Some(1),
-            _ => None,
-        };
-
-        if let Some(dir) = dir {
-            if state.can_level_change(current_ts)
-                && (dir == -1 && settings.level > 1 || dir == 1 && settings.level < 20)
-            {
-                let level = settings.level as i32;
-                let level = level + dir;
-                settings.level = level as usize;
-
-                let lvl = match &state {
-                    GameState::Menu(lvl) => {
-                        if let Some(lvl) = lvl {
-                            Some(LevelChange {
-                                initial: lvl.initial,
-                                last: Some(current_ts),
-                            })
-                        } else {
-                            Some(LevelChange {
-                                initial: current_ts,
-                                last: None,
-                            })
-                        }
-                    }
-                    _ => None,
-                };
-
-                state = GameState::Menu(lvl);
             }
         }
 
@@ -290,7 +259,12 @@ pub extern "C" fn run_the_game() {
                 current_piece = None;
                 touches.clear();
 
-                state = GameState::DroppingDots(land_time);
+                let has_bad = squares.iter().flatten().any(|s| s.is_bad());
+                if has_bad {
+                    state = GameState::DroppingDots(land_time);
+                } else {
+                    state = GameState::Victory;
+                }
             }
             GameState::DroppingDots(last_drop) => {
                 let delta = current_ts - last_drop;
@@ -382,17 +356,17 @@ pub extern "C" fn run_the_game() {
 
                     if land_piece {
                         state = GameState::PieceLanded(get_current_timestamp_millis());
-                    }
+                    } else {
+                        let delta = current_ts - last_tick;
 
-                    let delta = current_ts - last_tick;
+                        if delta > TICK_RATE_MS {
+                            if piece.can_lower(&squares) {
+                                piece.lower_mut();
 
-                    if delta > TICK_RATE_MS {
-                        if piece.can_lower(&squares) {
-                            piece.lower_mut();
-
-                            state = GameState::Normal(current_ts);
-                        } else {
-                            state = GameState::PieceLanded(get_current_timestamp_millis());
+                                state = GameState::Normal(current_ts);
+                            } else {
+                                state = GameState::PieceLanded(get_current_timestamp_millis());
+                            }
                         }
                     }
                 }
@@ -400,7 +374,14 @@ pub extern "C" fn run_the_game() {
             GameState::Victory => {}
             GameState::Defeat => {}
             GameState::Paused => {}
-            GameState::Menu(_) => {}
+            GameState::Menu(_) => {
+                if let Some((level, new_state)) =
+                    check_level_change(current_ts, &touches, &state, &level_buttons, &settings)
+                {
+                    settings.level = level;
+                    state = new_state;
+                }
+            }
             GameState::PreppingNextPiece(_last_tick) => {
                 if let Some(on_deck) = &mut on_deck_piece {
                     on_deck.originate_mut();
