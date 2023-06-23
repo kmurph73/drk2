@@ -1,6 +1,12 @@
 use crate::{prelude::SCREEN_HEIGHT, touches::Touches, Msg};
 
-pub fn handle_mousedown(x: i32, y: i32, touches: &mut Touches, is_right_click: bool) -> Msg {
+pub fn handle_mousedown(
+    x: i32,
+    y: i32,
+    current_ts: u128,
+    touches: &mut Touches,
+    is_right_click: bool,
+) -> Msg {
     if is_right_click {
         return Msg::Nada;
     }
@@ -8,7 +14,7 @@ pub fn handle_mousedown(x: i32, y: i32, touches: &mut Touches, is_right_click: b
     let max_y = SCREEN_HEIGHT - 40;
 
     if y < max_y {
-        touches.assign_down(x, y);
+        touches.assign_down(x, y, current_ts);
     }
 
     Msg::Nada

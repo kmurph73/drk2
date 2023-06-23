@@ -141,8 +141,8 @@ impl Piece {
     }
 
     pub fn add(&mut self, x: i32, y: i32) {
-        self.lhs.add(x, y);
-        self.rhs.add(x, y);
+        self.lhs.add_mut(x, y);
+        self.rhs.add_mut(x, y);
     }
 
     pub fn move_on_deck(&mut self) -> bool {
@@ -215,6 +215,60 @@ impl Piece {
         let rhs = self.rhs.tile.add_y(y_offset);
 
         (lhs, rhs)
+    }
+
+    fn lowest_x_offset(&self, squares: &[Option<Dot>]) -> i32 {
+        if self.is_horizontal() {
+            if self.lhs.tile.0 < self.rhs.tile.0 {
+                self.lhs.lowest_x_offset(squares)
+            } else {
+                self.rhs.lowest_x_offset(squares)
+            }
+        } else {
+            let lhs_lowest = self.lhs.lowest_x_offset(squares);
+            let rhs_lowest = self.rhs.lowest_x_offset(squares);
+
+            std::cmp::min(rhs_lowest, lhs_lowest)
+        }
+    }
+
+    pub fn snap_left(&self, squares: &[Option<Dot>]) -> Option<(Pos, Pos)> {
+        let x_offset = self.lowest_x_offset(squares);
+
+        if x_offset == 0 {
+            None
+        } else {
+            println!("left: {x_offset}");
+
+            Some((self.lhs.tile.add_x(x_offset), self.rhs.tile.add_x(x_offset)))
+        }
+    }
+
+    pub fn snap_right(&self, squares: &[Option<Dot>]) -> Option<(Pos, Pos)> {
+        let x_offset = self.greatest_x_offset(squares);
+
+        if x_offset == 0 {
+            None
+        } else {
+            println!("right: {x_offset}");
+
+            Some((self.lhs.tile.add_x(x_offset), self.rhs.tile.add_x(x_offset)))
+        }
+    }
+
+    fn greatest_x_offset(&self, squares: &[Option<Dot>]) -> i32 {
+        if self.is_horizontal() {
+            if self.lhs.tile.0 > self.rhs.tile.0 {
+                self.lhs.greatest_x_offset(squares)
+            } else {
+                self.rhs.greatest_x_offset(squares)
+            }
+        } else {
+            let lhs_greatest = self.lhs.greatest_x_offset(squares);
+            let rhs_greatest = self.rhs.greatest_x_offset(squares);
+
+            std::cmp::max(rhs_greatest, lhs_greatest)
+        }
     }
 
     pub fn attempt_move(&self, dir: &Direction, squares: &[Option<Dot>]) -> Option<(Pos, Pos)> {

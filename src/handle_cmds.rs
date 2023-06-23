@@ -2,9 +2,10 @@ use crate::{
     cmd::{Cmd, Direction},
     dot::Dot,
     piece::Piece,
+    Msg,
 };
 
-pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> bool {
+pub fn handle_cmds_mut(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> Msg {
     for cmd in cmds {
         match cmd {
             Cmd::Move(dir) => {
@@ -12,7 +13,7 @@ pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> 
                     let (lhs, rhs) = new_pos;
                     piece.set_pos(lhs, rhs);
                 } else if *dir == Direction::Down {
-                    return true;
+                    return Msg::PieceLanded;
                 }
             }
             Cmd::Rotate => {
@@ -24,10 +25,20 @@ pub fn handle_cmds(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> 
                 let new_pos = piece.find_lowest_drop(squares);
                 let (lhs, rhs) = new_pos;
                 piece.set_pos(lhs, rhs);
-                return true;
+                return Msg::PieceLanded;
+            }
+            Cmd::SnapLeft => {
+                if let Some((lhs, rhs)) = piece.snap_left(squares) {
+                    piece.set_pos(lhs, rhs);
+                }
+            }
+            Cmd::SnapRight => {
+                if let Some((lhs, rhs)) = piece.snap_right(squares) {
+                    piece.set_pos(lhs, rhs);
+                }
             }
         }
     }
 
-    false
+    Msg::Nada
 }

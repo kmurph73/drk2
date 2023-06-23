@@ -12,7 +12,7 @@ pub fn check_level_change(
     level_buttons: &[ImageButton],
     settings: &Settings,
 ) -> Option<(usize, GameState)> {
-    let msg = touches.check_level_change(&level_buttons);
+    let msg = touches.check_level_change(level_buttons);
 
     let dir: Option<i32> = match msg {
         Msg::LevelDown => Some(-1),
@@ -45,11 +45,7 @@ pub fn check_level_change(
                 _ => None,
             };
 
-            if let Some(lvl) = level_change {
-                Some((level, GameState::Menu(Some(lvl))))
-            } else {
-                None
-            }
+            level_change.map(|lvl| (level, GameState::Menu(Some(lvl))))
         } else {
             None
         }

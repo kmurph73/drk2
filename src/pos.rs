@@ -12,6 +12,10 @@ impl Pos {
         map_idx(self.0, self.1)
     }
 
+    pub fn add_x(&self, x_offset: i32) -> Pos {
+        Pos(self.0 + x_offset, self.1)
+    }
+
     pub fn add_y(&self, y_offset: i32) -> Pos {
         Pos(self.0, self.1 + y_offset)
     }
@@ -51,6 +55,26 @@ impl Pos {
 
     pub fn blocked(&self, squares: &[Option<Dot>], lowest_top: i32) -> bool {
         self.outside_of_grid(lowest_top) || self.intersects(squares)
+    }
+
+    pub fn get_lowest_x(&self, squares: &[Option<Dot>]) -> i32 {
+        let Pos(x, y) = self;
+
+        let mut x = x - 1;
+        let mut offset = 0;
+
+        while x > 0 {
+            let idx = map_idx(x, *y);
+
+            if squares[idx].is_some() {
+                return offset;
+            }
+
+            offset -= 1;
+            x -= 1;
+        }
+
+        offset
     }
 
     pub fn outside_of_grid(&self, lowest_top: i32) -> bool {

@@ -13,7 +13,7 @@ use gen_buttons::{
     gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_modal_text,
     gen_plus_minus_menu_buttons,
 };
-use handle_cmds::handle_cmds;
+use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
 use load_save_settings::load_settings;
@@ -88,8 +88,8 @@ mod prelude {
     );
 
     pub const DRAG_DIFF: i32 = 26;
-    pub const ACCUM_THRESHOLD: i32 = 100;
-    pub const ACCUM_MS: i32 = 500;
+    pub const SNAP_MS: u128 = 115;
+    pub const SNAP_DIST: i32 = 130;
     pub const DROP_DRAG_DIFF: i32 = 40;
     pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
@@ -132,6 +132,7 @@ pub enum Msg {
     Quit,
     Menu,
     MouseUp,
+    PieceLanded,
 }
 
 #[no_mangle]
@@ -176,6 +177,8 @@ pub extern "C" fn run_the_game() {
     'running: loop {
         sdl.clear();
 
+        let current_ts = get_current_timestamp_millis();
+
         let mut new_cmds: Vec<Cmd> = Vec::new();
 
         let msg = handle_events(
@@ -186,13 +189,12 @@ pub extern "C" fn run_the_game() {
             &help_buttons,
             &menu_buttons,
             &endgame_buttons,
+            current_ts,
         );
 
         if state.is_normal() {
-            process_touches(&mut touches, &mut new_cmds);
+            process_touches(&mut touches, &mut new_cmds, current_ts);
         }
-
-        let current_ts = get_current_timestamp_millis();
 
         match msg {
             Msg::Quit => {
@@ -216,6 +218,7 @@ pub extern "C" fn run_the_game() {
             Msg::LevelDown => {}
             Msg::LevelUp => {}
             Msg::Nada => {}
+            Msg::PieceLanded => {}
             Msg::MouseUp => {
                 if state.is_menu() {
                     state = GameState::Menu(None);
@@ -352,9 +355,9 @@ pub extern "C" fn run_the_game() {
             }
             GameState::Normal(last_tick) => {
                 if let Some(piece) = &mut current_piece {
-                    let land_piece = handle_cmds(&new_cmds, piece, &squares);
+                    let msg = handle_cmds_mut(&new_cmds, piece, &squares);
 
-                    if land_piece {
+                    if msg == Msg::PieceLanded {
                         state = GameState::PieceLanded(get_current_timestamp_millis());
                     } else {
                         let delta = current_ts - last_tick;

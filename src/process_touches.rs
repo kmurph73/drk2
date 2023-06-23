@@ -2,11 +2,11 @@ use crate::{
     cmd::{Cmd, Direction},
     pos::Pos,
     prelude::{DRAG_DIFF, DROP_DRAG_DIFF},
-    touches::Touches,
+    touches::{Snap, Touches},
 };
 
 #[allow(clippy::manual_range_contains)]
-pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>) {
+pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>, current_ts: u128) {
     let mut cmd: Option<Cmd> = None;
     let diff = DRAG_DIFF;
     let Pos(x, y) = if let Some(down) = touches.down {
@@ -36,6 +36,16 @@ pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>) {
         cmd = Some(Cmd::Move(Direction::Down));
     } else if delta_y < -DROP_DRAG_DIFF && cmd.is_none() {
         cmd = Some(Cmd::DropPiece);
+    }
+
+    if let Some(snap) = touches.check_snap(current_x, current_ts) {
+        match snap {
+            Snap::Clear => {
+                touches.snap_x = None;
+            }
+            Snap::Right => cmd = Some(Cmd::SnapRight),
+            Snap::Left => cmd = Some(Cmd::SnapLeft),
+        }
     }
 
     if let Some(cmd) = cmd {

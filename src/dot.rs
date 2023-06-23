@@ -8,7 +8,7 @@ use crate::{
     },
     my_sdl::SDL_Rect,
     pos::Pos,
-    prelude::{NUM_SQUARES_USIZE, ROWS},
+    prelude::{COLS, NUM_SQUARES_USIZE, ROWS},
     util::{map_idx, tuple_to_rect},
 };
 
@@ -54,7 +54,7 @@ pub struct Dot {
 }
 
 impl Dot {
-    pub fn add(&mut self, x: i32, y: i32) {
+    pub fn add_mut(&mut self, x: i32, y: i32) {
         self.tile.0 += x;
         self.tile.1 += y;
     }
@@ -122,6 +122,44 @@ impl Dot {
         }
 
         y - 1
+    }
+
+    pub fn greatest_x_offset(&self, squares: &[Option<Dot>]) -> i32 {
+        let mut offset = 0;
+        let mut x = self.tile.0 + 1;
+        let y = self.tile.1;
+
+        while x < COLS {
+            let idx = map_idx(x, y);
+
+            if squares[idx].is_some() {
+                return offset;
+            }
+
+            offset += 1;
+            x += 1;
+        }
+
+        offset
+    }
+
+    pub fn lowest_x_offset(&self, squares: &[Option<Dot>]) -> i32 {
+        let mut offset = 0;
+        let mut x = self.tile.0 - 1;
+        let y = self.tile.1;
+
+        while x >= 0 {
+            let idx = map_idx(x, y);
+
+            if squares[idx].is_some() {
+                return offset;
+            }
+
+            offset -= 1;
+            x -= 1;
+        }
+
+        offset
     }
 
     pub fn lowest_y_offset(&self, squares: &[Option<Dot>]) -> i32 {
