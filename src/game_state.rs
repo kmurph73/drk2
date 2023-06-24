@@ -13,6 +13,7 @@ pub enum GameState {
     DotsLanded(u128),
     Normal(u128),
     PreppingNextPiece(u128),
+    Suspended,
     Victory,
     Defeat,
     Paused,

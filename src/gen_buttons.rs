@@ -146,21 +146,6 @@ pub fn gen_menu_buttons() -> Vec<ImageButton> {
 
     buttons.push(play);
 
-    let y = y + offset_y;
-
-    let (sx, sy, sw, sh) = QUIT_BTN_IMG;
-    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
-
-    let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
-
-    let quit = ImageButton {
-        kind: ButtonKind::Quit,
-        srcrect,
-        dstrect,
-    };
-
-    buttons.push(quit);
-
     buttons
 }
 

@@ -8,10 +8,12 @@ use crate::{
     handle_mouseup::handle_mouseup,
     keyboard::KeyboardState,
     my_sdl::{
-        SDL_Event, SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN,
+        SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
+        SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN,
         SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_MOUSEBUTTONDOWN,
         SDL_EventType_SDL_MOUSEBUTTONUP, SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT,
-        SDL_PollEvent,
+        SDL_PollEvent, SDL_WindowEventID_SDL_WINDOWEVENT_FOCUS_GAINED,
+        SDL_WindowEventID_SDL_WINDOWEVENT_FOCUS_LOST,
     },
     touches::Touches,
     GameState, ImageButton, Msg,
@@ -38,6 +40,9 @@ pub fn handle_events(
             let button = (*sdl_event).button;
 
             match (*sdl_event).type_ {
+                SDL_EventType_SDL_APP_DIDENTERFOREGROUND => {
+                    return Msg::ResumeGame;
+                }
                 SDL_EventType_SDL_KEYDOWN => {
                     let msg = handle_keydown(button.button, keys, state, cmds);
                     match msg {
@@ -63,7 +68,13 @@ pub fn handle_events(
                     touches.assign_motion(button.x, button.y);
                 }
                 SDL_EventType_SDL_APP_WILLENTERBACKGROUND => {
-                    return Msg::PauseGame;
+                    return Msg::SuspendGame;
+                }
+                SDL_WindowEventID_SDL_WINDOWEVENT_FOCUS_LOST => {
+                    return Msg::SuspendGame;
+                }
+                SDL_WindowEventID_SDL_WINDOWEVENT_FOCUS_GAINED => {
+                    return Msg::ResumeGame;
                 }
                 SDL_EventType_SDL_MOUSEBUTTONUP => {
                     let is_right_click = button.button == 3;

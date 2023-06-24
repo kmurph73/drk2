@@ -127,6 +127,7 @@ pub enum Msg {
     LevelDown,
     PauseGame,
     ResumeGame,
+    SuspendGame,
     NewGame,
     Nada,
     Quit,
@@ -219,6 +220,9 @@ pub extern "C" fn run_the_game() {
             Msg::LevelUp => {}
             Msg::Nada => {}
             Msg::PieceLanded => {}
+            Msg::SuspendGame => {
+                state = GameState::Suspended;
+            }
             Msg::MouseUp => {
                 if state.is_menu() {
                     state = GameState::Menu(None);
@@ -377,6 +381,7 @@ pub extern "C" fn run_the_game() {
             GameState::Victory => {}
             GameState::Defeat => {}
             GameState::Paused => {}
+            GameState::Suspended => {}
             GameState::Menu(_) => {
                 if let Some((level, new_state)) =
                     check_level_change(current_ts, &touches, &state, &level_buttons, &settings)
@@ -427,6 +432,7 @@ pub extern "C" fn run_the_game() {
             } else if state == GameState::Defeat {
                 draw_modal(&sdl, &endgame_buttons, &defeat_image);
             } else if state == GameState::Paused {
+                println!("paused");
                 draw_modal(&sdl, &help_buttons, &paused_image);
             }
 
