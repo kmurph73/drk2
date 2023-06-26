@@ -29,6 +29,10 @@ impl GameState {
         *self == GameState::Paused
     }
 
+    pub fn is_suspended(&self) -> bool {
+        *self == GameState::Suspended
+    }
+
     pub fn is_normal(&self) -> bool {
         matches!(*self, GameState::Normal(_))
     }

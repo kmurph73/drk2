@@ -16,8 +16,9 @@ use gen_buttons::{
 use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
-use load_save_settings::load_settings;
+use load_save_settings::{load_settings, save_settings};
 use my_sdl::{MySdl, SDL_Rect};
+use mybindings::{LoadDefaults, SaveDefaults, SaveFile};
 use piece::Piece;
 use prelude::{DROP_RATE_MS, HELP_MODAL, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
 use touches::Touches;
@@ -45,6 +46,7 @@ pub mod keyboard;
 pub mod load_save_settings;
 pub mod my_sdl;
 pub mod my_sdl_rect;
+pub mod mybindings;
 pub mod piece;
 pub mod pos;
 pub mod process_touches;
@@ -79,7 +81,7 @@ mod prelude {
     pub const TICK_RATE_MS: u128 = 800;
     pub const LEVEL_DEFAULT: usize = 10;
     pub const SPEED_DEFAULT: usize = 800;
-    pub const SETTINGS_PATH: &str = "./resources/settings.json";
+    pub const SETTINGS_PATH: &str = "settings.json";
     pub const MENU_BTN: (i32, i32, i32, i32) = (
         SCREEN_WIDTH / 2,
         0,
@@ -87,7 +89,7 @@ mod prelude {
         SQUARE_SIZE * 2 + TOPSET,
     );
 
-    pub const DRAG_DIFF: i32 = 26;
+    pub const DRAG_DIFF: i32 = 23;
     pub const SNAP_MS: u128 = 115;
     pub const SNAP_DIST: i32 = 130;
     pub const DROP_DRAG_DIFF: i32 = 40;
@@ -139,6 +141,17 @@ pub enum Msg {
 #[no_mangle]
 pub extern "C" fn run_the_game() {
     let mut settings = load_settings();
+
+    unsafe {
+        // SaveDefaults();
+        // SaveFile();
+        let level = LoadDefaults();
+        if level == 0 {
+            settings.level = 13;
+        } else {
+            settings.level = level as usize;
+        }
+    }
 
     let modal = tuple_to_rect(HELP_MODAL);
     let victory_image = gen_modal_text(&modal, tuple_to_rect(VICTORY_IMG));
@@ -270,6 +283,7 @@ pub extern "C" fn run_the_game() {
                 if has_bad {
                     state = GameState::DroppingDots(land_time);
                 } else {
+                    touches.clear();
                     state = GameState::Victory;
                 }
             }
@@ -322,11 +336,13 @@ pub extern "C" fn run_the_game() {
                                 squares.iter().flatten().any(|d| d.above_grid());
 
                             if has_piece_above_grid {
+                                touches.clear();
                                 state = GameState::Defeat;
                             } else {
                                 state = GameState::PreppingNextPiece(current_ts);
                             }
                         } else {
+                            touches.clear();
                             state = GameState::Victory;
                         }
                     } else {
@@ -352,6 +368,7 @@ pub extern "C" fn run_the_game() {
                         if has_bad {
                             state = GameState::DroppingDots(last_drop)
                         } else {
+                            touches.clear();
                             state = GameState::Victory;
                         }
                     }
@@ -432,7 +449,6 @@ pub extern "C" fn run_the_game() {
             } else if state == GameState::Defeat {
                 draw_modal(&sdl, &endgame_buttons, &defeat_image);
             } else if state == GameState::Paused {
-                println!("paused");
                 draw_modal(&sdl, &help_buttons, &paused_image);
             }
 
@@ -445,8 +461,6 @@ pub extern "C" fn run_the_game() {
 
         sdl.present();
     }
-
-    // save_settings(&settings);
 
     sdl.quit();
 }

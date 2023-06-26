@@ -228,7 +228,7 @@ impl Piece {
             let lhs_lowest = self.lhs.lowest_x_offset(squares);
             let rhs_lowest = self.rhs.lowest_x_offset(squares);
 
-            std::cmp::min(rhs_lowest, lhs_lowest)
+            std::cmp::max(rhs_lowest, lhs_lowest)
         }
     }
 
@@ -238,8 +238,6 @@ impl Piece {
         if x_offset == 0 {
             None
         } else {
-            println!("left: {x_offset}");
-
             Some((self.lhs.tile.add_x(x_offset), self.rhs.tile.add_x(x_offset)))
         }
     }
@@ -250,8 +248,6 @@ impl Piece {
         if x_offset == 0 {
             None
         } else {
-            println!("right: {x_offset}");
-
             Some((self.lhs.tile.add_x(x_offset), self.rhs.tile.add_x(x_offset)))
         }
     }
@@ -267,7 +263,7 @@ impl Piece {
             let lhs_greatest = self.lhs.greatest_x_offset(squares);
             let rhs_greatest = self.rhs.greatest_x_offset(squares);
 
-            std::cmp::max(rhs_greatest, lhs_greatest)
+            std::cmp::min(rhs_greatest, lhs_greatest)
         }
     }
 

@@ -40,9 +40,6 @@ pub fn handle_events(
             let button = (*sdl_event).button;
 
             match (*sdl_event).type_ {
-                SDL_EventType_SDL_APP_DIDENTERFOREGROUND => {
-                    return Msg::ResumeGame;
-                }
                 SDL_EventType_SDL_KEYDOWN => {
                     let msg = handle_keydown(button.button, keys, state, cmds);
                     match msg {
@@ -68,13 +65,15 @@ pub fn handle_events(
                     touches.assign_motion(button.x, button.y);
                 }
                 SDL_EventType_SDL_APP_WILLENTERBACKGROUND => {
-                    return Msg::SuspendGame;
+                    if state.is_normal() {
+                        return Msg::SuspendGame;
+                    }
                 }
-                SDL_WindowEventID_SDL_WINDOWEVENT_FOCUS_LOST => {
-                    return Msg::SuspendGame;
-                }
-                SDL_WindowEventID_SDL_WINDOWEVENT_FOCUS_GAINED => {
-                    return Msg::ResumeGame;
+
+                SDL_EventType_SDL_APP_DIDENTERFOREGROUND => {
+                    if state.is_suspended() {
+                        return Msg::ResumeGame;
+                    }
                 }
                 SDL_EventType_SDL_MOUSEBUTTONUP => {
                     let is_right_click = button.button == 3;
