@@ -87,22 +87,38 @@ impl Piece {
         &self,
         squares: &[Option<Dot>],
         ignores: &[usize],
-    ) -> Option<(usize, usize)> {
+        blocks: &[usize],
+    ) -> Option<(Piece, usize, usize)> {
         let lhs_index = self.lhs.idx();
         let rhs_index = self.rhs.idx();
 
-        if self.lhs.can_drop3(squares, rhs_index, ignores)
-            && self.rhs.can_drop3(squares, lhs_index, ignores)
+        if self.lhs.can_drop3(squares, rhs_index, ignores, blocks)
+            && self.rhs.can_drop3(squares, lhs_index, ignores, blocks)
         {
+            let piece = Piece {
+                lhs: self.lhs.lower(),
+                rhs: self.rhs.lower(),
+                rotation: self.rotation,
+                landed: self.landed,
+            };
+
             let (lower_index, higher_index) = if self.rhs.lower_than(&self.lhs) {
                 (rhs_index, lhs_index)
             } else {
                 (lhs_index, rhs_index)
             };
 
-            Some((lower_index, higher_index))
+            Some((piece, lower_index, higher_index))
         } else {
             None
+        }
+    }
+
+    pub fn lower_higher_index(&self) -> (usize, usize) {
+        if self.rhs.lower_than(&self.lhs) {
+            (self.rhs.idx(), self.lhs.idx())
+        } else {
+            (self.lhs.idx(), self.rhs.idx())
         }
     }
 

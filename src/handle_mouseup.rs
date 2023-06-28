@@ -14,6 +14,10 @@ pub fn handle_mouseup(
     endgame_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
 ) -> Msg {
+    if touches.down.is_none() {
+        return Msg::Nada;
+    }
+
     if is_right_click {
         return Msg::Nada;
     }

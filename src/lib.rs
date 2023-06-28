@@ -3,6 +3,7 @@ use std::ffi::CString;
 use crate::random_scenario::random_scenario;
 // use crate::test_scenario::test_scenario;
 use crate::process_touches::process_touches;
+use calc_dot_drop_dist::DroppingDot;
 use calc_dots_to_drop::calc_dots_to_drop;
 use check_level_change::check_level_change;
 use cmd::Cmd;
@@ -16,14 +17,14 @@ use gen_buttons::{
 use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
-use load_save_settings::{load_settings, save_settings};
+use load_save_settings::load_settings;
 use my_sdl::{MySdl, SDL_Rect};
-use mybindings::{LoadDefaults, SaveDefaults, SaveFile};
 use piece::Piece;
 use prelude::{DROP_RATE_MS, HELP_MODAL, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
 use touches::Touches;
 use util::{contains2, get_current_timestamp_millis, tuple_to_rect};
 
+pub mod calc_dot_drop_dist;
 pub mod calc_dots_to_drop;
 pub mod check_level_change;
 pub mod cmd;
@@ -32,6 +33,7 @@ pub mod dot;
 pub mod draw_game;
 pub mod draw_grid;
 pub mod draw_menus;
+pub mod easings;
 pub mod game_state;
 pub mod gen_buttons;
 pub mod get_indexes_to_remove;
@@ -55,6 +57,7 @@ pub mod test_scenario;
 pub mod touches;
 pub mod util;
 
+use crate::calc_dot_drop_dist::calc_dot_drop_dist;
 use crate::draw_game::draw_dots;
 use crate::draw_grid::draw_grid;
 use crate::get_indexes_to_remove::get_indexes_to_remove;
@@ -89,6 +92,7 @@ mod prelude {
         SQUARE_SIZE * 2 + TOPSET,
     );
 
+    pub const DROP_MS: u128 = 300;
     pub const DRAG_DIFF: i32 = 23;
     pub const SNAP_MS: u128 = 115;
     pub const SNAP_DIST: i32 = 130;
@@ -142,17 +146,6 @@ pub enum Msg {
 pub extern "C" fn run_the_game() {
     let mut settings = load_settings();
 
-    unsafe {
-        // SaveDefaults();
-        // SaveFile();
-        let level = LoadDefaults();
-        if level == 0 {
-            settings.level = 13;
-        } else {
-            settings.level = level as usize;
-        }
-    }
-
     let modal = tuple_to_rect(HELP_MODAL);
     let victory_image = gen_modal_text(&modal, tuple_to_rect(VICTORY_IMG));
     let defeat_image = gen_modal_text(&modal, tuple_to_rect(DEFEAT_IMG));
@@ -171,6 +164,7 @@ pub extern "C" fn run_the_game() {
 
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, settings.level * 3);
+    let mut dropping_dots: Option<Vec<Option<DroppingDot>>> = None;
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
@@ -244,7 +238,7 @@ pub extern "C" fn run_the_game() {
         }
 
         match state {
-            GameState::PieceLanded(land_time) => {
+            GameState::PieceLanded => {
                 let piece = current_piece.expect("piece should be here");
 
                 let lhs_idx = piece.lhs.idx();
@@ -281,7 +275,15 @@ pub extern "C" fn run_the_game() {
 
                 let has_bad = squares.iter().flatten().any(|s| s.is_bad());
                 if has_bad {
-                    state = GameState::DroppingDots(land_time);
+                    let dots = calc_dot_drop_dist(&squares, &pieces, current_ts);
+                    let has_falling_dots = dots.iter().any(|d| d.is_some());
+
+                    if has_falling_dots {
+                        dropping_dots = Some(dots);
+                        state = GameState::DroppingDots(current_ts);
+                    } else {
+                        state = GameState::DotsLanded(current_ts);
+                    }
                 } else {
                     touches.clear();
                     state = GameState::Victory;
@@ -292,6 +294,7 @@ pub extern "C" fn run_the_game() {
 
                 if delta > DROP_RATE_MS {
                     let to_drop = calc_dots_to_drop(&squares, &pieces);
+
                     if to_drop.is_empty() {
                         state = GameState::DotsLanded(current_ts);
                     } else {
@@ -331,6 +334,7 @@ pub extern "C" fn run_the_game() {
 
                     if indexes_to_remove.is_empty() {
                         let has_bad = squares.iter().flatten().any(|s| s.is_bad());
+
                         if has_bad {
                             let has_piece_above_grid =
                                 squares.iter().flatten().any(|d| d.above_grid());
@@ -379,7 +383,7 @@ pub extern "C" fn run_the_game() {
                     let msg = handle_cmds_mut(&new_cmds, piece, &squares);
 
                     if msg == Msg::PieceLanded {
-                        state = GameState::PieceLanded(get_current_timestamp_millis());
+                        state = GameState::PieceLanded;
                     } else {
                         let delta = current_ts - last_tick;
 
@@ -389,7 +393,7 @@ pub extern "C" fn run_the_game() {
 
                                 state = GameState::Normal(current_ts);
                             } else {
-                                state = GameState::PieceLanded(get_current_timestamp_millis());
+                                state = GameState::PieceLanded;
                             }
                         }
                     }
@@ -432,7 +436,7 @@ pub extern "C" fn run_the_game() {
             draw_menu(&sdl, &menu_buttons, &level_buttons, settings.level);
         } else {
             draw_grid(&sdl, square_size);
-            draw_dots(&sdl, &squares, square_size, img_divisor);
+            draw_dots(&sdl, &squares, square_size, img_divisor, &dropping_dots);
 
             if let Some(piece) = &on_deck_piece {
                 draw_piece(piece, &sdl, square_size, img_divisor);

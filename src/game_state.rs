@@ -8,7 +8,7 @@ pub struct LevelChange {
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum GameState {
-    PieceLanded(u128),
+    PieceLanded,
     DroppingDots(u128),
     DotsLanded(u128),
     Normal(u128),

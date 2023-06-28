@@ -1,7 +1,7 @@
 use crate::{
     img_consts::{
         MENU_BTN_IMG, MINUS_SQUARE_IMG, NEW_GAME_BTN_IMG, PLAY_BTN_IMG, PLUS_SQUARE_IMG,
-        QUIT_BTN_IMG, RESUME_BTN_IMG,
+        RESUME_BTN_IMG,
     },
     my_sdl::SDL_Rect,
     prelude::{HELP_MODAL, IMG_DIVISOR, SCREEN_WIDTH},
@@ -126,15 +126,13 @@ pub fn gen_help_buttons() -> Vec<ImageButton> {
 pub fn gen_menu_buttons() -> Vec<ImageButton> {
     let mut buttons: Vec<ImageButton> = Vec::with_capacity(2);
 
-    let offset_y = 200;
-
     let (sx, sy, sw, sh) = PLAY_BTN_IMG;
     let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
 
     // let width = sw / 2;
     let x = (SCREEN_WIDTH - (sw / IMG_DIVISOR)) / 2;
 
-    let y = 100;
+    let y = 200;
     // let x = 100; // (w - (sw / 2)) / 2;
     let dstrect = SDL_Rect::new(x, y, sw / IMG_DIVISOR, sh / IMG_DIVISOR);
 

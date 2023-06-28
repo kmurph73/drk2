@@ -9,6 +9,7 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
     let mut y = ROWS - 1;
 
     let mut ignores: Vec<usize> = Vec::new();
+    let blocks: Vec<usize> = Vec::new();
 
     while y >= 0 {
         for x in 0..COLS {
@@ -35,14 +36,16 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
                     continue;
                 }
 
-                if let Some((lower_index, higher_index)) = piece.attempt_drop(squares, &ignores) {
+                if let Some((_piece, lower_index, higher_index)) =
+                    piece.attempt_drop(squares, &ignores, &blocks)
+                {
                     ignores.push(lower_index);
                     ignores.push(higher_index);
                     tiles_to_drop.push(lower_index);
                     tiles_to_drop.push(higher_index);
                     handled_pieces.push(idx);
                 }
-            } else if dot.can_drop4(squares, &ignores) {
+            } else if dot.can_drop4(squares, &ignores, &blocks) {
                 ignores.push(idx);
                 tiles_to_drop.push(idx);
             }

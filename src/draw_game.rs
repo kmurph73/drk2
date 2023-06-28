@@ -1,4 +1,5 @@
 use crate::{
+    calc_dot_drop_dist::DroppingDot,
     dot::Dot,
     img_consts::CONNECTOR_IMG,
     my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy},
@@ -23,7 +24,7 @@ pub fn draw_image(srcrect: &SDL_Rect, dstrect: &SDL_Rect, sdl: &MySdl) {
     }
 }
 
-fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
+fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32, offset_y: i32) {
     let srcrect = dot.img_rect();
     let SDL_Rect { w, h, .. } = srcrect;
 
@@ -31,7 +32,7 @@ fn draw_dot(dot: &Dot, sdl: &MySdl, square_size: i32, img_divisor: i32) {
 
     let dest = SDL_Rect {
         x: x + 2,
-        y: y + 2 + TOPSET,
+        y: y + 2 + TOPSET + offset_y,
         w: w / img_divisor,
         h: h / img_divisor,
     };
@@ -94,13 +95,29 @@ pub fn draw_piece_connectors(pieces: &Vec<Piece>, sdl: &MySdl, square_size: i32,
 }
 
 pub fn draw_piece(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32) {
-    draw_dot(&piece.lhs, sdl, square_size, img_divisor);
-    draw_dot(&piece.rhs, sdl, square_size, img_divisor);
+    draw_dot(&piece.lhs, sdl, square_size, img_divisor, 0);
+    draw_dot(&piece.rhs, sdl, square_size, img_divisor, 0);
     draw_connector(&piece.lhs, piece.rotation, sdl, square_size, img_divisor);
 }
 
-pub fn draw_dots(sdl: &MySdl, squares: &[Option<Dot>], square_size: i32, img_divisor: i32) {
-    for dot in squares.iter().flatten() {
-        draw_dot(dot, sdl, square_size, img_divisor);
+pub fn draw_dots(
+    sdl: &MySdl,
+    squares: &[Option<Dot>],
+    square_size: i32,
+    img_divisor: i32,
+    dropping_dots: &Option<Vec<Option<DroppingDot>>>,
+) {
+    for (idx, dot) in squares.iter().flatten().enumerate() {
+        let offset_y = let dropping = if let Some(dropping_dots) = dropping_dots {
+            if let Some(d) = dropping_dots[idx] {
+                d.get_offset_y()
+            } else {
+                0
+            }
+        } else {
+            0
+        }
     }
+
+    draw_dot(dot, sdl, square_size, img_divisor, offset_y);
 }

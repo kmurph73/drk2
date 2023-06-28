@@ -77,17 +77,27 @@ impl Dot {
         idx < NUM_SQUARES_USIZE && (idx == ignore || squares[idx].is_none())
     }
 
-    pub fn can_drop3(&self, squares: &[Option<Dot>], ignore: usize, ignores: &[usize]) -> bool {
+    pub fn can_drop3(
+        &self,
+        squares: &[Option<Dot>],
+        ignore: usize,
+        ignores: &[usize],
+        blocks: &[usize],
+    ) -> bool {
         let tile = self.tile.add_y(1);
         let idx = tile.idx();
 
-        tile.1 < ROWS && (idx == ignore || ignores.contains(&idx) || squares[idx].is_none())
+        tile.1 < ROWS
+            && (idx == ignore || ignores.contains(&idx) || squares[idx].is_none())
+            && !blocks.contains(&idx)
     }
 
-    pub fn can_drop4(&self, squares: &[Option<Dot>], ignores: &[usize]) -> bool {
+    pub fn can_drop4(&self, squares: &[Option<Dot>], ignores: &[usize], blocks: &[usize]) -> bool {
         let idx = self.tile.add_y(1).idx();
 
-        idx < NUM_SQUARES_USIZE && (ignores.contains(&idx) || squares[idx].is_none())
+        idx < NUM_SQUARES_USIZE
+            && (ignores.contains(&idx) || squares[idx].is_none())
+            && !blocks.contains(&idx)
     }
 
     pub fn above_grid(&self) -> bool {
