@@ -3,11 +3,11 @@ use std::ffi::CString;
 use crate::random_scenario::random_scenario;
 // use crate::test_scenario::test_scenario;
 use crate::process_touches::process_touches;
-use calc_dot_drop_dist::DroppingDot;
+use calc_dot_drop_dist::{get_y_offsets, DroppingDot};
 use calc_dots_to_drop::calc_dots_to_drop;
 use check_level_change::check_level_change;
 use cmd::Cmd;
-use draw_game::{draw_piece, draw_piece_connectors};
+use draw_game::{draw_dots_w_offsets, draw_piece, draw_piece_connectors};
 use draw_menus::{draw_menu, draw_modal};
 use game_state::GameState;
 use gen_buttons::{
@@ -92,7 +92,7 @@ mod prelude {
         SQUARE_SIZE * 2 + TOPSET,
     );
 
-    pub const DROP_MS: u128 = 300;
+    pub const DROP_MS: i32 = 300;
     pub const DRAG_DIFF: i32 = 23;
     pub const SNAP_MS: u128 = 115;
     pub const SNAP_DIST: i32 = 130;
@@ -164,7 +164,6 @@ pub extern "C" fn run_the_game() {
 
     let mut rng = rand::thread_rng();
     let mut squares = random_scenario(&mut rng, settings.level * 3);
-    let mut dropping_dots: Option<Vec<Option<DroppingDot>>> = None;
     let mut on_deck_piece = Some(Piece::random_on_deck(&mut rng));
     let mut current_piece = Some(Piece::random(&mut rng));
 
@@ -279,8 +278,8 @@ pub extern "C" fn run_the_game() {
                     let has_falling_dots = dots.iter().any(|d| d.is_some());
 
                     if has_falling_dots {
-                        dropping_dots = Some(dots);
-                        state = GameState::DroppingDots(current_ts);
+                        let (y_offsets, _) = get_y_offsets(&dots, current_ts);
+                        state = GameState::DroppingDots(dots, y_offsets);
                     } else {
                         state = GameState::DotsLanded(current_ts);
                     }
@@ -289,42 +288,13 @@ pub extern "C" fn run_the_game() {
                     state = GameState::Victory;
                 }
             }
-            GameState::DroppingDots(last_drop) => {
-                let delta = current_ts - last_drop;
+            GameState::DroppingDots(dropping_dots, _) => {
+                let (y_offsets, done) = get_y_offsets(&dropping_dots, current_ts);
 
-                if delta > DROP_RATE_MS {
-                    let to_drop = calc_dots_to_drop(&squares, &pieces);
-
-                    if to_drop.is_empty() {
-                        state = GameState::DotsLanded(current_ts);
-                    } else {
-                        for idx in &to_drop {
-                            let result = if let Some(dot) = &squares[*idx] {
-                                let dot = dot.lower();
-                                let next_idx = dot.idx();
-
-                                Some((next_idx, dot.clone()))
-                            } else {
-                                None
-                            };
-
-                            if let Some((next_idx, dot)) = result {
-                                squares[*idx] = None;
-                                squares[next_idx] = Some(dot);
-                            }
-                        }
-
-                        for piece in &mut pieces {
-                            for idx in &to_drop {
-                                if piece.has_idx(*idx) {
-                                    piece.lower_mut();
-                                    break;
-                                }
-                            }
-                        }
-
-                        state = GameState::DroppingDots(current_ts);
-                    }
+                if done {
+                    state = GameState::DotsLanded(current_ts);
+                } else {
+                    state = GameState::DroppingDots(dropping_dots, y_offsets);
                 }
             }
             GameState::DotsLanded(last_drop) => {
@@ -370,7 +340,15 @@ pub extern "C" fn run_the_game() {
                         let has_bad = squares.iter().flatten().any(|s| s.is_bad());
 
                         if has_bad {
-                            state = GameState::DroppingDots(last_drop)
+                            let dots = calc_dot_drop_dist(&squares, &pieces, current_ts);
+                            let has_falling_dots = dots.iter().any(|d| d.is_some());
+
+                            if has_falling_dots {
+                                let (y_offsets, _) = get_y_offsets(&dots, current_ts);
+                                state = GameState::DroppingDots(dots, y_offsets);
+                            } else {
+                                state = GameState::DotsLanded(current_ts);
+                            }
                         } else {
                             touches.clear();
                             state = GameState::Victory;
@@ -436,7 +414,15 @@ pub extern "C" fn run_the_game() {
             draw_menu(&sdl, &menu_buttons, &level_buttons, settings.level);
         } else {
             draw_grid(&sdl, square_size);
-            draw_dots(&sdl, &squares, square_size, img_divisor, &dropping_dots);
+
+            match &state {
+                GameState::DroppingDots(_, y_offsets) => {
+                    draw_dots_w_offsets(&sdl, &squares, square_size, img_divisor, y_offsets);
+                }
+                _ => {
+                    draw_dots(&sdl, &squares, square_size, img_divisor);
+                }
+            }
 
             if let Some(piece) = &on_deck_piece {
                 draw_piece(piece, &sdl, square_size, img_divisor);

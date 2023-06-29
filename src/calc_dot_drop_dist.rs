@@ -11,32 +11,35 @@ pub enum DropKind {
     Dot,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct DroppingDot {
     pub ts: u128,
     pub dist: i32,
+    pub pixel_dist: i32,
     pub total_time: f64,
 }
 
 impl DroppingDot {
-    pub fn get_offset_y(&self, current_ts: u128) -> (i32, bool) {
+    pub fn get_offset_y(&self, current_ts: u128) -> i32 {
         let delta = (current_ts - self.ts) as f64;
         let mut pct = delta / self.total_time;
-        let pixel_dist = self.dist * SQUARE_SIZE as f64;
 
         if pct > 1.0 {
-            pi
+            return self.pixel_dist;
         }
 
-        let mult = ease_in_sine(pct);
+        pct = ease_in_sine(pct);
 
-        pi
+        let y_offset = pct * (self.pixel_dist as f64);
+
+        y_offset as i32
     }
 }
 
 pub fn calc_dot_drop_dist(
     squares: &[Option<Dot>],
     pieces: &[Piece],
-    ts: u128,
+    current_ts: u128,
 ) -> Vec<Option<DroppingDot>> {
     let mut arr: Vec<Option<DroppingDot>> = empty_array(NUM_SQUARES_USIZE);
     let mut handled_pieces: Vec<usize> = Vec::new();
@@ -76,7 +79,7 @@ pub fn calc_dot_drop_dist(
                     ignores.push(lower_index);
                     ignores.push(higher_index);
 
-                    let mut dist = 1;
+                    let mut dist: i32 = 1;
                     let mut next_piece = piece;
 
                     loop {
@@ -94,10 +97,14 @@ pub fn calc_dot_drop_dist(
                         }
                     }
 
-                    let total_time = DROP_MS * dist as u128;
+                    let total_time = DROP_MS * dist;
+                    let total_time = total_time as f64;
+                    let pixel_dist = dist * SQUARE_SIZE;
+
                     arr[idx] = Some(DroppingDot {
                         dist,
-                        ts,
+                        pixel_dist,
+                        ts: current_ts,
                         total_time,
                     });
                 }
@@ -120,11 +127,12 @@ pub fn calc_dot_drop_dist(
                     }
                 }
 
-                let total_time = DROP_MS * dist as u128;
+                let total_time = DROP_MS * dist;
                 let drop = DroppingDot {
                     dist,
-                    ts,
-                    total_time,
+                    pixel_dist: dist * SQUARE_SIZE,
+                    ts: current_ts,
+                    total_time: total_time as f64,
                 };
 
                 arr[idx] = Some(drop);
@@ -135,4 +143,26 @@ pub fn calc_dot_drop_dist(
     }
 
     arr
+}
+
+pub fn get_y_offsets(dots: &[Option<DroppingDot>], current_ts: u128) -> (Vec<i32>, bool) {
+    let mut finished = true;
+
+    let mut offsets: Vec<i32> = Vec::with_capacity(NUM_SQUARES_USIZE);
+
+    for (idx, dot) in dots.iter().enumerate() {
+        if let Some(dot) = dot {
+            let offset = dot.get_offset_y(current_ts);
+
+            if offset != dot.dist {
+                finished = false
+            }
+
+            offsets.push(offset);
+        } else {
+            offsets.push(0);
+        }
+    }
+
+    (offsets, finished)
 }

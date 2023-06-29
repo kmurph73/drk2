@@ -100,24 +100,28 @@ pub fn draw_piece(piece: &Piece, sdl: &MySdl, square_size: i32, img_divisor: i32
     draw_connector(&piece.lhs, piece.rotation, sdl, square_size, img_divisor);
 }
 
-pub fn draw_dots(
+pub fn draw_dots_w_offsets(
     sdl: &MySdl,
     squares: &[Option<Dot>],
     square_size: i32,
     img_divisor: i32,
-    dropping_dots: &Option<Vec<Option<DroppingDot>>>,
+    y_offsets: &[i32],
 ) {
-    for (idx, dot) in squares.iter().flatten().enumerate() {
-        let offset_y = let dropping = if let Some(dropping_dots) = dropping_dots {
-            if let Some(d) = dropping_dots[idx] {
-                d.get_offset_y()
-            } else {
-                0
-            }
+    for (idx, dot) in squares.iter().enumerate() {
+        let dot = if let Some(dot) = dot {
+            dot
         } else {
-            0
-        }
-    }
+            continue;
+        };
 
-    draw_dot(dot, sdl, square_size, img_divisor, offset_y);
+        let offset_y = y_offsets[idx];
+
+        draw_dot(dot, sdl, square_size, img_divisor, offset_y);
+    }
+}
+
+pub fn draw_dots(sdl: &MySdl, squares: &[Option<Dot>], square_size: i32, img_divisor: i32) {
+    for dot in squares.iter().flatten() {
+        draw_dot(dot, sdl, square_size, img_divisor, 0);
+    }
 }
