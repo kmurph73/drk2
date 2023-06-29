@@ -36,6 +36,31 @@ impl DroppingDot {
     }
 }
 
+pub fn move_squares(squares: &mut [Option<Dot>], dropping_dots: &[Option<DroppingDot>]) {
+    let mut y = ROWS - 1;
+
+    while y >= 0 {
+        for x in 0..COLS {
+            let i = map_idx(x, y);
+            if let Some(dd) = &dropping_dots[i] {
+                let indexes = if let Some(dot) = &mut squares[i] {
+                    let idx = dot.idx();
+                    dot.add_mut(0, dd.dist);
+                    Some((idx, dot.idx()))
+                } else {
+                    None
+                };
+
+                if let Some((a, b)) = indexes {
+                    squares.swap(a, b);
+                }
+            }
+        }
+
+        y -= 1;
+    }
+}
+
 pub fn calc_dot_drop_dist(
     squares: &[Option<Dot>],
     pieces: &[Piece],
@@ -43,10 +68,11 @@ pub fn calc_dot_drop_dist(
 ) -> Vec<Option<DroppingDot>> {
     let mut arr: Vec<Option<DroppingDot>> = empty_array(NUM_SQUARES_USIZE);
     let mut handled_pieces: Vec<usize> = Vec::new();
-    let mut y = ROWS - 1;
 
     let mut ignores: Vec<usize> = Vec::new();
     let mut blocks: Vec<usize> = Vec::new();
+
+    let mut y = ROWS - 1;
 
     while y >= 0 {
         for x in 0..COLS {
