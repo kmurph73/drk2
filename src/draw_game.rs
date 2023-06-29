@@ -1,5 +1,4 @@
 use crate::{
-    calc_dot_drop_dist::DroppingDot,
     dot::Dot,
     img_consts::CONNECTOR_IMG,
     my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy},

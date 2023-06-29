@@ -36,8 +36,8 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
                     continue;
                 }
 
-                if let Some((_piece, lower_index, higher_index)) =
-                    piece.attempt_drop(squares, &ignores, &blocks)
+                if let Some((lower_index, higher_index)) =
+                    piece.attempt_to_lower(squares, &ignores, &blocks)
                 {
                     ignores.push(lower_index);
                     ignores.push(higher_index);

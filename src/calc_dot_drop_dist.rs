@@ -11,11 +11,11 @@ pub enum DropKind {
     Dot,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct DroppingDot {
     pub ts: u128,
     pub dist: i32,
-    pub pixel_dist: i32,
+    pub dist_px: i32,
     pub total_time: f64,
 }
 
@@ -25,12 +25,12 @@ impl DroppingDot {
         let mut pct = delta / self.total_time;
 
         if pct > 1.0 {
-            return self.pixel_dist;
+            return self.dist_px;
         }
 
         pct = ease_in_sine(pct);
 
-        let y_offset = pct * (self.pixel_dist as f64);
+        let y_offset = pct * (self.dist_px as f64);
 
         y_offset as i32
     }
@@ -99,40 +99,46 @@ pub fn calc_dot_drop_dist(
                     continue;
                 }
 
-                if let Some((piece, lower_index, higher_index)) =
-                    piece.attempt_drop(squares, &ignores, &blocks)
+                if let Some((lower_index, higher_index)) =
+                    &piece.attempt_to_lower(squares, &ignores, &blocks)
                 {
-                    ignores.push(lower_index);
-                    ignores.push(higher_index);
+                    ignores.push(*lower_index);
+                    ignores.push(*higher_index);
 
                     let mut dist: i32 = 1;
-                    let mut next_piece = piece;
+                    let mut next_piece = piece.lower();
 
                     loop {
-                        if let Some((piece, _lower_index, _higher_index)) =
-                            next_piece.attempt_drop(squares, &ignores, &blocks)
+                        if next_piece
+                            .attempt_to_lower(squares, &ignores, &blocks)
+                            .is_some()
                         {
                             dist += 1;
-
-                            next_piece = piece;
+                            next_piece.lower_mut();
                         } else {
                             let (lower_index, higher_index) = next_piece.lower_higher_index();
                             blocks.push(lower_index);
                             blocks.push(higher_index);
+
+                            let total_time = DROP_MS * dist;
+                            let total_time = total_time as f64;
+                            let pixel_dist = dist * SQUARE_SIZE;
+
+                            let (lhs, rhs) = piece.indexes();
+
+                            let dot = DroppingDot {
+                                dist,
+                                dist_px: pixel_dist,
+                                ts: current_ts,
+                                total_time,
+                            };
+
+                            arr[lhs] = Some(dot.clone());
+                            arr[rhs] = Some(dot);
+
                             break;
                         }
                     }
-
-                    let total_time = DROP_MS * dist;
-                    let total_time = total_time as f64;
-                    let pixel_dist = dist * SQUARE_SIZE;
-
-                    arr[idx] = Some(DroppingDot {
-                        dist,
-                        pixel_dist,
-                        ts: current_ts,
-                        total_time,
-                    });
                 }
 
                 handled_pieces.push(idx);
@@ -147,8 +153,7 @@ pub fn calc_dot_drop_dist(
                         dist += 1;
                         dot = dot.lower();
                     } else {
-                        let d = dot.tile.add_y(dist);
-                        blocks.push(d.idx());
+                        blocks.push(dot.idx());
                         break;
                     }
                 }
@@ -156,7 +161,7 @@ pub fn calc_dot_drop_dist(
                 let total_time = DROP_MS * dist;
                 let drop = DroppingDot {
                     dist,
-                    pixel_dist: dist * SQUARE_SIZE,
+                    dist_px: dist * SQUARE_SIZE,
                     ts: current_ts,
                     total_time: total_time as f64,
                 };
@@ -176,15 +181,15 @@ pub fn get_y_offsets(dots: &[Option<DroppingDot>], current_ts: u128) -> (Vec<i32
 
     let mut offsets: Vec<i32> = Vec::with_capacity(NUM_SQUARES_USIZE);
 
-    for (idx, dot) in dots.iter().enumerate() {
+    for dot in dots.iter() {
         if let Some(dot) = dot {
-            let offset = dot.get_offset_y(current_ts);
+            let offset_px = dot.get_offset_y(current_ts);
 
-            if offset != dot.dist {
+            if offset_px < dot.dist_px {
                 finished = false
             }
 
-            offsets.push(offset);
+            offsets.push(offset_px);
         } else {
             offsets.push(0);
         }

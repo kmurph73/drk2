@@ -83,35 +83,41 @@ impl Piece {
         self.rotation == 0 || self.rotation == 2
     }
 
-    pub fn attempt_drop(
+    pub fn attempt_to_lower(
         &self,
         squares: &[Option<Dot>],
         ignores: &[usize],
         blocks: &[usize],
-    ) -> Option<(Piece, usize, usize)> {
+    ) -> Option<(usize, usize)> {
         let lhs_index = self.lhs.idx();
         let rhs_index = self.rhs.idx();
 
-        if self.lhs.can_drop3(squares, rhs_index, ignores, blocks)
-            && self.rhs.can_drop3(squares, lhs_index, ignores, blocks)
+        if self.lhs.can_lower3(squares, rhs_index, ignores, blocks)
+            && self.rhs.can_lower3(squares, lhs_index, ignores, blocks)
         {
-            let piece = Piece {
-                lhs: self.lhs.lower(),
-                rhs: self.rhs.lower(),
-                rotation: self.rotation,
-                landed: self.landed,
-            };
-
             let (lower_index, higher_index) = if self.rhs.lower_than(&self.lhs) {
                 (rhs_index, lhs_index)
             } else {
                 (lhs_index, rhs_index)
             };
 
-            Some((piece, lower_index, higher_index))
+            Some((lower_index, higher_index))
         } else {
             None
         }
+    }
+
+    pub fn lower(&self) -> Piece {
+        Piece {
+            lhs: self.lhs.lower(),
+            rhs: self.rhs.lower(),
+            rotation: self.rotation,
+            landed: self.landed,
+        }
+    }
+
+    pub fn indexes(&self) -> (usize, usize) {
+        (self.lhs.idx(), self.rhs.idx())
     }
 
     pub fn lower_higher_index(&self) -> (usize, usize) {

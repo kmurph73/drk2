@@ -77,7 +77,7 @@ impl Dot {
         idx < NUM_SQUARES_USIZE && (idx == ignore || squares[idx].is_none())
     }
 
-    pub fn can_drop3(
+    pub fn can_lower3(
         &self,
         squares: &[Option<Dot>],
         ignore: usize,
