@@ -1,7 +1,21 @@
 use crate::{
-    my_sdl::{MySdl, SDL_RenderDrawLine, SDL_SetRenderDrawColor},
+    my_sdl::{MySdl, SDL_Rect, SDL_RenderDrawLine, SDL_RenderFillRect, SDL_SetRenderDrawColor},
     prelude::{COLS, ROWS, TOPSET},
 };
+
+pub fn draw_line(sdl: &MySdl, line: &Vec<(i32, i32)>) {
+    let w = 1;
+    let h = 1;
+    unsafe {
+        SDL_SetRenderDrawColor(sdl.renderer, 220, 220, 220, 255);
+    }
+    for (x, y) in line {
+        let rect = SDL_Rect { x: *x, y: *y, w, h };
+        unsafe {
+            SDL_RenderFillRect(sdl.renderer, &rect);
+        }
+    }
+}
 
 fn draw_rows(sdl: &MySdl, square_size: i32) {
     let x1 = square_size;

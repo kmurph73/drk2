@@ -8,6 +8,10 @@ use crate::{
 pub struct Pos(pub i32, pub i32);
 
 impl Pos {
+    pub fn abs_delta(&self, x: i32, y: i32) -> Pos {
+        Pos((self.0 - x).abs(), (self.1 - y).abs())
+    }
+
     pub fn idx(&self) -> usize {
         map_idx(self.0, self.1)
     }

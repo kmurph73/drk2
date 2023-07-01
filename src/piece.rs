@@ -1,6 +1,6 @@
 use rand::rngs::ThreadRng;
 
-use crate::{cmd::Direction, dot::Dot, pos::Pos};
+use crate::{blocks::Blocks, cmd::Direction, dot::Dot, pos::Pos};
 
 #[derive(Clone)]
 pub struct Piece {
@@ -83,18 +83,11 @@ impl Piece {
         self.rotation == 0 || self.rotation == 2
     }
 
-    pub fn attempt_to_lower(
-        &self,
-        squares: &[Option<Dot>],
-        ignores: &[usize],
-        blocks: &[usize],
-    ) -> Option<(usize, usize)> {
+    pub fn attempt_to_lower(&self, blocks: &Blocks) -> Option<(usize, usize)> {
         let lhs_index = self.lhs.idx();
         let rhs_index = self.rhs.idx();
 
-        if self.lhs.can_lower3(squares, rhs_index, ignores, blocks)
-            && self.rhs.can_lower3(squares, lhs_index, ignores, blocks)
-        {
+        if self.lhs.can_lower3(blocks, rhs_index) && self.rhs.can_lower3(blocks, lhs_index) {
             let (lower_index, higher_index) = if self.rhs.lower_than(&self.lhs) {
                 (rhs_index, lhs_index)
             } else {
@@ -162,7 +155,7 @@ impl Piece {
         self.lhs.tile == *tile || self.rhs.tile == *tile
     }
 
-    pub fn add(&mut self, x: i32, y: i32) {
+    pub fn add_mut(&mut self, x: i32, y: i32) {
         self.lhs.add_mut(x, y);
         self.rhs.add_mut(x, y);
     }
@@ -172,7 +165,7 @@ impl Piece {
 
         let (dx, dy) = if x == 4 { (0, 1) } else { (1, 0) };
 
-        self.add(dx, dy);
+        self.add_mut(dx, dy);
 
         dy == 1
     }
@@ -223,7 +216,7 @@ impl Piece {
         }
     }
 
-    fn lowest_y_offset(&self, squares: &[Option<Dot>]) -> i32 {
+    pub fn lowest_y_offset(&self, squares: &[Option<Dot>]) -> i32 {
         let lh_offset = self.lhs.lowest_y_offset(squares);
         let rh_offset = self.rhs.lowest_y_offset(squares);
 

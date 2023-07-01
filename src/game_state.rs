@@ -1,4 +1,4 @@
-use crate::{calc_dot_drop_dist::DroppingDot, prelude::BTN_HOLD_DELAY_MS};
+use crate::{calc_dot_drop_dist::DroppingDot, pos::Pos, prelude::BTN_HOLD_DELAY_MS};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct LevelChange {
@@ -12,11 +12,12 @@ pub enum GameState {
     DroppingDots(Vec<Option<DroppingDot>>, Vec<i32>),
     DotsLanded(u128),
     Normal(u128),
-    PreppingNextPiece(u128),
+    PreppingNextPiece(u128, Pos),
     Suspended,
     Victory,
     Defeat,
     Paused,
+    DroppingPiece((i32, f64, u128, i32)),
     Menu(Option<LevelChange>),
 }
 

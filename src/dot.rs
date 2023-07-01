@@ -2,6 +2,7 @@ use rand::rngs::ThreadRng;
 use rand::Rng;
 
 use crate::{
+    blocks::Blocks,
     img_consts::{
         BLUE_DOT_IMG, BLUE_KODAMA_IMG, GREEN_DOT_IMG, GREEN_KODAMA_IMG, ORANGE_DOT_IMG,
         ORANGE_KODAMA_IMG, RED_DOT_IMG, RED_KODAMA_IMG, YELLOW_DOT_IMG, YELLOW_KODAMA_IMG,
@@ -77,27 +78,20 @@ impl Dot {
         idx < NUM_SQUARES_USIZE && (idx == ignore || squares[idx].is_none())
     }
 
-    pub fn can_lower3(
-        &self,
-        squares: &[Option<Dot>],
-        ignore: usize,
-        ignores: &[usize],
-        blocks: &[usize],
-    ) -> bool {
+    pub fn can_lower3(&self, blocks: &Blocks, ignore: usize) -> bool {
         let tile = self.tile.add_y(1);
         let idx = tile.idx();
+        if ignore == idx {
+            return true;
+        }
 
-        tile.1 < ROWS
-            && (idx == ignore || ignores.contains(&idx) || squares[idx].is_none())
-            && !blocks.contains(&idx)
+        tile.1 < ROWS && blocks.passable(idx)
     }
 
-    pub fn can_drop4(&self, squares: &[Option<Dot>], ignores: &[usize], blocks: &[usize]) -> bool {
+    pub fn can_drop4(&self, blocks: &Blocks) -> bool {
         let idx = self.tile.add_y(1).idx();
 
-        idx < NUM_SQUARES_USIZE
-            && (ignores.contains(&idx) || squares[idx].is_none())
-            && !blocks.contains(&idx)
+        idx < NUM_SQUARES_USIZE && blocks.passable(idx)
     }
 
     pub fn above_grid(&self) -> bool {

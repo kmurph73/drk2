@@ -22,10 +22,7 @@ pub fn handle_cmds_mut(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>])
                 }
             }
             Cmd::DropPiece => {
-                let new_pos = piece.find_lowest_drop(squares);
-                let (lhs, rhs) = new_pos;
-                piece.set_pos(lhs, rhs);
-                return Msg::PieceLanded;
+                return Msg::DropPiece;
             }
             Cmd::SnapLeft => {
                 if let Some((lhs, rhs)) = piece.snap_left(squares) {

@@ -1,4 +1,5 @@
 use crate::{
+    blocks::Blocks,
     dot::Dot,
     easings::ease_in_sine,
     piece::Piece,
@@ -36,9 +37,14 @@ impl DroppingDot {
     }
 }
 
-pub fn move_squares(squares: &mut [Option<Dot>], dropping_dots: &[Option<DroppingDot>]) {
+pub fn move_squares(
+    squares: &mut [Option<Dot>],
+    dropping_dots: &[Option<DroppingDot>],
+    pieces: &mut [Piece],
+) {
     let mut y = ROWS - 1;
 
+    let mut handled_pieces: Vec<usize> = Vec::new();
     while y >= 0 {
         for x in 0..COLS {
             let i = map_idx(x, y);
@@ -46,6 +52,14 @@ pub fn move_squares(squares: &mut [Option<Dot>], dropping_dots: &[Option<Droppin
                 let indexes = if let Some(dot) = &mut squares[i] {
                     let idx = dot.idx();
                     dot.add_mut(0, dd.dist);
+                    if let Some((i, piece)) =
+                        pieces.iter_mut().enumerate().find(|(_i, p)| p.has_idx(idx))
+                    {
+                        if !handled_pieces.contains(&i) {
+                            piece.add_mut(0, dd.dist);
+                            handled_pieces.push(i);
+                        }
+                    }
                     Some((idx, dot.idx()))
                 } else {
                     None
@@ -69,8 +83,7 @@ pub fn calc_dot_drop_dist(
     let mut arr: Vec<Option<DroppingDot>> = empty_array(NUM_SQUARES_USIZE);
     let mut handled_pieces: Vec<usize> = Vec::new();
 
-    let mut ignores: Vec<usize> = Vec::new();
-    let mut blocks: Vec<usize> = Vec::new();
+    let mut blocks = Blocks::new(squares);
 
     let mut y = ROWS - 1;
 
@@ -99,26 +112,19 @@ pub fn calc_dot_drop_dist(
                     continue;
                 }
 
-                if let Some((lower_index, higher_index)) =
-                    &piece.attempt_to_lower(squares, &ignores, &blocks)
-                {
-                    ignores.push(*lower_index);
-                    ignores.push(*higher_index);
+                if let Some((lower_index, higher_index)) = &piece.attempt_to_lower(&blocks) {
+                    blocks.set_both_passable(*lower_index, *higher_index);
 
                     let mut dist: i32 = 1;
                     let mut next_piece = piece.lower();
 
                     loop {
-                        if next_piece
-                            .attempt_to_lower(squares, &ignores, &blocks)
-                            .is_some()
-                        {
+                        if next_piece.attempt_to_lower(&blocks).is_some() {
                             dist += 1;
                             next_piece.lower_mut();
                         } else {
                             let (lower_index, higher_index) = next_piece.lower_higher_index();
-                            blocks.push(lower_index);
-                            blocks.push(higher_index);
+                            blocks.set_both_block(lower_index, higher_index);
 
                             let total_time = DROP_MS * dist;
                             let total_time = total_time as f64;
@@ -142,18 +148,18 @@ pub fn calc_dot_drop_dist(
                 }
 
                 handled_pieces.push(idx);
-            } else if dot.can_drop4(squares, &ignores, &blocks) {
+            } else if dot.can_drop4(&blocks) {
                 let mut dist = 1;
-                ignores.push(idx);
+                blocks.set_passable(idx);
 
                 let mut dot = dot.lower();
 
                 loop {
-                    if dot.can_drop4(squares, &ignores, &blocks) {
+                    if dot.can_drop4(&blocks) {
                         dist += 1;
                         dot = dot.lower();
                     } else {
-                        blocks.push(dot.idx());
+                        blocks.set_blocks(dot.idx());
                         break;
                     }
                 }

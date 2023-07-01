@@ -1,3 +1,4 @@
+use crate::blocks::Blocks;
 use crate::dot::Dot;
 use crate::piece::Piece;
 use crate::prelude::{COLS, ROWS};
@@ -8,8 +9,7 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
     let mut handled_pieces: Vec<usize> = Vec::new();
     let mut y = ROWS - 1;
 
-    let mut ignores: Vec<usize> = Vec::new();
-    let blocks: Vec<usize> = Vec::new();
+    let mut blocks = Blocks::new(squares);
 
     while y >= 0 {
         for x in 0..COLS {
@@ -36,17 +36,14 @@ pub fn calc_dots_to_drop(squares: &[Option<Dot>], pieces: &[Piece]) -> Vec<usize
                     continue;
                 }
 
-                if let Some((lower_index, higher_index)) =
-                    piece.attempt_to_lower(squares, &ignores, &blocks)
-                {
-                    ignores.push(lower_index);
-                    ignores.push(higher_index);
+                if let Some((lower_index, higher_index)) = piece.attempt_to_lower(&blocks) {
+                    blocks.set_both_passable(lower_index, higher_index);
                     tiles_to_drop.push(lower_index);
                     tiles_to_drop.push(higher_index);
                     handled_pieces.push(idx);
                 }
-            } else if dot.can_drop4(squares, &ignores, &blocks) {
-                ignores.push(idx);
+            } else if dot.can_drop4(&blocks) {
+                blocks.set_passable(idx);
                 tiles_to_drop.push(idx);
             }
         }

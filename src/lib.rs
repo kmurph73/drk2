@@ -2,11 +2,12 @@ use std::ffi::CString;
 
 use crate::process_touches::process_touches;
 use crate::random_scenario::random_scenario;
-use crate::test_scenario::test_scenario;
 use calc_dot_drop_dist::{get_y_offsets, move_squares};
 use check_level_change::check_level_change;
 use cmd::Cmd;
-use draw_game::{draw_dots_w_offsets, draw_piece, draw_piece_connectors};
+use draw_game::{
+    draw_dots_w_offsets, draw_piece, draw_piece_connectors, draw_piece_connectors_w_offsets,
+};
 use draw_menus::{draw_menu, draw_modal};
 use game_state::GameState;
 use gen_buttons::{
@@ -19,10 +20,15 @@ use keyboard::{Keyboard, KeyboardState};
 use load_save_settings::load_settings;
 use my_sdl::{MySdl, SDL_Rect};
 use piece::Piece;
-use prelude::{HELP_MODAL, LANDED_DELAY_MS, SCREEN_WIDTH, TICK_RATE_MS};
+use pos::Pos;
+use prelude::{
+    HELP_MODAL, LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, SCREEN_WIDTH,
+    TICK_RATE_MS, TOPSET,
+};
 use touches::Touches;
-use util::{contains2, get_current_timestamp_millis, tuple_to_rect};
+use util::{contains2, get_current_timestamp_millis, plot_line, tuple_to_rect};
 
+pub mod blocks;
 pub mod calc_dot_drop_dist;
 pub mod calc_dots_to_drop;
 pub mod check_level_change;
@@ -90,10 +96,15 @@ mod prelude {
         SQUARE_SIZE * 2 + TOPSET,
     );
 
-    pub const DROP_MS: i32 = 150;
-    pub const DRAG_DIFF: i32 = 23;
-    pub const SNAP_MS: u128 = 115;
-    pub const SNAP_DIST: i32 = 130;
+    pub const PIECE_DROP_MS: u128 = 40;
+    pub const PIECE_DROP_MS_F64: f64 = PIECE_DROP_MS as f64;
+
+    pub const PIECE_TRANSFER_MS: u128 = 200;
+    pub const PIECE_TRANSFER_MS_F64: f64 = PIECE_TRANSFER_MS as f64;
+    pub const DROP_MS: i32 = 100;
+    pub const DRAG_DIFF: i32 = 24;
+    pub const SNAP_MS: u128 = 120;
+    pub const SNAP_DIST: i32 = 120;
     pub const DROP_DRAG_DIFF: i32 = 40;
     pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
@@ -138,6 +149,7 @@ pub enum Msg {
     Menu,
     MouseUp,
     PieceLanded,
+    DropPiece,
 }
 
 #[no_mangle]
@@ -161,9 +173,18 @@ pub extern "C" fn run_the_game() {
     let mut touches = Touches::init();
 
     let mut rng = rand::thread_rng();
-    let mut squares = test_scenario();
-    let mut on_deck_piece = Some(Piece::custom_on_deck());
-    let mut current_piece = Some(Piece::custom());
+    let mut squares = random_scenario(&mut rng, settings.level * 3);
+    let on_deck = Piece::random_on_deck(&mut rng);
+    let piece = Piece::random(&mut rng);
+
+    let Pos(x0, y0) = on_deck.lhs.tile.top_left_px(square_size).add_y(TOPSET);
+    // println!("{:#?}", on_deck.lhs.tile);
+    let Pos(x1, y1) = piece.lhs.tile.top_left_px(square_size).add_y(TOPSET);
+    let line = plot_line(x0, y0, x1, y1);
+    let line_len_f64 = line.len() as f64;
+
+    let mut on_deck_piece = Some(on_deck);
+    let mut current_piece = Some(piece);
 
     // let mut state = GameState::Normal(get_current_timestamp_millis());
     let mut state = GameState::Menu(None);
@@ -206,11 +227,13 @@ pub extern "C" fn run_the_game() {
                 break 'running;
             }
             Msg::NewGame => {
-                squares = test_scenario();
+                squares = random_scenario(&mut rng, settings.level * 3);
                 touches.clear();
                 pieces.clear();
-                current_piece = Some(Piece::custom());
-                on_deck_piece = Some(Piece::custom_on_deck());
+                current_piece = Some(Piece::random(&mut rng));
+                let od = Piece::random_on_deck(&mut rng);
+                on_deck_piece = Some(od);
+
                 state = GameState::Normal(current_ts);
             }
             Msg::Menu => {
@@ -224,6 +247,7 @@ pub extern "C" fn run_the_game() {
             Msg::LevelUp => {}
             Msg::Nada => {}
             Msg::PieceLanded => {}
+            Msg::DropPiece => {}
             Msg::SuspendGame => {
                 state = GameState::Suspended;
             }
@@ -290,7 +314,7 @@ pub extern "C" fn run_the_game() {
                 let (y_offsets, done) = get_y_offsets(&dropping_dots, current_ts);
 
                 if done {
-                    move_squares(&mut squares, &dropping_dots);
+                    move_squares(&mut squares, &dropping_dots, &mut pieces);
                     state = GameState::DotsLanded(current_ts);
                 } else {
                     state = GameState::DroppingDots(dropping_dots, y_offsets);
@@ -312,7 +336,7 @@ pub extern "C" fn run_the_game() {
                                 touches.clear();
                                 state = GameState::Defeat;
                             } else {
-                                state = GameState::PreppingNextPiece(current_ts);
+                                state = GameState::PreppingNextPiece(current_ts, Pos(0, 0));
                             }
                         } else {
                             touches.clear();
@@ -359,18 +383,29 @@ pub extern "C" fn run_the_game() {
                 if let Some(piece) = &mut current_piece {
                     let msg = handle_cmds_mut(&new_cmds, piece, &squares);
 
-                    if msg == Msg::PieceLanded {
-                        state = GameState::PieceLanded;
-                    } else {
-                        let delta = current_ts - last_tick;
+                    match msg {
+                        Msg::PieceLanded => {
+                            state = GameState::PieceLanded;
+                        }
+                        Msg::DropPiece => {
+                            if let Some(piece) = &current_piece {
+                                let dist = piece.lowest_y_offset(&squares);
+                                let dist_px = (dist * square_size) as f64;
 
-                        if delta > TICK_RATE_MS {
-                            if piece.can_lower(&squares) {
-                                piece.lower_mut();
+                                state = GameState::DroppingPiece((dist, dist_px, current_ts, 0));
+                            }
+                        }
+                        _ => {
+                            let delta = current_ts - last_tick;
 
-                                state = GameState::Normal(current_ts);
-                            } else {
-                                state = GameState::PieceLanded;
+                            if delta > TICK_RATE_MS {
+                                if piece.can_lower(&squares) {
+                                    piece.lower_mut();
+
+                                    state = GameState::Normal(current_ts);
+                                } else {
+                                    state = GameState::PieceLanded;
+                                }
                             }
                         }
                     }
@@ -380,6 +415,24 @@ pub extern "C" fn run_the_game() {
             GameState::Defeat => {}
             GameState::Paused => {}
             GameState::Suspended => {}
+            GameState::DroppingPiece((dist, dist_px, ts, _)) => {
+                if let Some(piece) = &mut current_piece {
+                    let delta = current_ts - ts;
+                    let delta = delta as f64;
+
+                    let pct = delta / PIECE_DROP_MS_F64;
+
+                    if pct < 1.0 {
+                        let offset = dist_px * pct;
+                        let offset = offset as i32;
+
+                        state = GameState::DroppingPiece((dist, dist_px, ts, offset));
+                    } else {
+                        piece.add_mut(0, dist);
+                        state = GameState::PieceLanded;
+                    }
+                }
+            }
             GameState::Menu(_) => {
                 if let Some((level, new_state)) =
                     check_level_change(current_ts, &touches, &state, &level_buttons, &settings)
@@ -388,30 +441,37 @@ pub extern "C" fn run_the_game() {
                     state = new_state;
                 }
             }
-            GameState::PreppingNextPiece(_last_tick) => {
+            GameState::PreppingNextPiece(initial_tick, _last_offset) => {
                 if let Some(on_deck) = &mut on_deck_piece {
-                    on_deck.originate_mut();
-                    current_piece = Some(on_deck.clone());
-                    on_deck_piece = Some(Piece::custom_on_deck());
+                    let delta = current_ts - initial_tick;
+                    let delta = delta as f64;
 
-                    state = GameState::Normal(current_ts);
+                    let pct: f64 = delta / PIECE_TRANSFER_MS_F64;
+
+                    if pct < 1.0 {
+                        let line_idx = line_len_f64 * pct;
+                        let line_idx = line_idx as usize;
+                        let (x, y) = line[line_idx];
+                        let top_left = on_deck.lhs.tile.top_left_px(square_size);
+
+                        let offset = top_left.abs_delta(x, y - TOPSET);
+
+                        state = GameState::PreppingNextPiece(initial_tick, offset);
+                    } else {
+                        on_deck.originate_mut();
+                        current_piece = Some(on_deck.clone());
+                        on_deck_piece = Some(Piece::random_on_deck(&mut rng));
+
+                        state = GameState::Normal(current_ts);
+                    }
                 }
             }
         }
 
-        // let current_time = get_current_timestamp();
-        // let delta = current_time - initial_time;
-
-        // if delta > 0 {
-        //     let fps = frame / delta;
-        //     println!("secs: {delta}");
-
-        //     sdl.draw_fps(fps);
-        // }
-
         if state.is_menu() {
             draw_menu(&sdl, &menu_buttons, &level_buttons, settings.level);
         } else {
+            // draw_line(&sdl, &line);
             draw_grid(&sdl, square_size);
 
             match &state {
@@ -419,19 +479,46 @@ pub extern "C" fn run_the_game() {
                     draw_dots_w_offsets(&sdl, &squares, square_size, img_divisor, y_offsets);
                 }
                 _ => {
-                    draw_dots(&sdl, &squares, square_size, img_divisor);
+                    draw_dots(&sdl, &squares, square_size, img_divisor, (0, 0));
                 }
             }
 
             if let Some(piece) = &on_deck_piece {
-                draw_piece(piece, &sdl, square_size, img_divisor);
+                match &state {
+                    GameState::PreppingNextPiece(_ts, Pos(x, y)) => {
+                        draw_piece(piece, &sdl, square_size, img_divisor, (*x, *y));
+                    }
+                    _ => {
+                        draw_piece(piece, &sdl, square_size, img_divisor, (0, 0));
+                    }
+                }
             }
 
             if let Some(piece) = &current_piece {
-                draw_piece(piece, &sdl, square_size, img_divisor);
+                match &state {
+                    GameState::DroppingPiece((_dist, _fdist, _ts, y_offset)) => {
+                        draw_piece(piece, &sdl, square_size, img_divisor, (0, *y_offset));
+                    }
+                    _ => {
+                        draw_piece(piece, &sdl, square_size, img_divisor, (0, 0));
+                    }
+                }
             }
 
-            draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
+            match &state {
+                GameState::DroppingDots(_, y_offsets) => {
+                    draw_piece_connectors_w_offsets(
+                        &pieces,
+                        &sdl,
+                        square_size,
+                        img_divisor,
+                        y_offsets,
+                    );
+                }
+                _ => {
+                    draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
+                }
+            }
 
             if state == GameState::Victory {
                 draw_modal(&sdl, &endgame_buttons, &victory_image);

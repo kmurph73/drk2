@@ -2,6 +2,26 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{img_consts::*, my_sdl::SDL_Rect, prelude::COLS};
 
+pub fn plot_line(x0: i32, y0: i32, x1: i32, y1: i32) -> Vec<(i32, i32)> {
+    let mut arr: Vec<(i32, i32)> = Vec::new();
+    let dx = x1 - x0;
+    let dy = y1 - y0;
+    let mut d = 2 * dy - dx;
+    let mut y = y0;
+
+    for x in x0..x1 {
+        arr.push((x, y));
+        if d > 0 {
+            y += 1;
+            d -= 2 * dx;
+        }
+
+        d += 2 * dy;
+    }
+
+    arr
+}
+
 pub fn is_mac() -> bool {
     true
     // let info = os_info::get();
