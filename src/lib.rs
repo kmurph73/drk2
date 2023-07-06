@@ -21,10 +21,7 @@ use load_save_settings::load_settings;
 use my_sdl::{MySdl, SDL_Rect};
 use piece::Piece;
 use pos::Pos;
-use prelude::{
-    HELP_MODAL, LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, SCREEN_WIDTH,
-    TICK_RATE_MS, TOPSET,
-};
+use prelude::{LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, TICK_RATE_MS, TOPSET};
 use touches::Touches;
 use util::{contains2, get_current_timestamp_millis, plot_line, tuple_to_rect};
 
@@ -42,6 +39,7 @@ pub mod easings;
 pub mod game_state;
 pub mod gen_buttons;
 pub mod get_indexes_to_remove;
+pub mod globals;
 pub mod handle_cmds;
 pub mod handle_events;
 pub mod handle_keydown;
@@ -69,32 +67,17 @@ use crate::get_indexes_to_remove::get_indexes_to_remove;
 use crate::handle_events::handle_events;
 
 mod prelude {
-    pub const SCREEN_WIDTH: i32 = 375;
-    pub const SCREEN_HEIGHT: i32 = 812;
     pub const TOPSET: i32 = 32;
     pub const COLS: i32 = 8;
     pub const ROWS: i32 = 16;
     pub const NUM_SQUARES: i32 = COLS * ROWS;
-    pub const SQUARE_SIZE: i32 = SCREEN_WIDTH / (COLS + 2);
-    pub const HELP_MODAL: (i32, i32, i32, i32) = (
-        SQUARE_SIZE,
-        SQUARE_SIZE * 2,
-        SCREEN_WIDTH - SQUARE_SIZE * 2,
-        SCREEN_HEIGHT - SQUARE_SIZE * 4,
-    );
-    pub const IMG_DIVISOR: i32 = 2;
+
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const LANDED_DELAY_MS: u128 = 200;
     pub const TICK_RATE_MS: u128 = 800;
     pub const LEVEL_DEFAULT: usize = 10;
     pub const SPEED_DEFAULT: usize = 800;
     pub const SETTINGS_PATH: &str = "settings.json";
-    pub const MENU_BTN: (i32, i32, i32, i32) = (
-        SCREEN_WIDTH / 2,
-        0,
-        SCREEN_WIDTH / 2,
-        SQUARE_SIZE * 2 + TOPSET,
-    );
 
     pub const PIECE_DROP_MS: u128 = 40;
     pub const PIECE_DROP_MS_F64: f64 = PIECE_DROP_MS as f64;
@@ -102,10 +85,7 @@ mod prelude {
     pub const PIECE_TRANSFER_MS: u128 = 200;
     pub const PIECE_TRANSFER_MS_F64: f64 = PIECE_TRANSFER_MS as f64;
     pub const DROP_MS: i32 = 100;
-    pub const DRAG_DIFF: i32 = 24;
     pub const SNAP_MS: u128 = 120;
-    pub const SNAP_DIST: i32 = 120;
-    pub const DROP_DRAG_DIFF: i32 = 40;
     pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
 
@@ -156,20 +136,21 @@ pub enum Msg {
 pub extern "C" fn run_the_game() {
     let mut settings = load_settings();
 
-    let modal = tuple_to_rect(HELP_MODAL);
+    // let is_mac = is_mac();
+    let (sdl, globals) = MySdl::init_sdl();
+
+    let modal = globals.help_modal;
     let victory_image = gen_modal_text(&modal, tuple_to_rect(VICTORY_IMG));
     let defeat_image = gen_modal_text(&modal, tuple_to_rect(DEFEAT_IMG));
     let paused_image = gen_modal_text(&modal, tuple_to_rect(PAUSED_IMG));
 
-    // let is_mac = is_mac();
-    let sdl = MySdl::init_sdl();
-    let help_buttons = gen_help_buttons();
-    let endgame_buttons = gen_endgame_buttons();
-    let menu_buttons = gen_menu_buttons();
+    let help_buttons = gen_help_buttons(&sdl, &globals);
+    let endgame_buttons = gen_endgame_buttons(&globals);
+    let menu_buttons = gen_menu_buttons(&sdl, &globals);
     let y = menu_buttons[0].dstrect.y + 80;
-    let level_buttons = gen_plus_minus_menu_buttons(y);
+    let level_buttons = gen_plus_minus_menu_buttons(y, &globals);
 
-    let square_size = SCREEN_WIDTH / 10;
+    let square_size = globals.square_size;
     let mut touches = Touches::init();
 
     let mut rng = rand::thread_rng();
@@ -193,8 +174,6 @@ pub extern "C" fn run_the_game() {
 
     let mut pieces: Vec<Piece> = Vec::new();
 
-    let img_divisor = 2; // if is_mac { 2 } else { 1 };
-
     let mut keys = KeyboardState {
         pressed: Keyboard::init(false),
         enabled: Keyboard::init(true),
@@ -216,10 +195,12 @@ pub extern "C" fn run_the_game() {
             &menu_buttons,
             &endgame_buttons,
             current_ts,
+            &sdl,
+            &globals,
         );
 
         if state.is_normal() {
-            process_touches(&mut touches, &mut new_cmds, current_ts);
+            process_touches(&mut touches, &mut new_cmds, current_ts, &globals);
         }
 
         match msg {
@@ -296,7 +277,8 @@ pub extern "C" fn run_the_game() {
 
                 let has_bad = squares.iter().flatten().any(|s| s.is_bad());
                 if has_bad {
-                    let dropping_dots = calc_dot_drop_dist(&squares, &pieces, current_ts);
+                    let dropping_dots =
+                        calc_dot_drop_dist(&squares, &pieces, current_ts, square_size);
                     let has_falling_dots = dropping_dots.iter().any(|d| d.is_some());
 
                     if has_falling_dots {
@@ -363,7 +345,8 @@ pub extern "C" fn run_the_game() {
                         let has_bad = squares.iter().flatten().any(|s| s.is_bad());
 
                         if has_bad {
-                            let dots = calc_dot_drop_dist(&squares, &pieces, current_ts);
+                            let dots =
+                                calc_dot_drop_dist(&squares, &pieces, current_ts, square_size);
                             let has_falling_dots = dots.iter().any(|d| d.is_some());
 
                             if has_falling_dots {
@@ -469,27 +452,33 @@ pub extern "C" fn run_the_game() {
         }
 
         if state.is_menu() {
-            draw_menu(&sdl, &menu_buttons, &level_buttons, settings.level);
+            draw_menu(
+                &sdl,
+                &menu_buttons,
+                &level_buttons,
+                settings.level,
+                &globals,
+            );
         } else {
             // draw_line(&sdl, &line);
             draw_grid(&sdl, square_size);
 
             match &state {
                 GameState::DroppingDots(_, y_offsets) => {
-                    draw_dots_w_offsets(&sdl, &squares, square_size, img_divisor, y_offsets);
+                    draw_dots_w_offsets(&sdl, &squares, square_size, y_offsets);
                 }
                 _ => {
-                    draw_dots(&sdl, &squares, square_size, img_divisor, (0, 0));
+                    draw_dots(&sdl, &squares, square_size, (0, 0));
                 }
             }
 
             if let Some(piece) = &on_deck_piece {
                 match &state {
                     GameState::PreppingNextPiece(_ts, Pos(x, y)) => {
-                        draw_piece(piece, &sdl, square_size, img_divisor, (*x, *y));
+                        draw_piece(piece, &sdl, square_size, (*x, *y));
                     }
                     _ => {
-                        draw_piece(piece, &sdl, square_size, img_divisor, (0, 0));
+                        draw_piece(piece, &sdl, square_size, (0, 0));
                     }
                 }
             }
@@ -497,35 +486,29 @@ pub extern "C" fn run_the_game() {
             if let Some(piece) = &current_piece {
                 match &state {
                     GameState::DroppingPiece((_dist, _fdist, _ts, y_offset)) => {
-                        draw_piece(piece, &sdl, square_size, img_divisor, (0, *y_offset));
+                        draw_piece(piece, &sdl, square_size, (0, *y_offset));
                     }
                     _ => {
-                        draw_piece(piece, &sdl, square_size, img_divisor, (0, 0));
+                        draw_piece(piece, &sdl, square_size, (0, 0));
                     }
                 }
             }
 
             match &state {
                 GameState::DroppingDots(_, y_offsets) => {
-                    draw_piece_connectors_w_offsets(
-                        &pieces,
-                        &sdl,
-                        square_size,
-                        img_divisor,
-                        y_offsets,
-                    );
+                    draw_piece_connectors_w_offsets(&pieces, &sdl, square_size, y_offsets);
                 }
                 _ => {
-                    draw_piece_connectors(&pieces, &sdl, square_size, img_divisor);
+                    draw_piece_connectors(&pieces, &sdl, square_size);
                 }
             }
 
             if state == GameState::Victory {
-                draw_modal(&sdl, &endgame_buttons, &victory_image);
+                draw_modal(&sdl, &endgame_buttons, &victory_image, &globals);
             } else if state == GameState::Defeat {
-                draw_modal(&sdl, &endgame_buttons, &defeat_image);
+                draw_modal(&sdl, &endgame_buttons, &defeat_image, &globals);
             } else if state == GameState::Paused {
-                draw_modal(&sdl, &help_buttons, &paused_image);
+                draw_modal(&sdl, &help_buttons, &paused_image, &globals);
             }
 
             // let (x, y, w, h) = MENU_BTN;

@@ -2,14 +2,16 @@ const bigDir = "bigimgs";
 const out = "imgs";
 
 const hidpi = true; //Deno.build.vendor === "apple";
-const size = 33;
-const connectorSize = 12;
+const size = 40;
+const connectorSize = size * 0.28;
 const btnSize = 160;
 const btnDims = `${btnSize}x${btnSize}`;
 
 const dotSize = size * 2;
 const dims = `${dotSize}x${dotSize}`;
-const conSize = hidpi ? connectorSize * 2 : connectorSize;
+let conSize = hidpi ? connectorSize * 2 : connectorSize;
+conSize = Math.floor(conSize);
+
 const connectorDims = `${conSize}x${conSize}`;
 
 const getDimensions = (name: string): string | null => {

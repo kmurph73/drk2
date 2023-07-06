@@ -2,13 +2,14 @@ use std::ptr::null_mut;
 
 use crate::{
     cmd::Cmd,
+    globals::Globals,
     handle_keydown::handle_keydown,
     handle_keyup::handle_keyup,
     handle_mousedown::handle_mousedown,
     handle_mouseup::handle_mouseup,
     keyboard::KeyboardState,
     my_sdl::{
-        SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
+        MySdl, SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
         SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN,
         SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_MOUSEBUTTONDOWN,
         SDL_EventType_SDL_MOUSEBUTTONUP, SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT,
@@ -28,6 +29,8 @@ pub fn handle_events(
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
     current_ts: u128,
+    sdl: &MySdl,
+    globals: &Globals,
 ) -> Msg {
     unsafe {
         let mut _event: *mut SDL_Event = null_mut();
@@ -60,9 +63,11 @@ pub fn handle_events(
                         _ => return msg,
                     }
                 }
+
                 SDL_EventType_SDL_MOUSEMOTION => {
                     touches.assign_motion(button.x, button.y);
                 }
+
                 SDL_EventType_SDL_APP_WILLENTERBACKGROUND => {
                     if state.is_normal() {
                         return Msg::SuspendGame;
@@ -87,6 +92,8 @@ pub fn handle_events(
                         menu_buttons,
                         endgame_buttons,
                         cmds,
+                        sdl,
+                        globals,
                     );
 
                     match msg {

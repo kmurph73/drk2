@@ -1,9 +1,10 @@
 use std::ffi::CString;
 
 use crate::{
+    globals::{self, Globals},
     my_sdl::SDL_Log,
     pos::Pos,
-    prelude::{SNAP_DIST, SNAP_MS},
+    prelude::SNAP_MS,
     ButtonKind, ImageButton, Msg,
 };
 
@@ -36,7 +37,7 @@ impl Touches {
     }
 
     #[allow(clippy::comparison_chain)]
-    pub fn check_snap(&self, current_x: i32, current_ts: u128) -> Option<Snap> {
+    pub fn check_snap(&self, current_x: i32, current_ts: u128, globals: &Globals) -> Option<Snap> {
         if let Some((snap_x, ts)) = self.snap_x {
             let delta = current_ts - ts;
 
@@ -45,13 +46,13 @@ impl Touches {
             } else {
                 let delta_x = current_x - snap_x;
 
-                if delta_x < 0 && delta_x < -SNAP_DIST {
+                if delta_x < 0 && delta_x < -globals.snap_dist {
                     unsafe {
                         let str = CString::new("left").unwrap();
                         SDL_Log(str.as_ptr());
                     }
                     return Some(Snap::Left);
-                } else if delta_x > 0 && delta_x > SNAP_DIST {
+                } else if delta_x > 0 && delta_x > globals.snap_dist {
                     unsafe {
                         let str = CString::new("right").unwrap();
                         SDL_Log(str.as_ptr());

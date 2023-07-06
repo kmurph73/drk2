@@ -2,6 +2,12 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{img_consts::*, my_sdl::SDL_Rect, prelude::COLS};
 
+pub fn percent_of(n: i32, percentage: f64) -> i32 {
+    let n = (n as f64) * percentage;
+
+    n as i32
+}
+
 pub fn plot_line(x0: i32, y0: i32, x1: i32, y1: i32) -> Vec<(i32, i32)> {
     let mut arr: Vec<(i32, i32)> = Vec::new();
     let dx = x1 - x0;

@@ -1,6 +1,6 @@
 use std::ffi::CString;
 
-use crate::prelude::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::{globals::Globals, prelude::COLS};
 
 #[allow(clippy::all)]
 #[allow(warnings, unused)]
@@ -34,30 +34,25 @@ pub struct MySdl {
 }
 
 impl MySdl {
-    pub fn init_sdl() -> Self {
+    pub fn init_sdl() -> (MySdl, Globals) {
         unsafe {
             if SDL_Init(SDL_INIT_VIDEO) < 0 {
                 panic!("failed to initialize sdl2 with video");
             };
 
-            let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI; //| SDL_WindowFlags_SDL_WINDOW_BORDERLESS;
+            let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI; // | SDL_WindowFlags_SDL_WINDOW_FULLSCREEN; //| SDL_WindowFlags_SDL_WINDOW_BORDERLESS;
 
             let title = CString::new("Dr K Dos").expect("CString::new failed");
 
-            // let (width, height) = if IS_MOBILE {
-            //     let mut x = 0;
-            //     let mut y = 0;
-
-            //     SDL_GetWindowSize(window, &mut w, &mut h);
-            //     SDL_RenderSetLogicalSize(renderer, w, h);
-            // }
+            let window_width = 393;
+            let window_height = 830;
 
             let window = SDL_CreateWindow(
                 title.as_ptr(),
                 0,
                 0,
-                SCREEN_WIDTH,
-                SCREEN_HEIGHT,
+                window_width,
+                window_height,
                 window_flags,
             );
 
@@ -68,6 +63,7 @@ impl MySdl {
             let renderer_flags = SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC;
 
             let renderer = SDL_CreateRenderer(window, 0, renderer_flags);
+
             let scale = 2.0;
             SDL_RenderSetScale(renderer, scale, scale);
 
@@ -75,19 +71,26 @@ impl MySdl {
             let mut h = 0;
             SDL_GetWindowSize(window, &mut w, &mut h);
             SDL_RenderSetLogicalSize(renderer, w, h);
+            let window_width = w;
+            let window_height = h;
 
             IMG_Init((IMG_InitFlags_IMG_INIT_PNG).try_into().unwrap());
 
             let file = CString::new("skyline-packer-output.png").unwrap();
             let texture = IMG_LoadTexture(renderer, file.as_ptr());
+            let square_size = window_width / (COLS + 2);
+
+            let globals = Globals::make(window_width, window_height, square_size);
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BlendMode_SDL_BLENDMODE_BLEND);
 
-            MySdl {
+            let sdl = MySdl {
                 texture,
                 renderer,
                 window,
-            }
+            };
+
+            (sdl, globals)
         }
     }
 
@@ -113,8 +116,8 @@ impl MySdl {
         }
     }
 
-    pub fn draw(&self) {
-        let rect = SDL_Rect::new(0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100);
+    pub fn draw(&self, globals: &Globals) {
+        let rect = SDL_Rect::new(0, globals.window_height - 100, globals.window_width, 100);
         unsafe {
             SDL_SetRenderDrawColor(self.renderer, 150, 150, 150, 255);
             SDL_RenderFillRect(self.renderer, &rect);

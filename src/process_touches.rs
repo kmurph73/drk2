@@ -1,14 +1,24 @@
 use crate::{
     cmd::{Cmd, Direction},
+    globals::Globals,
     pos::Pos,
-    prelude::{DRAG_DIFF, DROP_DRAG_DIFF},
     touches::{Snap, Touches},
 };
 
 #[allow(clippy::manual_range_contains)]
-pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>, current_ts: u128) {
+pub fn process_touches(
+    touches: &mut Touches,
+    cmds: &mut Vec<Cmd>,
+    current_ts: u128,
+    globals: &Globals,
+) {
+    let Globals {
+        drag_diff,
+        drag_drop_diff,
+        ..
+    } = *globals;
+
     let mut cmd: Option<Cmd> = None;
-    let diff = DRAG_DIFF;
     let Pos(x, y) = if let Some(down) = touches.down {
         down
     } else {
@@ -25,20 +35,20 @@ pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>, current_ts: u
     let delta_y = current_y - y;
 
     if delta_x.abs() > delta_y.abs() {
-        if delta_x > diff {
+        if delta_x > globals.drag_diff {
             cmd = Some(Cmd::Move(Direction::Right));
-        } else if delta_x < -diff {
+        } else if delta_x < -drag_diff {
             cmd = Some(Cmd::Move(Direction::Left));
         }
     }
 
-    if delta_y > diff && delta_y > delta_x.abs() {
+    if delta_y > drag_diff && delta_y > delta_x.abs() {
         cmd = Some(Cmd::Move(Direction::Down));
-    } else if delta_y < -DROP_DRAG_DIFF && cmd.is_none() {
+    } else if delta_y < -drag_drop_diff && cmd.is_none() {
         cmd = Some(Cmd::DropPiece);
     }
 
-    if let Some(snap) = touches.check_snap(current_x, current_ts) {
+    if let Some(snap) = touches.check_snap(current_x, current_ts, globals) {
         match snap {
             Snap::Clear => {
                 touches.snap_x = None;

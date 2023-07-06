@@ -1,5 +1,5 @@
 use crate::{
-    cmd::Cmd, my_sdl::SDL_Rect, prelude::MENU_BTN, touches::Touches, ButtonKind, GameState,
+    cmd::Cmd, globals::Globals, my_sdl::MySdl, touches::Touches, ButtonKind, GameState,
     ImageButton, Msg,
 };
 
@@ -13,6 +13,8 @@ pub fn handle_mouseup(
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
+    sdl: &MySdl,
+    globals: &Globals,
 ) -> Msg {
     if touches.down.is_none() {
         return Msg::Nada;
@@ -50,15 +52,7 @@ pub fn handle_mouseup(
             }
         }
     } else if state.is_normal() {
-        let (rect_x, rect_y, w, h) = MENU_BTN;
-        let rect = SDL_Rect {
-            x: rect_x,
-            y: rect_y,
-            w,
-            h,
-        };
-
-        if rect.contains(x, y) {
+        if globals.menu_btn.contains(x, y) {
             return Msg::PauseGame;
         } else if !touches.dragged && touches.down.is_some() {
             let cmd = Cmd::Rotate;

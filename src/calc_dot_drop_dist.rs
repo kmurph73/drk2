@@ -3,7 +3,7 @@ use crate::{
     dot::Dot,
     easings::ease_in_sine,
     piece::Piece,
-    prelude::{COLS, DROP_MS, NUM_SQUARES_USIZE, ROWS, SQUARE_SIZE},
+    prelude::{COLS, DROP_MS, NUM_SQUARES_USIZE, ROWS},
     util::{empty_array, map_idx},
 };
 
@@ -79,6 +79,7 @@ pub fn calc_dot_drop_dist(
     squares: &[Option<Dot>],
     pieces: &[Piece],
     current_ts: u128,
+    square_size: i32,
 ) -> Vec<Option<DroppingDot>> {
     let mut arr: Vec<Option<DroppingDot>> = empty_array(NUM_SQUARES_USIZE);
     let mut handled_pieces: Vec<usize> = Vec::new();
@@ -128,7 +129,7 @@ pub fn calc_dot_drop_dist(
 
                             let total_time = DROP_MS * dist;
                             let total_time = total_time as f64;
-                            let pixel_dist = dist * SQUARE_SIZE;
+                            let pixel_dist = dist * square_size;
 
                             let (lhs, rhs) = piece.indexes();
 
@@ -167,7 +168,7 @@ pub fn calc_dot_drop_dist(
                 let total_time = DROP_MS * dist;
                 let drop = DroppingDot {
                     dist,
-                    dist_px: dist * SQUARE_SIZE,
+                    dist_px: dist * square_size,
                     ts: current_ts,
                     total_time: total_time as f64,
                 };

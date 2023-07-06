@@ -1,5 +1,5 @@
 fn main() {
-    let search_path = "/usr/lib64";
+    let search_path = "/opt/homebrew/lib";
 
     println!("cargo:rustc-link-search={search_path}");
 
