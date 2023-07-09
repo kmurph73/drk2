@@ -465,20 +465,20 @@ pub extern "C" fn run_the_game() {
 
             match &state {
                 GameState::DroppingDots(_, y_offsets) => {
-                    draw_dots_w_offsets(&sdl, &squares, square_size, y_offsets);
+                    draw_dots_w_offsets(&sdl, &squares, y_offsets, &globals);
                 }
                 _ => {
-                    draw_dots(&sdl, &squares, square_size, (0, 0));
+                    draw_dots(&sdl, &squares, (0, 0), &globals);
                 }
             }
 
             if let Some(piece) = &on_deck_piece {
                 match &state {
                     GameState::PreppingNextPiece(_ts, Pos(x, y)) => {
-                        draw_piece(piece, &sdl, square_size, (*x, *y));
+                        draw_piece(piece, &sdl, (*x, *y), &globals);
                     }
                     _ => {
-                        draw_piece(piece, &sdl, square_size, (0, 0));
+                        draw_piece(piece, &sdl, (0, 0), &globals);
                     }
                 }
             }
@@ -486,20 +486,20 @@ pub extern "C" fn run_the_game() {
             if let Some(piece) = &current_piece {
                 match &state {
                     GameState::DroppingPiece((_dist, _fdist, _ts, y_offset)) => {
-                        draw_piece(piece, &sdl, square_size, (0, *y_offset));
+                        draw_piece(piece, &sdl, (0, *y_offset), &globals);
                     }
                     _ => {
-                        draw_piece(piece, &sdl, square_size, (0, 0));
+                        draw_piece(piece, &sdl, (0, 0), &globals);
                     }
                 }
             }
 
             match &state {
                 GameState::DroppingDots(_, y_offsets) => {
-                    draw_piece_connectors_w_offsets(&pieces, &sdl, square_size, y_offsets);
+                    draw_piece_connectors_w_offsets(&pieces, &sdl, y_offsets, &globals);
                 }
                 _ => {
-                    draw_piece_connectors(&pieces, &sdl, square_size);
+                    draw_piece_connectors(&pieces, &sdl, &globals);
                 }
             }
 

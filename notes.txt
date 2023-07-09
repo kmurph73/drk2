@@ -1,0 +1,1 @@
+android dims: 1080, 2138

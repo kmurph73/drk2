@@ -4,6 +4,7 @@ pub struct Globals {
     pub window_width: i32,
     pub window_height: i32,
     pub square_size: i32,
+    pub dotset: i32,
     pub topset: i32,
     pub drag_diff: i32,
     pub drag_drop_diff: i32,
@@ -22,7 +23,9 @@ impl Globals {
         let drag_diff = percent_of(square_size, 0.5);
         let drag_drop_diff = percent_of(square_size, 0.65);
         let snap_dist = square_size;
-        let dot_size = percent_of(square_size, 0.9);
+        let dot_size = percent_of(square_size, 0.90);
+        let diff = square_size - dot_size;
+        let dotset = diff / 2;
         let connector_size = percent_of(square_size, 0.28);
         let button_width = square_size * 6;
         let button_height = (button_width as f64) * btn_dims;
@@ -52,6 +55,7 @@ impl Globals {
             window_height,
             window_width,
             square_size,
+            dotset,
             topset,
             drag_diff,
             drag_drop_diff,

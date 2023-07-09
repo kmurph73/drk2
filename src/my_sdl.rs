@@ -74,6 +74,10 @@ impl MySdl {
             let window_width = w;
             let window_height = h;
 
+            let log = format!("WTF: {}, {}", w, h);
+            let cstr = CString::new(log).unwrap();
+            SDL_Log(cstr.as_ptr());
+
             IMG_Init((IMG_InitFlags_IMG_INIT_PNG).try_into().unwrap());
 
             let file = CString::new("skyline-packer-output.png").unwrap();
