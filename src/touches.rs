@@ -1,11 +1,7 @@
 use std::ffi::CString;
 
 use crate::{
-    globals::{self, Globals},
-    my_sdl::SDL_Log,
-    pos::Pos,
-    prelude::SNAP_MS,
-    ButtonKind, ImageButton, Msg,
+    globals::Globals, my_sdl::SDL_Log, pos::Pos, prelude::SNAP_MS, ButtonKind, ImageButton, Msg,
 };
 
 pub struct Touches {

@@ -152,7 +152,8 @@ pub fn gen_plus_minus_menu_buttons(y: i32, globals: &Globals) -> Vec<ImageButton
     let mut image_buttons: Vec<ImageButton> = Vec::with_capacity(2);
 
     let srcrect = tuple_to_rect(MINUS_SQUARE_IMG);
-    let SDL_Rect { w, h, .. } = srcrect;
+    let w = globals.square_size * 2;
+    let h = w;
     let x_offset = 10;
     let dstrect = SDL_Rect {
         x: x_offset,
@@ -170,7 +171,6 @@ pub fn gen_plus_minus_menu_buttons(y: i32, globals: &Globals) -> Vec<ImageButton
     image_buttons.push(btn);
 
     let srcrect = tuple_to_rect(PLUS_SQUARE_IMG);
-    let SDL_Rect { w, h, .. } = srcrect;
     let dstrect = SDL_Rect {
         x: globals.window_width - x_offset - w,
         y,
