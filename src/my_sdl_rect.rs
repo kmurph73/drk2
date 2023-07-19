@@ -14,6 +14,15 @@ impl SDL_Rect {
         }
     }
 
+    pub fn dst_new(dx: i32, dy: i32, dw: i32, dh: i32) -> SDL_Rect {
+        SDL_Rect {
+            x: dx,
+            y: dy,
+            w: dw,
+            h: dh,
+        }
+    }
+
     pub fn shrink(&self, n: i32) -> SDL_Rect {
         let SDL_Rect { x, y, w, h } = &self;
 

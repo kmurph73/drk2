@@ -52,6 +52,7 @@ pub mod load_save_settings;
 pub mod my_sdl;
 pub mod my_sdl_rect;
 pub mod mybindings;
+pub mod number_images;
 pub mod piece;
 pub mod pos;
 pub mod process_touches;
@@ -138,19 +139,21 @@ pub extern "C" fn run_the_game() {
 
     // let is_mac = is_mac();
     let (sdl, globals) = MySdl::init_sdl();
+    let number_images = NumberImages::make_numbers(globals.ratio);
 
     let modal = globals.help_modal;
-    let victory_image = gen_modal_text(&modal, tuple_to_rect(VICTORY_IMG));
-    let defeat_image = gen_modal_text(&modal, tuple_to_rect(DEFEAT_IMG));
-    let paused_image = gen_modal_text(&modal, tuple_to_rect(PAUSED_IMG));
+    let square_size = globals.square_size;
+    let ratio = globals.ratio;
+    let victory_image = gen_modal_text(&modal, tuple_to_rect(VICTORY_IMG), ratio, square_size);
+    let defeat_image = gen_modal_text(&modal, tuple_to_rect(DEFEAT_IMG), ratio, square_size);
+    let paused_image = gen_modal_text(&modal, tuple_to_rect(PAUSED_IMG), ratio, square_size);
 
-    let help_buttons = gen_help_buttons(&sdl, &globals);
+    let help_buttons = gen_help_buttons(&globals);
     let endgame_buttons = gen_endgame_buttons(&globals);
-    let menu_buttons = gen_menu_buttons(&sdl, &globals);
-    let y = menu_buttons[0].dstrect.y + 80;
+    let menu_buttons = gen_menu_buttons(&globals);
+    let y = menu_buttons[0].dstrect.y + square_size * 3;
     let level_buttons = gen_plus_minus_menu_buttons(y, &globals);
 
-    let square_size = globals.square_size;
     let mut touches = Touches::init();
 
     let mut rng = rand::thread_rng();
@@ -195,7 +198,6 @@ pub extern "C" fn run_the_game() {
             &menu_buttons,
             &endgame_buttons,
             current_ts,
-            &sdl,
             &globals,
         );
 
@@ -458,6 +460,7 @@ pub extern "C" fn run_the_game() {
                 &level_buttons,
                 settings.level,
                 &globals,
+                &number_images,
             );
         } else {
             // draw_line(&sdl, &line);

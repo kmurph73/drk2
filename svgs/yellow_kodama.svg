@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="167px" height="167px" viewBox="0 0 167 167" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>yellow_kodama</title>
+    <g id="yellow-kodama" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="yellow_kodama">
+            <circle id="Oval" fill="#EEEE19" cx="83.5" cy="83.5" r="83.5"></circle>
+            <ellipse id="Oval" fill="#000000" cx="50.5" cy="61.5" rx="18.5" ry="21.5"></ellipse>
+            <ellipse id="Oval" fill="#000000" cx="126.5" cy="61.5" rx="18.5" ry="14.5"></ellipse>
+            <ellipse id="Oval" fill="#000000" cx="100.5" cy="143.5" rx="26.5" ry="13.5"></ellipse>
+        </g>
+    </g>
+</svg>
