@@ -49,30 +49,11 @@ pub fn draw_menu(
     buttons: &Vec<ImageButton>,
     image_buttons: &Vec<ImageButton>,
     level: usize,
-    Globals {
-        window_width,
-        ratio,
-        ..
-    }: &Globals,
     number_images: &NumberImages,
 ) {
     let (srcrect, dstrect) = number_images.get_level_image(level);
-    let r = &image_buttons[0].dstrect;
-    let container = SDL_Rect {
-        x: 0,
-        y: r.y,
-        w: *window_width,
-        h: r.h,
-    };
 
-    let (width, height) = (srcrect.w as f64 * ratio, srcrect.h as f64 * ratio);
-    let (width, height) = (width as i32, height as i32);
-
-    let (x, y) = container.center(width, height);
-
-    let dstrect = SDL_Rect::new(x, y, width, height);
-
-    draw_image(srcrect, &dstrect, sdl);
+    draw_image(srcrect, dstrect, sdl);
 
     for ImageButton {
         srcrect, dstrect, ..

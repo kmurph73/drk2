@@ -34,8 +34,8 @@ fn draw_dot(
     let h = w;
 
     let dest = SDL_Rect {
-        x: x + 2 + offset_x + *dotset,
-        y: y + 2 + TOPSET + offset_y + *dotset,
+        x: x + offset_x + *dotset,
+        y: y + TOPSET + offset_y + *dotset,
         w,
         h,
     };
@@ -45,57 +45,19 @@ fn draw_dot(
     }
 }
 
-fn connector_offset(rotation: i32, square_size: i32, connector_size: i32) -> (i32, i32) {
-    let half_conn = connector_size / 2;
-    let half_square = square_size / 2;
-
-    let x = square_size - half_conn;
-    let y = half_square - half_conn;
-
-    // 0 => (square_size - 5, half_square - 5),
-
-    let (x, y) = match rotation {
-        0 => (x + 1, y + 1),
-        1 => (half_square - half_conn, -half_conn),
-        2 => (-half_conn, y),
-        3 => (half_square - half_conn, square_size - half_conn),
-        _ => panic!("{rotation} should be 0..3"),
-    };
-
-    (x, y)
-}
-
 fn draw_connector(
-    lhs: &Dot,
-    rotation: i32,
+    piece: &Piece,
     sdl: &MySdl,
     (extra_x_offset, extra_y_offset): (i32, i32),
-    Globals {
-        square_size,
-        connector_size,
-        ..
-    }: &Globals,
+    globals: &Globals,
 ) {
-    let square_size = *square_size;
-    let connector_size = *connector_size;
-
-    let Pos(x, y) = lhs.tile.top_left_px(square_size);
-
-    let (x_offset, y_offset) = connector_offset(rotation, square_size, connector_size);
-
-    let x = x + x_offset;
-    let y = y + y_offset;
-
-    let (_img_x, _img_y, _w, _h) = CONNECTOR_IMG;
-
-    let w = connector_size;
-    let h = w;
+    let (x, y) = piece.center_connector(globals, extra_x_offset, extra_y_offset);
 
     let dstrect = SDL_Rect {
-        x: x + extra_x_offset,
-        y: y + TOPSET + extra_y_offset,
-        w,
-        h,
+        x,
+        y,
+        w: globals.connector_size,
+        h: globals.connector_size,
     };
 
     let srcrect = tuple_to_rect(CONNECTOR_IMG);
@@ -107,7 +69,7 @@ fn draw_connector(
 
 pub fn draw_piece_connectors(pieces: &Vec<Piece>, sdl: &MySdl, globals: &Globals) {
     for piece in pieces {
-        draw_connector(&piece.lhs, piece.rotation, sdl, (0, 0), globals);
+        draw_connector(piece, sdl, (0, 0), globals);
     }
 }
 
@@ -121,14 +83,14 @@ pub fn draw_piece_connectors_w_offsets(
         let (lhs, _rhs) = piece.indexes();
         let y_offset = y_offsets[lhs];
 
-        draw_connector(&piece.lhs, piece.rotation, sdl, (0, y_offset), globals);
+        draw_connector(piece, sdl, (0, y_offset), globals);
     }
 }
 
 pub fn draw_piece(piece: &Piece, sdl: &MySdl, offset: (i32, i32), globals: &Globals) {
     draw_dot(&piece.lhs, sdl, offset, globals);
     draw_dot(&piece.rhs, sdl, offset, globals);
-    draw_connector(&piece.lhs, piece.rotation, sdl, offset, globals);
+    draw_connector(piece, sdl, offset, globals);
 }
 
 pub fn draw_dots_w_offsets(

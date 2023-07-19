@@ -1,6 +1,9 @@
 use rand::rngs::ThreadRng;
 
-use crate::{blocks::Blocks, cmd::Direction, dot::Dot, pos::Pos};
+use crate::{
+    blocks::Blocks, cmd::Direction, dot::Dot, globals::Globals, my_sdl::SDL_Rect, pos::Pos,
+    prelude::TOPSET,
+};
 
 #[derive(Clone)]
 pub struct Piece {
@@ -63,6 +66,31 @@ fn get_next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
+    pub fn center_connector(&self, globals: &Globals, x_off: i32, y_off: i32) -> (i32, i32) {
+        let square_size = globals.square_size;
+        let connector_size = globals.connector_size;
+
+        let Pos(x, y) = match self.rotation {
+            0 => self.lhs.tile.top_left_px(square_size),
+            1 => self.rhs.tile.top_left_px(square_size),
+            2 => self.rhs.tile.top_left_px(square_size),
+            3 => self.lhs.tile.top_left_px(square_size),
+            _ => panic!("shouldnt occur"),
+        };
+
+        let (w, h) = match self.rotation {
+            0 => (square_size * 2, square_size),
+            1 => (square_size, square_size * 2),
+            2 => (square_size * 2, square_size),
+            3 => (square_size, square_size * 2),
+            _ => panic!("no bueno"),
+        };
+
+        let rect = SDL_Rect::new(x + x_off, y + y_off + TOPSET, w, h);
+
+        rect.center(connector_size, connector_size)
+    }
+
     pub fn lower_mut(&mut self) {
         self.lhs.tile.1 += 1;
         self.rhs.tile.1 += 1;

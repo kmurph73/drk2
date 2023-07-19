@@ -19,6 +19,7 @@ use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
 use load_save_settings::load_settings;
 use my_sdl::{MySdl, SDL_Rect};
+use number_images::NumberImages;
 use piece::Piece;
 use pos::Pos;
 use prelude::{LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, TICK_RATE_MS, TOPSET};
@@ -139,7 +140,6 @@ pub extern "C" fn run_the_game() {
 
     // let is_mac = is_mac();
     let (sdl, globals) = MySdl::init_sdl();
-    let number_images = NumberImages::make_numbers(globals.ratio);
 
     let modal = globals.help_modal;
     let square_size = globals.square_size;
@@ -153,6 +153,9 @@ pub extern "C" fn run_the_game() {
     let menu_buttons = gen_menu_buttons(&globals);
     let y = menu_buttons[0].dstrect.y + square_size * 3;
     let level_buttons = gen_plus_minus_menu_buttons(y, &globals);
+
+    let number_images =
+        NumberImages::make_numbers(globals.ratio, &modal, &level_buttons[0].dstrect);
 
     let mut touches = Touches::init();
 
@@ -459,7 +462,6 @@ pub extern "C" fn run_the_game() {
                 &menu_buttons,
                 &level_buttons,
                 settings.level,
-                &globals,
                 &number_images,
             );
         } else {

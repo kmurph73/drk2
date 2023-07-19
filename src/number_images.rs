@@ -34,12 +34,13 @@ pub fn make_number_rect(
     ratio: f64,
     (x, y, w, h): (i32, i32, i32, i32),
     modal: &SDL_Rect,
-    dy: i32,
+    lvl_btn_rect: &SDL_Rect,
 ) -> (SDL_Rect, SDL_Rect) {
     let dw = (w as f64 * ratio) as i32;
     let dh = (h as f64 * ratio) as i32;
 
     let (dx, _y) = modal.center(dw, dh);
+    let (_x, dy) = lvl_btn_rect.center(dw, dh);
 
     let srcrect = SDL_Rect { x, y, w, h };
     let dstrect = SDL_Rect::dst_new(dx, dy, dw, dh);
@@ -48,27 +49,27 @@ pub fn make_number_rect(
 }
 
 impl NumberImages {
-    pub fn make_numbers(ratio: f64, modal: &SDL_Rect, dy: i32) -> NumberImages {
-        let one = make_number_rect(ratio, ONE_IMG, modal, dy);
-        let two = make_number_rect(ratio, TWO_IMG, modal, dy);
-        let three = make_number_rect(ratio, THREE_IMG, modal, dy);
-        let four = make_number_rect(ratio, FOUR_IMG, modal, dy);
-        let five = make_number_rect(ratio, FIVE_IMG, modal, dy);
-        let six = make_number_rect(ratio, SIX_IMG, modal, dy);
-        let seven = make_number_rect(ratio, SEVEN_IMG, modal, dy);
-        let eight = make_number_rect(ratio, EIGHT_IMG, modal, dy);
-        let nine = make_number_rect(ratio, NINE_IMG, modal, dy);
-        let ten = make_number_rect(ratio, TEN_IMG, modal, dy);
-        let eleven = make_number_rect(ratio, ELEVEN_IMG, modal, dy);
-        let twelve = make_number_rect(ratio, TWELVE_IMG, modal, dy);
-        let thirteen = make_number_rect(ratio, THIRTEEN_IMG, modal, dy);
-        let fourteen = make_number_rect(ratio, FOURTEEN_IMG, modal, dy);
-        let fifteen = make_number_rect(ratio, FIFTEEN_IMG, modal, dy);
-        let sixteen = make_number_rect(ratio, SIXTEEN_IMG, modal, dy);
-        let seventeen = make_number_rect(ratio, SEVENTEEN_IMG, modal, dy);
-        let eighteen = make_number_rect(ratio, EIGHTEEN_IMG, modal, dy);
-        let nineteen = make_number_rect(ratio, NINETEEN_IMG, modal, dy);
-        let twenty = make_number_rect(ratio, TWENTY_IMG, modal, dy);
+    pub fn make_numbers(ratio: f64, modal: &SDL_Rect, lvl_btn_rect: &SDL_Rect) -> NumberImages {
+        let one = make_number_rect(ratio, ONE_IMG, modal, lvl_btn_rect);
+        let two = make_number_rect(ratio, TWO_IMG, modal, lvl_btn_rect);
+        let three = make_number_rect(ratio, THREE_IMG, modal, lvl_btn_rect);
+        let four = make_number_rect(ratio, FOUR_IMG, modal, lvl_btn_rect);
+        let five = make_number_rect(ratio, FIVE_IMG, modal, lvl_btn_rect);
+        let six = make_number_rect(ratio, SIX_IMG, modal, lvl_btn_rect);
+        let seven = make_number_rect(ratio, SEVEN_IMG, modal, lvl_btn_rect);
+        let eight = make_number_rect(ratio, EIGHT_IMG, modal, lvl_btn_rect);
+        let nine = make_number_rect(ratio, NINE_IMG, modal, lvl_btn_rect);
+        let ten = make_number_rect(ratio, TEN_IMG, modal, lvl_btn_rect);
+        let eleven = make_number_rect(ratio, ELEVEN_IMG, modal, lvl_btn_rect);
+        let twelve = make_number_rect(ratio, TWELVE_IMG, modal, lvl_btn_rect);
+        let thirteen = make_number_rect(ratio, THIRTEEN_IMG, modal, lvl_btn_rect);
+        let fourteen = make_number_rect(ratio, FOURTEEN_IMG, modal, lvl_btn_rect);
+        let fifteen = make_number_rect(ratio, FIFTEEN_IMG, modal, lvl_btn_rect);
+        let sixteen = make_number_rect(ratio, SIXTEEN_IMG, modal, lvl_btn_rect);
+        let seventeen = make_number_rect(ratio, SEVENTEEN_IMG, modal, lvl_btn_rect);
+        let eighteen = make_number_rect(ratio, EIGHTEEN_IMG, modal, lvl_btn_rect);
+        let nineteen = make_number_rect(ratio, NINETEEN_IMG, modal, lvl_btn_rect);
+        let twenty = make_number_rect(ratio, TWENTY_IMG, modal, lvl_btn_rect);
 
         NumberImages {
             one,
@@ -95,7 +96,7 @@ impl NumberImages {
     }
 
     pub fn get_level_image(&self, level: usize) -> (&SDL_Rect, &SDL_Rect) {
-        let tuple = match level {
+        match level {
             1 => (&self.one.0, &self.one.1),
             2 => (&self.two.0, &self.two.1),
             3 => (&self.three.0, &self.three.1),
@@ -117,8 +118,6 @@ impl NumberImages {
             19 => (&self.nineteen.0, &self.nineteen.1),
             20 => (&self.twenty.0, &self.twenty.1),
             _ => panic!("number 1-20 plz"),
-        };
-
-        tuple
+        }
     }
 }
