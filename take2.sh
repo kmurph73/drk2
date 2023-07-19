@@ -1,0 +1,1 @@
+deno run --allow-run --allow-write --allow-read take2.ts

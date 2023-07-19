@@ -80,11 +80,12 @@ impl MySdl {
 
             IMG_Init((IMG_InitFlags_IMG_INIT_PNG).try_into().unwrap());
 
-            let file = CString::new("skyline-packer-output.png").unwrap();
+            let file = CString::new("resources/skyline-packer-output.png").unwrap();
             let texture = IMG_LoadTexture(renderer, file.as_ptr());
             let square_size = window_width / (COLS + 2);
 
             let globals = Globals::make(window_width, window_height, square_size);
+            println!("{:#?}", globals);
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BlendMode_SDL_BLENDMODE_BLEND);
 

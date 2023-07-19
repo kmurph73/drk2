@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="167px" height="167px" viewBox="0 0 167 167" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>orange kodama</title>
+    <g id="orange-kodama" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Oval">
+            <circle fill="#FF9A0F" cx="83.5" cy="83.5" r="83.5"></circle>
+            <ellipse fill="#000000" cx="51" cy="58.5" rx="17" ry="25.5"></ellipse>
+            <ellipse fill="#000000" cx="118" cy="79.5" rx="17" ry="17.5"></ellipse>
+            <ellipse fill="#000000" cx="71" cy="136" rx="30" ry="10"></ellipse>
+        </g>
+    </g>
+</svg>

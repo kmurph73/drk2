@@ -9,7 +9,7 @@ use crate::{
     handle_mouseup::handle_mouseup,
     keyboard::KeyboardState,
     my_sdl::{
-        MySdl, SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
+        SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
         SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN,
         SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_MOUSEBUTTONDOWN,
         SDL_EventType_SDL_MOUSEBUTTONUP, SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT,
@@ -29,7 +29,6 @@ pub fn handle_events(
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
     current_ts: u128,
-    sdl: &MySdl,
     globals: &Globals,
 ) -> Msg {
     unsafe {
@@ -92,7 +91,6 @@ pub fn handle_events(
                         menu_buttons,
                         endgame_buttons,
                         cmds,
-                        sdl,
                         globals,
                     );
 

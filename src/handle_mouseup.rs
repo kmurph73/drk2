@@ -1,6 +1,5 @@
 use crate::{
-    cmd::Cmd, globals::Globals, my_sdl::MySdl, touches::Touches, ButtonKind, GameState,
-    ImageButton, Msg,
+    cmd::Cmd, globals::Globals, touches::Touches, ButtonKind, GameState, ImageButton, Msg,
 };
 
 pub fn handle_mouseup(
@@ -13,7 +12,6 @@ pub fn handle_mouseup(
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
-    sdl: &MySdl,
     globals: &Globals,
 ) -> Msg {
     if touches.down.is_none() {

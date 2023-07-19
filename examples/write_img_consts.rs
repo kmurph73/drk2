@@ -35,6 +35,8 @@ pub fn main() -> std::io::Result<()> {
 
     let mut lines: Vec<String> = Vec::new();
 
+    lines.push(String::from("pub const BASE_DOT_SIZE: i32 = 160;"));
+
     for img in &p.imgs {
         let file = &img.filename;
         let arr: Vec<&str> = file.split('.').collect();
@@ -47,6 +49,18 @@ pub fn main() -> std::io::Result<()> {
         );
         lines.push(line);
     }
+
+    // lines.push(String::from("pub struct Images {"));
+
+    // for img in &p.imgs {
+    //     let file = &img.filename;
+    //     let arr: Vec<&str> = file.split('.').collect();
+    //     let name = arr[0];
+
+    //     lines.push(format!("    pub {}: Image,", name));
+    // }
+
+    // lines.push(String::from("}"));
 
     let mut output = File::create("./src/img_consts.rs")?;
 

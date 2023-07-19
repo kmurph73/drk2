@@ -1,9 +1,9 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::{img_consts::*, my_sdl::SDL_Rect, prelude::COLS};
+use crate::{my_sdl::SDL_Rect, prelude::COLS};
 
-pub fn percent_of(n: i32, percentage: f64) -> i32 {
-    let n = (n as f64) * percentage;
+pub fn percent_of(n: i32, pct: f64) -> i32 {
+    let n = (n as f64) * pct;
 
     n as i32
 }
@@ -82,32 +82,4 @@ pub fn get_current_timestamp_millis() -> u128 {
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis()
-}
-
-pub fn get_level_image(n: usize) -> SDL_Rect {
-    let tuple = match n {
-        1 => ONE_IMG,
-        2 => TWO_IMG,
-        3 => THREE_IMG,
-        4 => FOUR_IMG,
-        5 => FIVE_IMG,
-        6 => SIX_IMG,
-        7 => SEVEN_IMG,
-        8 => EIGHT_IMG,
-        9 => NINE_IMG,
-        10 => TEN_IMG,
-        11 => ELEVEN_IMG,
-        12 => TWELVE_IMG,
-        13 => THIRTEEN_IMG,
-        14 => FOURTEEN_IMG,
-        15 => FIFTEEN_IMG,
-        16 => SIXTEEN_IMG,
-        17 => SEVENTEEN_IMG,
-        18 => EIGHTEEN_IMG,
-        19 => NINETEEN_IMG,
-        20 => TWENTY_IMG,
-        _ => panic!("number 1-20 plz"),
-    };
-
-    tuple_to_rect(tuple)
 }

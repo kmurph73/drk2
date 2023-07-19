@@ -3,7 +3,7 @@ use crate::{
     draw_game::draw_image,
     globals::Globals,
     my_sdl::{MySdl, SDL_Color, SDL_Rect, SDL_RenderFillRect, SDL_SetRenderDrawColor},
-    util::get_level_image,
+    number_images::NumberImages,
     Image, ImageButton,
 };
 
@@ -50,12 +50,13 @@ pub fn draw_menu(
     image_buttons: &Vec<ImageButton>,
     level: usize,
     Globals {
-        square_size,
         window_width,
+        ratio,
         ..
     }: &Globals,
+    number_images: &NumberImages,
 ) {
-    let srcrect = get_level_image(level);
+    let (srcrect, dstrect) = number_images.get_level_image(level);
     let r = &image_buttons[0].dstrect;
     let container = SDL_Rect {
         x: 0,
@@ -64,13 +65,14 @@ pub fn draw_menu(
         h: r.h,
     };
 
-    let (width, height) = (srcrect.w / 2, srcrect.h / 2);
+    let (width, height) = (srcrect.w as f64 * ratio, srcrect.h as f64 * ratio);
+    let (width, height) = (width as i32, height as i32);
 
     let (x, y) = container.center(width, height);
 
     let dstrect = SDL_Rect::new(x, y, width, height);
 
-    draw_image(&srcrect, &dstrect, sdl);
+    draw_image(srcrect, &dstrect, sdl);
 
     for ImageButton {
         srcrect, dstrect, ..

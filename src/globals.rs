@@ -1,5 +1,10 @@
-use crate::{my_sdl::SDL_Rect, util::percent_of};
+use crate::{
+    img_consts::{BASE_DOT_SIZE, CONNECTOR_IMG, NEW_GAME_BTN_IMG},
+    my_sdl::SDL_Rect,
+    util::percent_of,
+};
 
+#[derive(Debug)]
 pub struct Globals {
     pub window_width: i32,
     pub window_height: i32,
@@ -14,24 +19,30 @@ pub struct Globals {
     pub button_size: (i32, i32),
     pub help_modal: SDL_Rect,
     pub menu_btn: SDL_Rect,
+    pub ratio: f64,
+}
+
+pub fn get_int(ratio: f64, (_x, _y, w, _h): (i32, i32, i32, i32)) -> i32 {
+    (w as f64 * ratio) as i32
+}
+
+pub fn get_size(ratio: f64, (_x, _y, w, h): (i32, i32, i32, i32)) -> (i32, i32) {
+    (((w as f64 * ratio) as i32), ((h as f64 * ratio) as i32))
 }
 
 impl Globals {
     pub fn make(window_width: i32, window_height: i32, square_size: i32) -> Globals {
-        let btn_dims = 82.0 / 325.0;
         let topset = percent_of(square_size, 0.25);
-        let drag_diff = percent_of(square_size, 0.5);
-        let drag_drop_diff = percent_of(square_size, 0.65);
-        let snap_dist = square_size;
+        let drag_diff = percent_of(square_size, 0.7);
+        let drag_drop_diff = percent_of(square_size, 0.60);
+        let snap_dist = percent_of(square_size, 1.6);
         let dot_size = percent_of(square_size, 0.90);
-        let diff = square_size - dot_size;
-        let dotset = diff / 2;
-        let connector_size = percent_of(square_size, 0.28);
-        let button_width = square_size * 6;
-        let button_height = (button_width as f64) * btn_dims;
-        let button_height = button_height as i32;
+        let ratio = (dot_size as f64) / (BASE_DOT_SIZE as f64);
 
-        let button_size = (button_width, button_height);
+        let connector_diff = square_size - dot_size;
+        let dotset = connector_diff / 2;
+        let connector_size = get_int(ratio, CONNECTOR_IMG);
+        let button_size = get_size(ratio, NEW_GAME_BTN_IMG);
 
         let (x, y, w, h) = (
             square_size,
@@ -65,6 +76,7 @@ impl Globals {
             button_size,
             help_modal,
             menu_btn,
+            ratio,
         }
     }
 }

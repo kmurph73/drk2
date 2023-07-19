@@ -65,7 +65,7 @@ fn work() {
 
     let mut packer = TexturePacker::new_skyline(config);
 
-    let entries = glob("./imgs/*.png").unwrap();
+    let entries = glob("./outvgs/*.png").unwrap();
 
     for path in entries {
         let path = path.unwrap();
@@ -107,7 +107,6 @@ fn work() {
     exporter
         .write_to(&mut file, image::ImageFormat::Png)
         .unwrap();
-
     println!("Output texture stored in {:?}", file);
 
     let imgs = Imgs { imgs };
