@@ -1,12 +1,12 @@
 use crate::{calc_dot_drop_dist::DroppingDot, pos::Pos, prelude::BTN_HOLD_DELAY_MS};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LevelChange {
     pub initial: u128,
     pub last: Option<u128>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum GameState {
     PieceLanded,
     DroppingDots(Vec<Option<DroppingDot>>, Vec<i32>),
@@ -19,9 +19,14 @@ pub enum GameState {
     Paused,
     DroppingPiece((i32, f64, u128, i32)),
     Menu(Option<LevelChange>),
+    About,
 }
 
 impl GameState {
+    pub fn is_about(&self) -> bool {
+        *self == GameState::About
+    }
+
     pub fn is_endgame(&self) -> bool {
         *self == GameState::Victory || *self == GameState::Defeat
     }

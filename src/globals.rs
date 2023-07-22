@@ -33,9 +33,9 @@ pub fn get_size(ratio: f64, (_x, _y, w, h): (i32, i32, i32, i32)) -> (i32, i32) 
 impl Globals {
     pub fn make(window_width: i32, window_height: i32, square_size: i32) -> Globals {
         let topset = percent_of(square_size, 0.25);
-        let drag_diff = percent_of(square_size, 0.65);
+        let drag_diff = percent_of(square_size, 0.69);
         let drag_drop_diff = percent_of(square_size, 0.60);
-        let snap_dist = percent_of(square_size, 1.6);
+        let snap_dist = percent_of(square_size, 1.7);
         let dot_size = percent_of(square_size, 0.90);
         let ratio = (dot_size as f64) / (BASE_DOT_SIZE as f64);
 

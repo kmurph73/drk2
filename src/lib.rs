@@ -8,11 +8,12 @@ use cmd::Cmd;
 use draw_game::{
     draw_dots_w_offsets, draw_piece, draw_piece_connectors, draw_piece_connectors_w_offsets,
 };
-use draw_menus::{draw_menu, draw_modal};
+use draw_grid::draw_menu_btn;
+use draw_menus::{draw_about, draw_menu, draw_modal};
 use game_state::GameState;
 use gen_buttons::{
     gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_modal_text,
-    gen_plus_minus_menu_buttons,
+    gen_plus_minus_menu_buttons, gen_top_menu_btn,
 };
 use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
@@ -84,13 +85,14 @@ mod prelude {
     pub const PIECE_DROP_MS: u128 = 40;
     pub const PIECE_DROP_MS_F64: f64 = PIECE_DROP_MS as f64;
 
-    pub const PIECE_TRANSFER_MS: u128 = 200;
+    pub const PIECE_TRANSFER_MS: u128 = 210;
     pub const PIECE_TRANSFER_MS_F64: f64 = PIECE_TRANSFER_MS as f64;
     pub const DROP_MS: i32 = 100;
     pub const SNAP_MS: u128 = 120;
     pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ButtonKind {
     LevelUp,
     LevelDown,
@@ -98,6 +100,7 @@ pub enum ButtonKind {
     NewGame,
     Menu,
     Quit,
+    About,
 }
 
 pub struct TextButton {
@@ -132,6 +135,7 @@ pub enum Msg {
     MouseUp,
     PieceLanded,
     DropPiece,
+    About,
 }
 
 #[no_mangle]
@@ -174,6 +178,7 @@ pub extern "C" fn run_the_game() {
     let mut current_piece = Some(piece);
 
     // let mut state = GameState::Normal(get_current_timestamp_millis());
+    let mut held_state = GameState::Menu(None);
     let mut state = GameState::Menu(None);
 
     // let initial_time = get_current_timestamp();
@@ -184,6 +189,8 @@ pub extern "C" fn run_the_game() {
         pressed: Keyboard::init(false),
         enabled: Keyboard::init(true),
     };
+
+    let top_menu_btn = gen_top_menu_btn(&globals);
 
     'running: loop {
         sdl.clear();
@@ -209,6 +216,7 @@ pub extern "C" fn run_the_game() {
         }
 
         match msg {
+            Msg::About => state = GameState::About,
             Msg::Quit => {
                 break 'running;
             }
@@ -226,15 +234,25 @@ pub extern "C" fn run_the_game() {
                 state = GameState::Menu(None);
             }
             Msg::PauseGame => {
+                held_state = state;
                 state = GameState::Paused;
             }
-            Msg::ResumeGame => state = GameState::Normal(current_ts),
+            Msg::ResumeGame => match &held_state {
+                GameState::Normal(_) => {
+                    state = GameState::Normal(current_ts);
+                }
+                GameState::PreppingNextPiece(_, _) => {
+                    state = GameState::PreppingNextPiece(current_ts, Pos(0, 0));
+                }
+                _ => state = held_state.clone(),
+            },
             Msg::LevelDown => {}
             Msg::LevelUp => {}
             Msg::Nada => {}
             Msg::PieceLanded => {}
             Msg::DropPiece => {}
             Msg::SuspendGame => {
+                held_state = state;
                 state = GameState::Suspended;
             }
             Msg::MouseUp => {
@@ -403,6 +421,7 @@ pub extern "C" fn run_the_game() {
             GameState::Defeat => {}
             GameState::Paused => {}
             GameState::Suspended => {}
+            GameState::About => {}
             GameState::DroppingPiece((dist, dist_px, ts, _)) => {
                 if let Some(piece) = &mut current_piece {
                     let delta = current_ts - ts;
@@ -463,10 +482,14 @@ pub extern "C" fn run_the_game() {
                 &level_buttons,
                 settings.level,
                 &number_images,
+                &globals,
             );
+        } else if state.is_about() {
+            draw_about(&sdl, &globals);
         } else {
             // draw_line(&sdl, &line);
             draw_grid(&sdl, square_size);
+            draw_menu_btn(&sdl, &top_menu_btn);
 
             match &state {
                 GameState::DroppingDots(_, y_offsets) => {
@@ -512,7 +535,7 @@ pub extern "C" fn run_the_game() {
                 draw_modal(&sdl, &endgame_buttons, &victory_image, &globals);
             } else if state == GameState::Defeat {
                 draw_modal(&sdl, &endgame_buttons, &defeat_image, &globals);
-            } else if state == GameState::Paused {
+            } else if state.is_paused() {
                 draw_modal(&sdl, &help_buttons, &paused_image, &globals);
             }
 

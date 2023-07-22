@@ -1,7 +1,8 @@
 use crate::{
     globals::Globals,
     img_consts::{
-        MENU_BTN_IMG, MINUS_BTN_IMG, NEW_GAME_BTN_IMG, PLAY_BTN_IMG, PLUS_BTN_IMG, RESUME_BTN_IMG,
+        ABOUT_BTN_IMG, MENU_BTN_IMG, MENU_LIGHT_BTN_IMG, MINUS_BTN_IMG, NEW_GAME_BTN_IMG,
+        PLAY_BTN_IMG, PLUS_BTN_IMG, RESUME_BTN_IMG,
     },
     my_sdl::SDL_Rect,
     util::tuple_to_rect,
@@ -134,6 +135,22 @@ pub fn gen_help_buttons(globals: &Globals) -> Vec<ImageButton> {
     buttons
 }
 
+pub fn gen_top_menu_btn(globals: &Globals) -> Image {
+    let srcrect = tuple_to_rect(MENU_LIGHT_BTN_IMG);
+
+    let w = globals.square_size * 4;
+    let ratio = w as f64 / srcrect.w as f64;
+
+    let h = ratio * (srcrect.h as f64);
+
+    let x = (globals.window_width - globals.square_size * 4) - (globals.square_size / 2);
+    let y = globals.square_size / 5;
+
+    let dstrect = SDL_Rect::new(x, y, w, h as i32);
+
+    Image { srcrect, dstrect }
+}
+
 pub fn gen_menu_buttons(globals: &Globals) -> Vec<ImageButton> {
     let mut buttons: Vec<ImageButton> = Vec::with_capacity(2);
 
@@ -142,7 +159,7 @@ pub fn gen_menu_buttons(globals: &Globals) -> Vec<ImageButton> {
     let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
 
     // let width = sw / 2;
-    let dx = (globals.window_width - (dw)) / 2;
+    let dx = (globals.window_width - dw) / 2;
 
     let dy = globals.square_size * 2;
     // let x = 100; // (w - (sw / 2)) / 2;
@@ -150,6 +167,19 @@ pub fn gen_menu_buttons(globals: &Globals) -> Vec<ImageButton> {
 
     let new_game = ImageButton {
         kind: ButtonKind::NewGame,
+        srcrect,
+        dstrect,
+    };
+
+    buttons.push(new_game);
+
+    let srcrect = tuple_to_rect(ABOUT_BTN_IMG);
+    let dy = dy + globals.square_size * 6;
+
+    let dstrect = SDL_Rect::dst_new(dx, dy, dw, dh);
+
+    let new_game = ImageButton {
+        kind: ButtonKind::About,
         srcrect,
         dstrect,
     };

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="527px" height="130px" viewBox="0 0 527 130" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>menu_light</title>
+    <g id="buttons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="menu_light">
+            <rect id="Rectangle" stroke="#FF5300" stroke-width="4" x="2" y="2" width="523" height="126"></rect>
+            <text id="MENU" font-family="Helvetica-Light, Helvetica" font-size="60" font-weight="300" fill="#FFFFFF">
+                <tspan x="175" y="87">MENU</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

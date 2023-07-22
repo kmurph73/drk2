@@ -29,6 +29,7 @@ pub use self::bindings::{
 
 pub struct MySdl {
     pub texture: *mut SDL_Texture,
+    pub about_texture: *mut SDL_Texture,
     pub renderer: *mut SDL_Renderer,
     pub window: *mut SDL_Window,
 }
@@ -85,12 +86,15 @@ impl MySdl {
             let square_size = window_width / (COLS + 2);
 
             let globals = Globals::make(window_width, window_height, square_size);
-            println!("{:#?}", globals);
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BlendMode_SDL_BLENDMODE_BLEND);
 
+            let file = CString::new("resources/aboot.png").unwrap();
+            let about_texture = IMG_LoadTexture(renderer, file.as_ptr());
+
             let sdl = MySdl {
                 texture,
+                about_texture,
                 renderer,
                 window,
             };
