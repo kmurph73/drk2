@@ -4,8 +4,9 @@ const connectorSize = Math.floor(dotSize * 0.28);
 
 const colors = ["red", "green", "blue", "yellow", "orange"];
 
+const levelHeight = dotSize * 0.7;
 const textHeight = dotSize * 2 * 0.85;
-const btnHeight = dotSize * 2 * 0.85;
+const btnHeight = dotSize * 2 * 0.8;
 
 const numberMap: Record<string, string> = {
   1: "one",
@@ -33,7 +34,17 @@ const numberMap: Record<string, string> = {
 const buttonTransforms = async () => {
   let commands = [];
 
-  const btns = ["menu", "new_game", "minus", "plus", "resume", "quit", "play"];
+  const btns = [
+    "menu",
+    "new_game",
+    "minus",
+    "plus",
+    "resume",
+    "quit",
+    "play",
+    "about",
+    "menu_light",
+  ];
 
   for (let index = 0; index < btns.length; index++) {
     const btn = btns[index];
@@ -82,7 +93,7 @@ const buttonTransforms = async () => {
 const texts = async () => {
   let commands = [];
 
-  const texts = ["victory", "defeat", "paused"];
+  const texts = ["victory", "defeat", "paused", "level"];
 
   for (let index = 0; index < texts.length; index++) {
     const text = texts[index];
@@ -105,7 +116,8 @@ const texts = async () => {
     const [_name, _t, dims] = resp.split(" ");
     let [w, h] = dims.split("x").map((s) => parseInt(s));
 
-    const ratio = textHeight / h;
+    const th = texts[index] === "level" ? levelHeight : textHeight;
+    const ratio = th / h;
 
     w = Math.floor(ratio * w);
 
@@ -117,7 +129,7 @@ const texts = async () => {
         "-w",
         w.toString(),
         "-h",
-        textHeight.toString(),
+        th.toString(),
         `svgs/${text}.svg`,
       ],
     });

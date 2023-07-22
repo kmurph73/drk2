@@ -22,40 +22,55 @@ pub fn handle_mouseup(
         return Msg::Nada;
     }
 
-    if state.is_paused() {
-        if let Some(btn) = help_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
-            match btn.kind {
-                ButtonKind::Resume => return Msg::ResumeGame,
-                ButtonKind::NewGame => return Msg::NewGame,
-                ButtonKind::Menu => return Msg::Menu,
-                ButtonKind::Quit => return Msg::Quit,
-                _ => {}
-            }
-        };
-    } else if state.is_endgame() {
-        if let Some(btn) = endgame_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
-            match btn.kind {
-                ButtonKind::NewGame => return Msg::NewGame,
-                ButtonKind::Menu => return Msg::Menu,
-                ButtonKind::Quit => return Msg::Quit,
-                _ => {}
-            }
-        };
-    } else if state.is_menu() {
-        if let Some(btn) = menu_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
-            match btn.kind {
-                ButtonKind::NewGame => return Msg::NewGame,
-                ButtonKind::Quit => return Msg::Quit,
-                _ => {}
+    match state {
+        GameState::Paused => {
+            if let Some(btn) = help_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
+                match btn.kind {
+                    ButtonKind::Resume => return Msg::ResumeGame,
+                    ButtonKind::NewGame => return Msg::NewGame,
+                    ButtonKind::Menu => return Msg::Menu,
+                    ButtonKind::Quit => return Msg::Quit,
+                    _ => {}
+                }
+            };
+        }
+        GameState::Victory | GameState::Defeat => {
+            if let Some(btn) = endgame_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
+                match btn.kind {
+                    ButtonKind::NewGame => return Msg::NewGame,
+                    ButtonKind::Menu => return Msg::Menu,
+                    ButtonKind::Quit => return Msg::Quit,
+                    _ => {}
+                }
+            };
+        }
+        GameState::Menu(_) => {
+            if let Some(btn) = menu_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
+                match btn.kind {
+                    ButtonKind::NewGame => return Msg::NewGame,
+                    ButtonKind::About => return Msg::About,
+                    ButtonKind::Quit => return Msg::Quit,
+                    _ => {}
+                }
             }
         }
-    } else if state.is_normal() {
-        if globals.menu_btn.contains(x, y) {
-            return Msg::PauseGame;
-        } else if !touches.dragged && touches.down.is_some() {
-            let cmd = Cmd::Rotate;
-            cmds.push(cmd);
+        GameState::Normal(_) => {
+            if globals.menu_btn.contains(x, y) {
+                return Msg::PauseGame;
+            } else if !touches.dragged && touches.down.is_some() {
+                let cmd = Cmd::Rotate;
+                cmds.push(cmd);
+            }
         }
+        GameState::PreppingNextPiece(_, _) => {
+            if globals.menu_btn.contains(x, y) {
+                return Msg::PauseGame;
+            }
+        }
+        GameState::About => {
+            return Msg::Menu;
+        }
+        _ => {}
     }
 
     touches.clear();
