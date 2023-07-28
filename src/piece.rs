@@ -66,6 +66,12 @@ fn get_next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
+    pub fn initial_right_x(&self, square_size: i32) -> i32 {
+        let Pos(x, _y) = self.lhs.tile.top_left_px(square_size);
+
+        x + square_size * 2
+    }
+
     pub fn center_connector(&self, globals: &Globals, x_off: i32, y_off: i32) -> (i32, i32) {
         let square_size = globals.square_size;
         let connector_size = globals.connector_size;

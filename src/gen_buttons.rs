@@ -1,13 +1,59 @@
 use crate::{
     globals::Globals,
     img_consts::{
-        ABOUT_BTN_IMG, MENU_BTN_IMG, MENU_LIGHT_BTN_IMG, MINUS_BTN_IMG, NEW_GAME_BTN_IMG,
-        PLAY_BTN_IMG, PLUS_BTN_IMG, RESUME_BTN_IMG,
+        ABOUT_BTN_IMG, LEVEL_IMG, MENU_BTN_IMG, MENU_LIGHT_BTN_IMG, MINUS_BTN_IMG,
+        NEW_GAME_BTN_IMG, NEXT_LEVEL_BTN_IMG, PLAY_BTN_IMG, PLUS_BTN_IMG, RESUME_BTN_IMG,
     },
+    load_save_settings::Settings,
     my_sdl::SDL_Rect,
+    number_images::NumberImages,
     util::tuple_to_rect,
     ButtonKind, Image, ImageButton,
 };
+
+pub fn gen_level_text(globals: &Globals, settings: &Settings, x: i32) -> Vec<Image> {
+    let mut arr = Vec::with_capacity(2);
+    let offset = globals.square_size / 8;
+
+    let dest_height = globals.square_size as f64 / 2.0;
+    let (_x, _y, w, h) = LEVEL_IMG;
+    let text_ratio = dest_height / h as f64;
+
+    let dest_width = w as f64 * text_ratio;
+
+    let srcrect = tuple_to_rect(LEVEL_IMG);
+    let dstrect = SDL_Rect {
+        x,
+        y: offset,
+        w: dest_width as i32,
+        h: dest_height as i32,
+    };
+
+    let img = Image { srcrect, dstrect };
+    arr.push(img);
+
+    let srcrect = NumberImages::get_number_img(settings.level);
+    let SDL_Rect { w, h, .. } = srcrect;
+
+    let text_ratio = dest_height / h as f64;
+
+    let dest_width = w as f64 * text_ratio;
+
+    let (x, _y) = dstrect.top_right();
+    let x = x + offset;
+
+    let dstrect = SDL_Rect {
+        x,
+        y: offset,
+        w: dest_width as i32,
+        h: dest_height as i32,
+    };
+
+    let img = Image { srcrect, dstrect };
+    arr.push(img);
+
+    arr
+}
 
 pub fn gen_modal_text(modal: &SDL_Rect, srcrect: SDL_Rect, ratio: f64, square_size: i32) -> Image {
     let dy = modal.y + square_size / 2;
@@ -131,6 +177,67 @@ pub fn gen_help_buttons(globals: &Globals) -> Vec<ImageButton> {
     };
 
     buttons.push(resume);
+
+    buttons
+}
+
+pub fn gen_victory_buttons(
+    Globals {
+        square_size,
+        window_width,
+        help_modal,
+        button_size,
+        ..
+    }: &Globals,
+    settings: &Settings,
+) -> Vec<ImageButton> {
+    let mut buttons: Vec<ImageButton> = Vec::with_capacity(2);
+
+    let y = help_modal.y + square_size * 3;
+
+    let on_last_level = settings.level == 20;
+
+    let (sx, sy, sw, sh) = if on_last_level {
+        NEW_GAME_BTN_IMG
+    } else {
+        NEXT_LEVEL_BTN_IMG
+    };
+
+    let (dw, dh) = *button_size;
+
+    let x = (window_width - dw) / 2;
+
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
+    let dstrect = SDL_Rect::new(x, y, dw, dh);
+
+    let kind = if settings.level == 20 {
+        ButtonKind::NewGame
+    } else {
+        ButtonKind::NextLevel
+    };
+
+    let next_level = ImageButton {
+        kind,
+        srcrect,
+        dstrect,
+    };
+
+    buttons.push(next_level);
+
+    let y = y + square_size + dh;
+
+    let (sx, sy, sw, sh) = MENU_BTN_IMG;
+    let srcrect = SDL_Rect::src_new(sx, sy, sw, sh);
+
+    let dstrect = SDL_Rect::new(x, y, dw, dh);
+
+    let menu = ImageButton {
+        kind: ButtonKind::Menu,
+        srcrect,
+        dstrect,
+    };
+
+    buttons.push(menu);
 
     buttons
 }

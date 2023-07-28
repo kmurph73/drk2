@@ -43,7 +43,7 @@ impl MySdl {
 
             let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI; // | SDL_WindowFlags_SDL_WINDOW_FULLSCREEN; //| SDL_WindowFlags_SDL_WINDOW_BORDERLESS;
 
-            let title = CString::new("Dr K Dos").expect("CString::new failed");
+            let title = CString::new("Dr. Kodama").expect("CString::new failed");
 
             let window_width = 393;
             let window_height = 830;
@@ -61,7 +61,8 @@ impl MySdl {
             let quality = CString::new("SDL_RENDER_SCALE_QUALITY").unwrap();
             SDL_SetHint(quality.as_ptr(), linear.as_ptr());
 
-            let renderer_flags = SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC;
+            let renderer_flags = SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC
+                | SDL_RendererFlags_SDL_RENDERER_ACCELERATED;
 
             let renderer = SDL_CreateRenderer(window, 0, renderer_flags);
 
@@ -74,10 +75,6 @@ impl MySdl {
             SDL_RenderSetLogicalSize(renderer, w, h);
             let window_width = w;
             let window_height = h;
-
-            let log = format!("WTF: {}, {}", w, h);
-            let cstr = CString::new(log).unwrap();
-            SDL_Log(cstr.as_ptr());
 
             IMG_Init((IMG_InitFlags_IMG_INIT_PNG).try_into().unwrap());
 

@@ -8,12 +8,12 @@ use cmd::Cmd;
 use draw_game::{
     draw_dots_w_offsets, draw_piece, draw_piece_connectors, draw_piece_connectors_w_offsets,
 };
-use draw_grid::draw_menu_btn;
+use draw_grid::{draw_images, draw_menu_btn};
 use draw_menus::{draw_about, draw_menu, draw_modal};
 use game_state::GameState;
 use gen_buttons::{
-    gen_endgame_buttons, gen_help_buttons, gen_menu_buttons, gen_modal_text,
-    gen_plus_minus_menu_buttons, gen_top_menu_btn,
+    gen_endgame_buttons, gen_help_buttons, gen_level_text, gen_menu_buttons, gen_modal_text,
+    gen_plus_minus_menu_buttons, gen_top_menu_btn, gen_victory_buttons,
 };
 use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
@@ -78,11 +78,10 @@ mod prelude {
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const LANDED_DELAY_MS: u128 = 200;
     pub const TICK_RATE_MS: u128 = 800;
-    pub const LEVEL_DEFAULT: usize = 10;
+    pub const LEVEL_DEFAULT: usize = 1;
     pub const SPEED_DEFAULT: usize = 800;
-    pub const SETTINGS_PATH: &str = "settings.json";
 
-    pub const PIECE_DROP_MS: u128 = 40;
+    pub const PIECE_DROP_MS: u128 = 50;
     pub const PIECE_DROP_MS_F64: f64 = PIECE_DROP_MS as f64;
 
     pub const PIECE_TRANSFER_MS: u128 = 210;
@@ -98,6 +97,7 @@ pub enum ButtonKind {
     LevelDown,
     Resume,
     NewGame,
+    NextLevel,
     Menu,
     Quit,
     About,
@@ -129,6 +129,7 @@ pub enum Msg {
     ResumeGame,
     SuspendGame,
     NewGame,
+    NextLevel,
     Nada,
     Quit,
     Menu,
@@ -155,6 +156,7 @@ pub extern "C" fn run_the_game() {
     let help_buttons = gen_help_buttons(&globals);
     let endgame_buttons = gen_endgame_buttons(&globals);
     let menu_buttons = gen_menu_buttons(&globals);
+    let mut victory_buttons = gen_victory_buttons(&globals, &settings);
     let y = menu_buttons[0].dstrect.y + square_size * 3;
     let level_buttons = gen_plus_minus_menu_buttons(y, &globals);
 
@@ -183,6 +185,8 @@ pub extern "C" fn run_the_game() {
 
     // let initial_time = get_current_timestamp();
 
+    let mut level_texts: Vec<Image> = Vec::with_capacity(2);
+
     let mut pieces: Vec<Piece> = Vec::new();
 
     let mut keys = KeyboardState {
@@ -207,6 +211,7 @@ pub extern "C" fn run_the_game() {
             &help_buttons,
             &menu_buttons,
             &endgame_buttons,
+            &victory_buttons,
             current_ts,
             &globals,
         );
@@ -221,12 +226,33 @@ pub extern "C" fn run_the_game() {
                 break 'running;
             }
             Msg::NewGame => {
-                squares = random_scenario(&mut rng, settings.level * 3);
+                victory_buttons = gen_victory_buttons(&globals, &settings);
+                squares = random_scenario(&mut rng, settings.level * 1);
                 touches.clear();
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
-                let od = Piece::random_on_deck(&mut rng);
-                on_deck_piece = Some(od);
+
+                let on_deck = Piece::random_on_deck(&mut rng);
+                let x = on_deck.initial_right_x(square_size) + square_size / 8;
+
+                level_texts = gen_level_text(&globals, &settings, x);
+                on_deck_piece = Some(on_deck);
+
+                state = GameState::Normal(current_ts);
+            }
+            Msg::NextLevel => {
+                settings.level = settings.level + 1;
+
+                victory_buttons = gen_victory_buttons(&globals, &settings);
+                squares = random_scenario(&mut rng, settings.level * 1);
+                touches.clear();
+                pieces.clear();
+                current_piece = Some(Piece::random(&mut rng));
+                let on_deck = Piece::random_on_deck(&mut rng);
+                let x = on_deck.initial_right_x(square_size) + square_size / 8;
+                on_deck_piece = Some(on_deck);
+
+                level_texts = gen_level_text(&globals, &settings, x);
 
                 state = GameState::Normal(current_ts);
             }
@@ -490,6 +516,7 @@ pub extern "C" fn run_the_game() {
             // draw_line(&sdl, &line);
             draw_grid(&sdl, square_size);
             draw_menu_btn(&sdl, &top_menu_btn);
+            draw_images(&sdl, &level_texts);
 
             match &state {
                 GameState::DroppingDots(_, y_offsets) => {
@@ -532,7 +559,7 @@ pub extern "C" fn run_the_game() {
             }
 
             if state == GameState::Victory {
-                draw_modal(&sdl, &endgame_buttons, &victory_image, &globals);
+                draw_modal(&sdl, &victory_buttons, &victory_image, &globals);
             } else if state == GameState::Defeat {
                 draw_modal(&sdl, &endgame_buttons, &defeat_image, &globals);
             } else if state.is_paused() {

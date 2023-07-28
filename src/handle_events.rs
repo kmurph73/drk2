@@ -28,6 +28,7 @@ pub fn handle_events(
     help_buttons: &[ImageButton],
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
+    victory_buttons: &[ImageButton],
     current_ts: u128,
     globals: &Globals,
 ) -> Msg {
@@ -90,6 +91,7 @@ pub fn handle_events(
                         help_buttons,
                         menu_buttons,
                         endgame_buttons,
+                        victory_buttons,
                         cmds,
                         globals,
                     );

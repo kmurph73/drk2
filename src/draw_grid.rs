@@ -67,3 +67,11 @@ pub fn draw_menu_btn(sdl: &MySdl, Image { srcrect, dstrect }: &Image) {
         SDL_RenderCopy(sdl.renderer, sdl.texture, srcrect, dstrect);
     }
 }
+
+pub fn draw_images(sdl: &MySdl, imgs: &[Image]) {
+    for i in imgs {
+        unsafe {
+            SDL_RenderCopy(sdl.renderer, sdl.texture, &i.srcrect, &i.dstrect);
+        }
+    }
+}

@@ -3,7 +3,7 @@ use std::io::Write;
 
 use serde::{Deserialize, Serialize};
 
-use crate::prelude::{LEVEL_DEFAULT, SETTINGS_PATH, SPEED_DEFAULT};
+use crate::prelude::{LEVEL_DEFAULT, SPEED_DEFAULT};
 
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
@@ -16,6 +16,7 @@ pub fn load_settings() -> Settings {
         level: LEVEL_DEFAULT,
         speed: SPEED_DEFAULT,
     }
+
     // let results = fs::read_to_string(SETTINGS_PATH);
 
     // match results {
@@ -43,6 +44,6 @@ pub fn load_settings() -> Settings {
 pub fn save_settings(settings: &Settings) {
     let json = serde_json::to_string(settings).unwrap();
 
-    let mut output = File::create(SETTINGS_PATH).unwrap();
+    let mut output = File::create("settings.json").unwrap();
     write!(output, "{json}").unwrap();
 }
