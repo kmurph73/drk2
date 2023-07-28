@@ -44,6 +44,7 @@ const buttonTransforms = async () => {
     "play",
     "about",
     "menu_light",
+    "next_level",
   ];
 
   for (let index = 0; index < btns.length; index++) {

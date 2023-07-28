@@ -11,6 +11,7 @@ pub fn handle_mouseup(
     help_buttons: &[ImageButton],
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
+    victory_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
     globals: &Globals,
 ) -> Msg {
@@ -34,7 +35,21 @@ pub fn handle_mouseup(
                 }
             };
         }
-        GameState::Victory | GameState::Defeat => {
+        GameState::Victory => {
+            if let Some(btn) = victory_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
+                match btn.kind {
+                    ButtonKind::NewGame => return Msg::NewGame,
+                    ButtonKind::NextLevel => {
+                        println!("NEXT LEVEL PLZ");
+                        return Msg::NextLevel;
+                    }
+                    ButtonKind::Menu => return Msg::Menu,
+                    ButtonKind::Quit => return Msg::Quit,
+                    _ => {}
+                }
+            };
+        }
+        GameState::Defeat => {
             if let Some(btn) = endgame_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
                 match btn.kind {
                     ButtonKind::NewGame => return Msg::NewGame,

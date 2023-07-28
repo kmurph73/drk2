@@ -5,6 +5,7 @@ use crate::{
         THIRTEEN_IMG, THREE_IMG, TWELVE_IMG, TWENTY_IMG, TWO_IMG,
     },
     my_sdl::SDL_Rect,
+    util::tuple_to_rect,
 };
 
 pub struct NumberImages {
@@ -49,6 +50,34 @@ pub fn make_number_rect(
 }
 
 impl NumberImages {
+    pub fn get_number_img(n: usize) -> SDL_Rect {
+        let tup = match n {
+            1 => ONE_IMG,
+            2 => TWO_IMG,
+            3 => THREE_IMG,
+            4 => FOUR_IMG,
+            5 => FIVE_IMG,
+            6 => SIX_IMG,
+            7 => SEVEN_IMG,
+            8 => EIGHT_IMG,
+            9 => NINE_IMG,
+            10 => TEN_IMG,
+            11 => ELEVEN_IMG,
+            12 => TWELVE_IMG,
+            13 => THIRTEEN_IMG,
+            14 => FOURTEEN_IMG,
+            15 => FIFTEEN_IMG,
+            16 => SIXTEEN_IMG,
+            17 => SEVENTEEN_IMG,
+            18 => EIGHTEEN_IMG,
+            19 => NINETEEN_IMG,
+            20 => TWENTY_IMG,
+            _ => panic!("should be 1..20"),
+        };
+
+        tuple_to_rect(tup)
+    }
+
     pub fn make_numbers(ratio: f64, modal: &SDL_Rect, lvl_btn_rect: &SDL_Rect) -> NumberImages {
         let one = make_number_rect(ratio, ONE_IMG, modal, lvl_btn_rect);
         let two = make_number_rect(ratio, TWO_IMG, modal, lvl_btn_rect);
