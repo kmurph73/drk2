@@ -86,7 +86,7 @@ mod prelude {
 
     pub const PIECE_TRANSFER_MS: u128 = 210;
     pub const PIECE_TRANSFER_MS_F64: f64 = PIECE_TRANSFER_MS as f64;
-    pub const DROP_MS: i32 = 100;
+    pub const DROP_MS: i32 = 120;
     pub const SNAP_MS: u128 = 120;
     pub const BTN_HOLD_DELAY_MS: u128 = 100;
 }
@@ -227,7 +227,7 @@ pub extern "C" fn run_the_game() {
             }
             Msg::NewGame => {
                 victory_buttons = gen_victory_buttons(&globals, &settings);
-                squares = random_scenario(&mut rng, settings.level * 1);
+                squares = random_scenario(&mut rng, settings.level * 3);
                 touches.clear();
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
@@ -244,7 +244,7 @@ pub extern "C" fn run_the_game() {
                 settings.level = settings.level + 1;
 
                 victory_buttons = gen_victory_buttons(&globals, &settings);
-                squares = random_scenario(&mut rng, settings.level * 1);
+                squares = random_scenario(&mut rng, settings.level * 3);
                 touches.clear();
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));

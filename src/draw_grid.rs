@@ -1,8 +1,5 @@
 use crate::{
-    my_sdl::{
-        MySdl, SDL_Rect, SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderFillRect,
-        SDL_SetRenderDrawColor,
-    },
+    my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy, SDL_RenderFillRect, SDL_SetRenderDrawColor},
     prelude::{COLS, ROWS, TOPSET},
     Image,
 };
@@ -22,34 +19,32 @@ pub fn draw_line(sdl: &MySdl, line: &Vec<(i32, i32)>) {
 }
 
 fn draw_rows(sdl: &MySdl, square_size: i32) {
-    let x1 = square_size;
+    let x = square_size;
     let x2 = square_size * 9;
+
+    let w = x2 - x;
 
     let screen_rows = ROWS + 1;
 
     for i in 2..screen_rows {
-        let y1 = i * square_size + TOPSET;
-        let y2 = i * square_size + TOPSET;
+        let y = i * square_size + TOPSET;
 
-        unsafe {
-            SDL_RenderDrawLine(sdl.renderer, x1, y1, x2, y2);
-        }
+        sdl.draw_horizontal_line(x, y - 1, w);
     }
 }
 
 fn draw_cols(sdl: &MySdl, square_size: i32) {
-    let y1 = square_size * 2 + TOPSET;
+    let y = square_size * 2 + TOPSET;
     let y2 = square_size * ROWS + TOPSET;
+
+    let h = y2 - y;
 
     let cols = COLS + 2;
 
     for i in 1..cols {
-        let x1 = square_size * i;
-        let x2 = square_size * i;
+        let x = square_size * i;
 
-        unsafe {
-            SDL_RenderDrawLine(sdl.renderer, x1, y1, x2, y2);
-        }
+        sdl.draw_vertical_line(x, y, h);
     }
 }
 
