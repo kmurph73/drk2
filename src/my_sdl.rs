@@ -129,4 +129,20 @@ impl MySdl {
             SDL_RenderFillRect(self.renderer, &rect);
         }
     }
+
+    pub fn draw_horizontal_line(&self, x: i32, y: i32, w: i32) {
+        let rect = SDL_Rect { x, y, w, h: 2 };
+
+        unsafe {
+            SDL_RenderDrawRect(self.renderer, &rect);
+        }
+    }
+
+    pub fn draw_vertical_line(&self, x: i32, y: i32, h: i32) {
+        let rect = SDL_Rect { x, y, w: 2, h };
+
+        unsafe {
+            SDL_RenderDrawRect(self.renderer, &rect);
+        }
+    }
 }

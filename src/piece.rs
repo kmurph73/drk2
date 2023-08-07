@@ -19,31 +19,36 @@ pub struct Rotation {
     next_rotation: i32,
 }
 
-fn attempt_rotation(rotation: i32, attempt: usize) -> Rotation {
+fn attempt_rotation(rotation: i32, attempt: usize) -> Option<Rotation> {
     let is_even = rotation % 2 == 0;
 
-    let (lhs, rhs) = match attempt {
+    let result = match attempt {
         0 => match is_even {
-            true => ((0, 0), (-1, -1)),
-            false => ((1, 0), (0, 1)),
+            true => Some(((0, 0), (-1, -1))),
+            false => Some(((1, 0), (0, 1))),
         },
         1 => match is_even {
-            true => ((0, 1), (-1, 0)),
-            false => ((0, 0), (-1, 1)),
+            true => Some(((0, 1), (-1, 0))),
+            false => Some(((0, 0), (-1, 1))),
         },
         2 => match is_even {
-            true => ((1, 0), (0, -1)),
-            false => ((0, -1), (-1, 0)),
+            true => Some(((1, 0), (0, -1))),
+            false => None,
         },
         _ => panic!("{attempt} should be 0..2"),
     };
 
-    let (lhs, rhs) = if rotation > 1 { (rhs, lhs) } else { (lhs, rhs) };
+    match result {
+        Some((lhs, rhs)) => {
+            let (lhs, rhs) = if rotation > 1 { (rhs, lhs) } else { (lhs, rhs) };
 
-    Rotation {
-        left_offset: Pos::from_tuple(lhs),
-        right_offset: Pos::from_tuple(rhs),
-        next_rotation: get_next_rotation(rotation),
+            return Some(Rotation {
+                left_offset: Pos::from_tuple(lhs),
+                right_offset: Pos::from_tuple(rhs),
+                next_rotation: get_next_rotation(rotation),
+            });
+        }
+        None => return None,
     }
 }
 
@@ -342,21 +347,26 @@ impl Piece {
         let rotation = self.rotation;
 
         while attempt < 3 {
-            let Rotation {
-                left_offset,
-                right_offset,
-                next_rotation,
-            } = attempt_rotation(rotation, attempt);
+            let rotation = attempt_rotation(rotation, attempt);
+            if let Some(rotation) = rotation {
+                let Rotation {
+                    left_offset,
+                    right_offset,
+                    next_rotation,
+                } = rotation;
 
-            let lhs = self.lhs.tile.add(left_offset);
-            let rhs = self.rhs.tile.add(right_offset);
+                let lhs = self.lhs.tile.add(left_offset);
+                let rhs = self.rhs.tile.add(right_offset);
 
-            if rhs.blocked(squares, -2) || lhs.blocked(squares, -2) {
-                attempt += 1;
-                continue;
-            } else {
-                return Some((lhs, rhs, next_rotation));
+                if rhs.blocked(squares, -2) || lhs.blocked(squares, -2) {
+                    attempt += 1;
+                    continue;
+                } else {
+                    return Some((lhs, rhs, next_rotation));
+                }
             }
+
+            attempt += 1;
         }
 
         None

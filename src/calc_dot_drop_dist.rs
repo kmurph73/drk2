@@ -35,6 +35,12 @@ impl DroppingDot {
 
         y_offset as i32
     }
+
+    pub fn adjust_mut(&mut self) {
+        let pct = 1.0 - (self.dist as f64 * 0.025);
+
+        self.total_time = self.total_time * pct;
+    }
 }
 
 pub fn move_squares(
@@ -129,19 +135,22 @@ pub fn calc_dot_drop_dist(
 
                             let total_time = DROP_MS * dist;
                             let total_time = total_time as f64;
+
                             let pixel_dist = dist * square_size;
 
                             let (lhs, rhs) = piece.indexes();
 
-                            let dot = DroppingDot {
+                            let mut dropping_dot = DroppingDot {
                                 dist,
                                 dist_px: pixel_dist,
                                 ts: current_ts,
                                 total_time,
                             };
 
-                            arr[lhs] = Some(dot.clone());
-                            arr[rhs] = Some(dot);
+                            dropping_dot.adjust_mut();
+
+                            arr[lhs] = Some(dropping_dot.clone());
+                            arr[rhs] = Some(dropping_dot);
 
                             break;
                         }
@@ -166,14 +175,16 @@ pub fn calc_dot_drop_dist(
                 }
 
                 let total_time = DROP_MS * dist;
-                let drop = DroppingDot {
+                let mut dropping_dot = DroppingDot {
                     dist,
                     dist_px: dist * square_size,
                     ts: current_ts,
                     total_time: total_time as f64,
                 };
 
-                arr[idx] = Some(drop);
+                dropping_dot.adjust_mut();
+
+                arr[idx] = Some(dropping_dot);
             }
         }
 
