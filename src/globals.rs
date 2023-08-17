@@ -1,6 +1,7 @@
 use crate::{
     img_consts::{BASE_DOT_SIZE, CONNECTOR_IMG, NEW_GAME_BTN_IMG},
     my_sdl::SDL_Rect,
+    prelude::{COLS, ROWS},
     util::percent_of,
 };
 
@@ -11,6 +12,7 @@ pub struct Globals {
     pub square_size: i32,
     pub dotset: i32,
     pub topset: i32,
+    pub left_x: i32,
     pub drag_diff: i32,
     pub drag_drop_diff: i32,
     pub snap_dist: i32,
@@ -31,7 +33,17 @@ pub fn get_size(ratio: f64, (_x, _y, w, h): (i32, i32, i32, i32)) -> (i32, i32) 
 }
 
 impl Globals {
-    pub fn make(window_width: i32, window_height: i32, square_size: i32) -> Globals {
+    pub fn make(window_width: i32, window_height: i32) -> Globals {
+        let square_size = window_width / (COLS + 2);
+
+        let square_size = if square_size * (ROWS + 1) > window_height {
+            window_height / (ROWS + 1)
+        } else {
+            square_size
+        };
+
+        let left_x = (window_width - (square_size * COLS)) / 2;
+
         let topset = percent_of(square_size, 0.25);
         let drag_diff = percent_of(square_size, 0.69);
         let drag_drop_diff = percent_of(square_size, 0.70);
@@ -63,6 +75,7 @@ impl Globals {
         let menu_btn = SDL_Rect::new(x, y, w, h);
 
         Globals {
+            left_x,
             window_height,
             window_width,
             square_size,

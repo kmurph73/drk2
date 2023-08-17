@@ -15,20 +15,14 @@ pub fn draw_image(srcrect: &SDL_Rect, dstrect: &SDL_Rect, sdl: &MySdl) {
     }
 }
 
-fn draw_dot(
-    dot: &Dot,
-    sdl: &MySdl,
-    (offset_x, offset_y): (i32, i32),
-    Globals {
-        square_size,
-        dot_size,
-        dotset,
-        ..
-    }: &Globals,
-) {
+fn draw_dot(dot: &Dot, sdl: &MySdl, (offset_x, offset_y): (i32, i32), globals: &Globals) {
+    let Globals {
+        dot_size, dotset, ..
+    } = globals;
+
     let srcrect = dot.img_rect();
 
-    let Pos(x, y) = dot.tile.top_left_px(*square_size);
+    let Pos(x, y) = dot.tile.top_left_px(globals);
 
     let w = *dot_size;
     let h = w;

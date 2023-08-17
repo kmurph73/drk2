@@ -1,5 +1,6 @@
 use crate::{
     dot::Dot,
+    globals::Globals,
     prelude::{COLS, ROWS},
     util::map_idx,
 };
@@ -28,12 +29,19 @@ impl Pos {
         Pos(x, y)
     }
 
-    pub fn top_left_px(&self, square_size: i32) -> Pos {
+    pub fn top_left_px(
+        &self,
+        Globals {
+            square_size,
+            left_x,
+            ..
+        }: &Globals,
+    ) -> Pos {
         let Pos(x, y) = self;
 
         let y = y * square_size;
 
-        let x = (x + 1) * square_size;
+        let x = (x * square_size) + left_x;
 
         Pos(x, y)
     }

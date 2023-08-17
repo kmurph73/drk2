@@ -1,4 +1,5 @@
 use crate::{
+    globals::Globals,
     my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy, SDL_RenderFillRect, SDL_SetRenderDrawColor},
     prelude::{COLS, ROWS, TOPSET},
     Image,
@@ -18,9 +19,16 @@ pub fn draw_line(sdl: &MySdl, line: &Vec<(i32, i32)>) {
     }
 }
 
-fn draw_rows(sdl: &MySdl, square_size: i32) {
-    let x = square_size;
-    let x2 = square_size * 9;
+fn draw_rows(
+    sdl: &MySdl,
+    Globals {
+        square_size,
+        left_x,
+        ..
+    }: &Globals,
+) {
+    let x = *left_x;
+    let x2 = (square_size * COLS) + left_x;
 
     let w = x2 - x;
 
@@ -33,28 +41,35 @@ fn draw_rows(sdl: &MySdl, square_size: i32) {
     }
 }
 
-fn draw_cols(sdl: &MySdl, square_size: i32) {
+fn draw_cols(
+    sdl: &MySdl,
+    Globals {
+        square_size,
+        left_x,
+        ..
+    }: &Globals,
+) {
     let y = square_size * 2 + TOPSET;
     let y2 = square_size * ROWS + TOPSET;
 
     let h = y2 - y;
 
-    let cols = COLS + 2;
+    let cols = COLS + 1;
 
-    for i in 1..cols {
-        let x = square_size * i;
+    for i in 0..cols {
+        let x = (square_size * i) + left_x;
 
         sdl.draw_vertical_line(x, y, h);
     }
 }
 
-pub fn draw_grid(sdl: &MySdl, square_size: i32) {
+pub fn draw_grid(sdl: &MySdl, globals: &Globals) {
     unsafe {
         SDL_SetRenderDrawColor(sdl.renderer, 40, 40, 40, 255);
     }
 
-    draw_rows(sdl, square_size);
-    draw_cols(sdl, square_size);
+    draw_rows(sdl, globals);
+    draw_cols(sdl, globals);
 }
 
 pub fn draw_menu_btn(sdl: &MySdl, Image { srcrect, dstrect }: &Image) {

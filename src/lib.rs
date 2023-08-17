@@ -170,9 +170,9 @@ pub extern "C" fn run_the_game() {
     let on_deck = Piece::random_on_deck(&mut rng);
     let piece = Piece::random(&mut rng);
 
-    let Pos(x0, y0) = on_deck.lhs.tile.top_left_px(square_size).add_y(TOPSET);
+    let Pos(x0, y0) = on_deck.lhs.tile.top_left_px(&globals).add_y(TOPSET);
     // println!("{:#?}", on_deck.lhs.tile);
-    let Pos(x1, y1) = piece.lhs.tile.top_left_px(square_size).add_y(TOPSET);
+    let Pos(x1, y1) = piece.lhs.tile.top_left_px(&globals).add_y(TOPSET);
     let line = plot_line(x0, y0, x1, y1);
     let line_len_f64 = line.len() as f64;
 
@@ -233,7 +233,7 @@ pub extern "C" fn run_the_game() {
                 current_piece = Some(Piece::random(&mut rng));
 
                 let on_deck = Piece::random_on_deck(&mut rng);
-                let x = on_deck.initial_right_x(square_size) + square_size / 8;
+                let x = on_deck.initial_right_x(&globals) + square_size / 8;
 
                 level_texts = gen_level_text(&globals, &settings, x);
                 on_deck_piece = Some(on_deck);
@@ -249,7 +249,7 @@ pub extern "C" fn run_the_game() {
                 pieces.clear();
                 current_piece = Some(Piece::random(&mut rng));
                 let on_deck = Piece::random_on_deck(&mut rng);
-                let x = on_deck.initial_right_x(square_size) + square_size / 8;
+                let x = on_deck.initial_right_x(&globals) + square_size / 8;
                 on_deck_piece = Some(on_deck);
 
                 level_texts = gen_level_text(&globals, &settings, x);
@@ -485,7 +485,7 @@ pub extern "C" fn run_the_game() {
                         let line_idx = line_len_f64 * pct;
                         let line_idx = line_idx as usize;
                         let (x, y) = line[line_idx];
-                        let top_left = on_deck.lhs.tile.top_left_px(square_size);
+                        let top_left = on_deck.lhs.tile.top_left_px(&globals);
 
                         let offset = top_left.abs_delta(x, y - TOPSET);
 
@@ -514,7 +514,7 @@ pub extern "C" fn run_the_game() {
             draw_about(&sdl, &globals);
         } else {
             // draw_line(&sdl, &line);
-            draw_grid(&sdl, square_size);
+            draw_grid(&sdl, &globals);
             draw_menu_btn(&sdl, &top_menu_btn);
             draw_images(&sdl, &level_texts);
 

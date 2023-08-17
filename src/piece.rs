@@ -71,10 +71,10 @@ fn get_next_rotation(n: i32) -> i32 {
 }
 
 impl Piece {
-    pub fn initial_right_x(&self, square_size: i32) -> i32 {
-        let Pos(x, _y) = self.lhs.tile.top_left_px(square_size);
+    pub fn initial_right_x(&self, globals: &Globals) -> i32 {
+        let Pos(x, _y) = self.lhs.tile.top_left_px(globals);
 
-        x + square_size * 2
+        x + globals.square_size * 2
     }
 
     pub fn center_connector(&self, globals: &Globals, x_off: i32, y_off: i32) -> (i32, i32) {
@@ -82,10 +82,10 @@ impl Piece {
         let connector_size = globals.connector_size;
 
         let Pos(x, y) = match self.rotation {
-            0 => self.lhs.tile.top_left_px(square_size),
-            1 => self.rhs.tile.top_left_px(square_size),
-            2 => self.rhs.tile.top_left_px(square_size),
-            3 => self.lhs.tile.top_left_px(square_size),
+            0 => self.lhs.tile.top_left_px(globals),
+            1 => self.rhs.tile.top_left_px(globals),
+            2 => self.rhs.tile.top_left_px(globals),
+            3 => self.lhs.tile.top_left_px(globals),
             _ => panic!("shouldnt occur"),
         };
 

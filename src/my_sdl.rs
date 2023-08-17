@@ -41,12 +41,14 @@ impl MySdl {
                 panic!("failed to initialize sdl2 with video");
             };
 
-            let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI; // | SDL_WindowFlags_SDL_WINDOW_FULLSCREEN; //| SDL_WindowFlags_SDL_WINDOW_BORDERLESS;
+            let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI
+                | SDL_WindowFlags_SDL_WINDOW_BORDERLESS
+                | SDL_WindowFlags_SDL_WINDOW_FULLSCREEN;
 
             let title = CString::new("Dr. Kodama").expect("CString::new failed");
 
-            let window_width = 393;
-            let window_height = 830;
+            let window_width = 900;
+            let window_height = 1000;
 
             let window = SDL_CreateWindow(
                 title.as_ptr(),
@@ -80,9 +82,8 @@ impl MySdl {
 
             let file = CString::new("resources/skyline-packer-output.png").unwrap();
             let texture = IMG_LoadTexture(renderer, file.as_ptr());
-            let square_size = window_width / (COLS + 2);
 
-            let globals = Globals::make(window_width, window_height, square_size);
+            let globals = Globals::make(window_width, window_height);
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BlendMode_SDL_BLENDMODE_BLEND);
 
