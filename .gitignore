@@ -6,3 +6,4 @@ imgs
 resources/skyline-packer-output.png
 .vscode/launch.json
 outvgs
+.vscode/c_cpp_properties.json
