@@ -13,8 +13,8 @@ const fn pct_of(pct: i32, n: i32) -> i32 {
     (pct * n) / 100
 }
 
-fn get_pct(x: i32, divisor: i32) -> i32 {
-    (x * 100) / divisor
+fn get_pct(n: i32, divisor: i32) -> i32 {
+    (n * 100) / divisor
 }
 
 fn number_to_str(n: i32) -> String {
@@ -73,6 +73,20 @@ fn identify_size(file: &String) -> (i32, i32) {
     (w, h)
 }
 
+fn get_resize(file: &String, height: i32) -> (i32, i32) {
+    let (w, h) = identify_size(&file);
+
+    let pct = get_pct(height, h);
+    let w = pct_of(pct, w);
+
+    (w, h)
+}
+
+fn convert(name: &String, w: i32, h: i32) {
+    let cmd = format!("svgexport svgs/{name}.svg {OUT}/{name}.png {w}:{h}");
+    exec(&cmd);
+}
+
 fn btn_transforms() {
     let btns = [
         "menu",
@@ -89,13 +103,10 @@ fn btn_transforms() {
 
     for btn in btns {
         let file = format!("svgs/{btn}_btn.svg");
-        let (w, h) = identify_size(&file);
+        let (w, h) = get_resize(&file, BTN_HEIGHT);
 
-        let pct = get_pct(BTN_HEIGHT, h);
-        let w = pct_of(pct, w);
-
-        let cmd = format!("svgexport svgs/{btn}_btn.svg {OUT}/{btn}_btn.svg {w}:{h}");
-        exec(&cmd);
+        let name = format!("{btn}_btn");
+        convert(&name, w, h);
     }
 }
 
@@ -104,35 +115,30 @@ fn texts() {
 
     for (i, text) in texts.iter().enumerate() {
         let file = format!("svgs/{text}.svg");
-        let (w, h) = identify_size(&file);
         let th = if i == 3 { LEVEL_HEIGHT } else { TEXT_HEIGHT };
 
-        let pct = get_pct(th, h);
-        let w = pct_of(pct, w);
+        let (w, h) = get_resize(&file, th);
 
-        let cmd = format!("svgexport svgs/{text}.svg {OUT}/{text}.png {w}:{h}");
-        exec(&cmd);
+        let name = format!("{}", text);
+        convert(&name, w, h);
     }
 }
 
 fn kodamas() {
     let colors = ["red", "green", "blue", "yellow", "orange"];
 
+    let (w, h) = (DOT_SIZE, DOT_SIZE);
     for color in colors {
-        let cmd = format!(
-            "svgexport svgs/{color}_kodama.svg {OUT}/{color}_kodama.png {DOT_SIZE}:{DOT_SIZE}"
-        );
-        exec(&cmd);
+        let name = format!("{color}_kodama");
+        convert(&name, w, h);
 
-        let cmd =
-            format!("svgexport svgs/{color}_dot.svg {OUT}/{color}_dot.png {DOT_SIZE}:{DOT_SIZE}");
-        exec(&cmd);
+        let name = format!("{color}_dot");
+        convert(&name, w, h);
     }
 
-    let cmd = format!(
-        "svgexport svgs/connector.svg {OUT}/connector.png {CONNECTOR_SIZE}:{CONNECTOR_SIZE}"
-    );
-    exec(&cmd);
+    let name = String::from("connector");
+    let (w, h) = (CONNECTOR_SIZE, CONNECTOR_SIZE);
+    convert(&name, w, h);
 }
 
 fn button_transforms() {
@@ -150,21 +156,21 @@ fn button_transforms() {
     ];
 
     for btn in btns {
-        let file = format!("svgs/{btn}_btn.svg");
-        let (w, h) = identify_size(&file);
-        let cmd = format!("svgexport {file} {OUT}/{btn}_btn.png {w}:{h}");
-        exec(&cmd);
+        let name = format!("{btn}_btn");
+        let file = format!("svgs/{name}.svg");
+        let (w, h) = get_resize(&file, BTN_HEIGHT);
+
+        convert(&name, w, h);
     }
 }
 
 fn numbers() {
     for n in 1..21 {
-        let file = format!("svgs/{}.svg", 1);
-        let (w, h) = identify_size(&file);
-        let name = number_to_str(n);
-        let outfile = format!("{OUT}/{name}.png");
-        let cmd = format!("svgexport svgs/{n}.svg {outfile} {w}:{h}");
-        exec(&cmd);
+        let name = format!("{n}");
+        let file = format!("svgs/{name}.svg");
+        let (w, h) = get_resize(&file, TEXT_HEIGHT);
+
+        convert(&name, w, h);
     }
 }
 
@@ -180,6 +186,7 @@ fn main() {
 }
 
 fn exec(cmd: &String) -> String {
+    println!("{}", cmd);
     let mut cmds = cmd.split(' ');
     if let Some(program) = cmds.next() {
         let mut cmd = Command::new(program);
