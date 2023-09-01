@@ -83,7 +83,14 @@ fn get_resize(file: &String, height: i32) -> (i32, i32) {
 }
 
 fn convert(name: &String, w: i32, h: i32) {
-    let cmd = format!("svgexport svgs/{name}.svg {OUT}/{name}.png {w}:{h}");
+    // let cmd = format!("svgexport svgs/{name}.svg {OUT}/{name}.png {w}:{h}");
+    let cmd = format!("inkscape --export-filename={OUT}/{name}.png -w {w} -h {h} svgs/{name}.svg");
+    exec(&cmd);
+}
+
+fn convert_dest(name: &String, dest: &String, w: i32, h: i32) {
+    // let cmd = format!("svgexport svgs/{name}.svg {OUT}/{dest}.png {w}:{h}");
+    let cmd = format!("inkscape --export-filename={OUT}/{dest}.png -w {w} -h {h} svgs/{name}.svg");
     exec(&cmd);
 }
 
@@ -167,10 +174,11 @@ fn button_transforms() {
 fn numbers() {
     for n in 1..21 {
         let name = format!("{n}");
+        let dest = format!("{}", number_to_str(n));
         let file = format!("svgs/{name}.svg");
         let (w, h) = get_resize(&file, TEXT_HEIGHT);
 
-        convert(&name, w, h);
+        convert_dest(&name, &dest, w, h);
     }
 }
 
