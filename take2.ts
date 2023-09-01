@@ -1,4 +1,4 @@
-const out = "outvgs";
+const out = "yesvgs";
 const dotSize = 160;
 const connectorSize = Math.floor(dotSize * 0.28);
 
@@ -184,12 +184,7 @@ const numbers = async () => {
   await Promise.all(commands);
 };
 
-const main = async () => {
-  // const hidpi = true; //Deno.build.vendor === "apple";
-
-  await Deno.remove(out, { recursive: true });
-  await Deno.mkdir(out);
-
+const kodamas = async () => {
   const cmds: Promise<Deno.CommandOutput>[] = [];
 
   for (let index = 0; index < colors.length; index++) {
@@ -238,7 +233,15 @@ const main = async () => {
   await Promise.all(cmds);
 };
 
+const main = async () => {
+  // const hidpi = true; //Deno.build.vendor === "apple";
+
+  await Deno.remove(out, { recursive: true });
+  await Deno.mkdir(out);
+};
+
 await main();
+await kodamas();
 await numbers();
 await texts();
 await buttonTransforms();

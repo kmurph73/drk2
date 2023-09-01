@@ -1,6 +1,6 @@
 use std::ffi::CString;
 
-use crate::{globals::Globals, prelude::COLS};
+use crate::globals::Globals;
 
 #[allow(clippy::all)]
 #[allow(warnings, unused)]

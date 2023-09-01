@@ -82,6 +82,15 @@ fn get_resize(file: &String, height: i32) -> (i32, i32) {
     (w, h)
 }
 
+fn reverse_resize(file: &String, height: i32) -> (i32, i32) {
+    let (w, h) = identify_size(&file);
+
+    let pct = get_pct(h, height);
+    let w = pct_of(pct, w);
+
+    (w, h)
+}
+
 fn convert(name: &String, w: i32, h: i32) {
     // let cmd = format!("svgexport svgs/{name}.svg {OUT}/{name}.png {w}:{h}");
     let cmd = format!("inkscape --export-filename={OUT}/{name}.png -w {w} -h {h} svgs/{name}.svg");
@@ -92,29 +101,6 @@ fn convert_dest(name: &String, dest: &String, w: i32, h: i32) {
     // let cmd = format!("svgexport svgs/{name}.svg {OUT}/{dest}.png {w}:{h}");
     let cmd = format!("inkscape --export-filename={OUT}/{dest}.png -w {w} -h {h} svgs/{name}.svg");
     exec(&cmd);
-}
-
-fn btn_transforms() {
-    let btns = [
-        "menu",
-        "new_game",
-        "minus",
-        "plus",
-        "resume",
-        "quit",
-        "play",
-        "about",
-        "menu_light",
-        "next_level",
-    ];
-
-    for btn in btns {
-        let file = format!("svgs/{btn}_btn.svg");
-        let (w, h) = get_resize(&file, BTN_HEIGHT);
-
-        let name = format!("{btn}_btn");
-        convert(&name, w, h);
-    }
 }
 
 fn texts() {
@@ -165,9 +151,9 @@ fn button_transforms() {
     for btn in btns {
         let name = format!("{btn}_btn");
         let file = format!("svgs/{name}.svg");
-        let (w, h) = get_resize(&file, BTN_HEIGHT);
+        let (w, _h) = get_resize(&file, BTN_HEIGHT);
 
-        convert(&name, w, h);
+        convert(&name, w, BTN_HEIGHT);
     }
 }
 
@@ -176,7 +162,7 @@ fn numbers() {
         let name = format!("{n}");
         let dest = format!("{}", number_to_str(n));
         let file = format!("svgs/{name}.svg");
-        let (w, h) = get_resize(&file, TEXT_HEIGHT);
+        let (w, h) = reverse_resize(&file, TEXT_HEIGHT);
 
         convert_dest(&name, &dest, w, h);
     }
@@ -187,10 +173,9 @@ fn main() {
     std::fs::create_dir(OUT).expect("mkdir failed");
 
     kodamas();
-    btn_transforms();
+    numbers();
     texts();
     button_transforms();
-    numbers();
 }
 
 fn exec(cmd: &String) -> String {
