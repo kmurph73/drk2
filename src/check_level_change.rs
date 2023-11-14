@@ -6,7 +6,7 @@ use crate::{
 };
 
 pub fn check_level_change(
-    current_ts: u128,
+    current_ts: u64,
     touches: &Touches,
     state: &GameState,
     level_buttons: &[ImageButton],

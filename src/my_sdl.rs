@@ -15,10 +15,11 @@ pub use self::bindings::{
     SDL_DestroyRenderer, SDL_DestroyWindow, SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
     SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN, SDL_EventType_SDL_KEYUP,
     SDL_EventType_SDL_MOUSEBUTTONDOWN, SDL_EventType_SDL_MOUSEBUTTONUP,
-    SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT, SDL_FreeSurface, SDL_GetError,
-    SDL_GetWindowSize, SDL_Init, SDL_Log, SDL_PollEvent, SDL_QueryTexture, SDL_Quit, SDL_Rect,
-    SDL_RenderClear, SDL_RenderCopy, SDL_RenderDrawLine, SDL_RenderDrawRect, SDL_RenderFillRect,
-    SDL_RenderPresent, SDL_RenderSetLogicalSize, SDL_RenderSetScale, SDL_Renderer,
+    SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT, SDL_FreeSurface, SDL_GetBasePath,
+    SDL_GetError, SDL_GetPrefPath, SDL_GetTicks64, SDL_GetWindowSize, SDL_Init, SDL_Log,
+    SDL_PollEvent, SDL_QueryTexture, SDL_Quit, SDL_Rect, SDL_RenderClear, SDL_RenderCopy,
+    SDL_RenderDrawLine, SDL_RenderDrawRect, SDL_RenderFillRect, SDL_RenderPresent,
+    SDL_RenderSetLogicalSize, SDL_RenderSetScale, SDL_Renderer,
     SDL_RendererFlags_SDL_RENDERER_ACCELERATED, SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC,
     SDL_Scancode_SDL_SCANCODE_ESCAPE, SDL_SetHint, SDL_SetRenderDrawBlendMode,
     SDL_SetRenderDrawColor, SDL_SetWindowModalFor, SDL_Texture, SDL_Window,
@@ -35,19 +36,27 @@ pub struct MySdl {
 }
 
 impl MySdl {
-    pub fn init_sdl() -> (MySdl, Globals) {
+    pub fn get_ticks() -> u64 {
+        unsafe { SDL_GetTicks64() }
+    }
+
+    pub fn init_sdl(is_android: bool) -> (MySdl, Globals) {
         unsafe {
             if SDL_Init(SDL_INIT_VIDEO) < 0 {
                 panic!("failed to initialize sdl2 with video");
             };
 
-            let window_flags = SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI
-                | SDL_WindowFlags_SDL_WINDOW_BORDERLESS
-                | SDL_WindowFlags_SDL_WINDOW_FULLSCREEN;
+            let window_flags = if is_android {
+                SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI
+                    | SDL_WindowFlags_SDL_WINDOW_BORDERLESS
+                    | SDL_WindowFlags_SDL_WINDOW_FULLSCREEN
+            } else {
+                SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI
+            };
 
             let title = CString::new("Dr. Kodama").expect("CString::new failed");
 
-            let window_width = 900;
+            let window_width = 700;
             let window_height = 1000;
 
             let window = SDL_CreateWindow(
@@ -87,8 +96,8 @@ impl MySdl {
 
             SDL_SetRenderDrawBlendMode(renderer, SDL_BlendMode_SDL_BLENDMODE_BLEND);
 
-            let file = CString::new("resources/aboot.png").unwrap();
-            let about_texture = IMG_LoadTexture(renderer, file.as_ptr());
+            let about_file = CString::new("resources/aboot.png").unwrap();
+            let about_texture = IMG_LoadTexture(renderer, about_file.as_ptr());
 
             let sdl = MySdl {
                 texture,

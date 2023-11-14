@@ -18,14 +18,14 @@ use gen_buttons::{
 use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
-use load_save_settings::load_settings;
+use load_save_settings::{load_settings, save_settings};
 use my_sdl::{MySdl, SDL_Rect};
 use number_images::NumberImages;
 use piece::Piece;
 use pos::Pos;
 use prelude::{LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, TICK_RATE_MS, TOPSET};
 use touches::Touches;
-use util::{contains2, get_current_timestamp_millis, plot_line, tuple_to_rect};
+use util::{contains2, plot_line, tuple_to_rect};
 
 pub mod blocks;
 pub mod calc_dot_drop_dist;
@@ -76,19 +76,18 @@ mod prelude {
     pub const NUM_SQUARES: i32 = COLS * ROWS;
 
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
-    pub const LANDED_DELAY_MS: u128 = 200;
-    pub const TICK_RATE_MS: u128 = 800;
+    pub const LANDED_DELAY_MS: u64 = 200;
+    pub const TICK_RATE_MS: u64 = 800;
     pub const LEVEL_DEFAULT: usize = 1;
-    pub const SPEED_DEFAULT: usize = 800;
 
-    pub const PIECE_DROP_MS: u128 = 50;
+    pub const PIECE_DROP_MS: u64 = 50;
     pub const PIECE_DROP_MS_F64: f64 = PIECE_DROP_MS as f64;
 
-    pub const PIECE_TRANSFER_MS: u128 = 210;
+    pub const PIECE_TRANSFER_MS: u64 = 210;
     pub const PIECE_TRANSFER_MS_F64: f64 = PIECE_TRANSFER_MS as f64;
     pub const DROP_MS: i32 = 120;
-    pub const SNAP_MS: u128 = 120;
-    pub const BTN_HOLD_DELAY_MS: u128 = 100;
+    pub const SNAP_MS: u64 = 120;
+    pub const BTN_HOLD_DELAY_MS: u64 = 100;
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -141,10 +140,18 @@ pub enum Msg {
 
 #[no_mangle]
 pub extern "C" fn run_the_game() {
-    let mut settings = load_settings();
+    let info = os_info::get();
+    let is_android = info.os_type() == os_info::Type::Android;
 
-    // let is_mac = is_mac();
-    let (sdl, globals) = MySdl::init_sdl();
+    let settings_path = if is_android {
+        "/data/user/0/com.kmurph.drk2/files/settings.json"
+    } else {
+        "/resources/settings.json"
+    };
+
+    let mut settings = load_settings(settings_path);
+
+    let (sdl, globals) = MySdl::init_sdl(is_android);
 
     let modal = globals.help_modal;
     let square_size = globals.square_size;
@@ -171,7 +178,6 @@ pub extern "C" fn run_the_game() {
     let piece = Piece::random(&mut rng);
 
     let Pos(x0, y0) = on_deck.lhs.tile.top_left_px(&globals).add_y(TOPSET);
-    // println!("{:#?}", on_deck.lhs.tile);
     let Pos(x1, y1) = piece.lhs.tile.top_left_px(&globals).add_y(TOPSET);
     let line = plot_line(x0, y0, x1, y1);
     let line_len_f64 = line.len() as f64;
@@ -179,11 +185,8 @@ pub extern "C" fn run_the_game() {
     let mut on_deck_piece = Some(on_deck);
     let mut current_piece = Some(piece);
 
-    // let mut state = GameState::Normal(get_current_timestamp_millis());
     let mut held_state = GameState::Menu(None);
     let mut state = GameState::Menu(None);
-
-    // let initial_time = get_current_timestamp();
 
     let mut level_texts: Vec<Image> = Vec::with_capacity(2);
 
@@ -199,7 +202,7 @@ pub extern "C" fn run_the_game() {
     'running: loop {
         sdl.clear();
 
-        let current_ts = get_current_timestamp_millis();
+        let current_ts = MySdl::get_ticks();
 
         let mut new_cmds: Vec<Cmd> = Vec::new();
 
@@ -226,6 +229,7 @@ pub extern "C" fn run_the_game() {
                 break 'running;
             }
             Msg::NewGame => {
+                save_settings(&settings, settings_path);
                 victory_buttons = gen_victory_buttons(&globals, &settings);
                 squares = random_scenario(&mut rng, settings.level * 3);
                 touches.clear();
@@ -241,7 +245,7 @@ pub extern "C" fn run_the_game() {
                 state = GameState::Normal(current_ts);
             }
             Msg::NextLevel => {
-                settings.level = settings.level + 1;
+                settings.level += 1;
 
                 victory_buttons = gen_victory_buttons(&globals, &settings);
                 squares = random_scenario(&mut rng, settings.level * 3);
@@ -352,7 +356,7 @@ pub extern "C" fn run_the_game() {
                 }
             }
             GameState::DotsLanded(last_drop) => {
-                let delta = get_current_timestamp_millis() - last_drop;
+                let delta = MySdl::get_ticks() - last_drop;
                 if delta > LANDED_DELAY_MS {
                     let indexes_to_remove = get_indexes_to_remove(&squares);
 

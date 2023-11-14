@@ -14,14 +14,14 @@ pub enum DropKind {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct DroppingDot {
-    pub ts: u128,
+    pub ts: u64,
     pub dist: i32,
     pub dist_px: i32,
     pub total_time: f64,
 }
 
 impl DroppingDot {
-    pub fn get_offset_y(&self, current_ts: u128) -> i32 {
+    pub fn get_offset_y(&self, current_ts: u64) -> i32 {
         let delta = (current_ts - self.ts) as f64;
         let mut pct = delta / self.total_time;
 
@@ -39,7 +39,7 @@ impl DroppingDot {
     pub fn adjust_mut(&mut self) {
         let pct = 1.0 - (self.dist as f64 * 0.025);
 
-        self.total_time = self.total_time * pct;
+        self.total_time *= pct;
     }
 }
 
@@ -84,7 +84,7 @@ pub fn move_squares(
 pub fn calc_dot_drop_dist(
     squares: &[Option<Dot>],
     pieces: &[Piece],
-    current_ts: u128,
+    current_ts: u64,
     square_size: i32,
 ) -> Vec<Option<DroppingDot>> {
     let mut arr: Vec<Option<DroppingDot>> = empty_array(NUM_SQUARES_USIZE);
@@ -194,7 +194,7 @@ pub fn calc_dot_drop_dist(
     arr
 }
 
-pub fn get_y_offsets(dots: &[Option<DroppingDot>], current_ts: u128) -> (Vec<i32>, bool) {
+pub fn get_y_offsets(dots: &[Option<DroppingDot>], current_ts: u64) -> (Vec<i32>, bool) {
     let mut finished = true;
 
     let mut offsets: Vec<i32> = Vec::with_capacity(NUM_SQUARES_USIZE);

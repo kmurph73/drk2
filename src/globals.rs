@@ -46,9 +46,9 @@ impl Globals {
 
         let topset = percent_of(square_size, 0.25);
         let drag_diff = percent_of(square_size, 0.69);
-        let drag_drop_diff = percent_of(square_size, 0.70);
-        let snap_dist = percent_of(square_size, 1.75);
-        let dot_size = percent_of(square_size, 0.90);
+        let drag_drop_diff = percent_of(square_size, 0.7);
+        let snap_dist = percent_of(square_size, 1.8);
+        let dot_size = percent_of(square_size, 0.9);
         let ratio = (dot_size as f64) / (BASE_DOT_SIZE as f64);
 
         let dotset = (square_size - dot_size) / 2;

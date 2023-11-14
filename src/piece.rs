@@ -42,13 +42,13 @@ fn attempt_rotation(rotation: i32, attempt: usize) -> Option<Rotation> {
         Some((lhs, rhs)) => {
             let (lhs, rhs) = if rotation > 1 { (rhs, lhs) } else { (lhs, rhs) };
 
-            return Some(Rotation {
+            Some(Rotation {
                 left_offset: Pos::from_tuple(lhs),
                 right_offset: Pos::from_tuple(rhs),
                 next_rotation: get_next_rotation(rotation),
-            });
+            })
         }
-        None => return None,
+        None => None,
     }
 }
 

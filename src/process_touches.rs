@@ -9,7 +9,7 @@ use crate::{
 pub fn process_touches(
     touches: &mut Touches,
     cmds: &mut Vec<Cmd>,
-    current_ts: u128,
+    current_ts: u64,
     globals: &Globals,
 ) {
     let Globals {

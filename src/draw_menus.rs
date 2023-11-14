@@ -87,15 +87,26 @@ pub fn draw_menu(
 }
 
 pub fn draw_about(sdl: &MySdl, globals: &Globals) {
-    let srcrect = SDL_Rect::new(0, 0, 1428, 2000);
+    let srcrect = SDL_Rect::new(0, 0, 1428, 2082);
     let padding = globals.square_size;
-    let half = padding / 2;
+    let half_padding = padding / 2;
 
-    let ratio = (globals.window_width - padding) as f64 / srcrect.w as f64;
+    let screen_width = globals.window_width - padding;
+    let screen_height = globals.window_height - padding;
+
+    let ratio = screen_width as f64 / srcrect.w as f64;
     let dw = srcrect.w as f64 * ratio;
     let dh = srcrect.h as f64 * ratio;
 
-    let dstrect = SDL_Rect::new(half, half, dw as i32, dh as i32);
+    let dstrect = if dh as i32 >= screen_height {
+        let ratio = screen_height as f64 / srcrect.h as f64;
+        let dw = srcrect.w as f64 * ratio;
+        let dh = srcrect.h as f64 * ratio;
+
+        SDL_Rect::new(half_padding, half_padding, dw as i32, dh as i32)
+    } else {
+        SDL_Rect::new(half_padding, half_padding, dw as i32, dh as i32)
+    };
 
     unsafe {
         SDL_RenderCopy(sdl.renderer, sdl.about_texture, &srcrect, &dstrect);

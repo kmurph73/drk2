@@ -1,14 +1,10 @@
-use std::ffi::CString;
-
-use crate::{
-    globals::Globals, my_sdl::SDL_Log, pos::Pos, prelude::SNAP_MS, ButtonKind, ImageButton, Msg,
-};
+use crate::{globals::Globals, pos::Pos, prelude::SNAP_MS, ButtonKind, ImageButton, Msg};
 
 pub struct Touches {
     pub down: Option<Pos>,
     pub current: Option<Pos>,
     pub dragged: bool,
-    pub snap_x: Option<(i32, u128)>,
+    pub snap_x: Option<(i32, u64)>,
 }
 
 pub enum Snap {
@@ -27,13 +23,13 @@ impl Touches {
         }
     }
 
-    pub fn assign_down(&mut self, x: i32, y: i32, current_ts: u128) {
+    pub fn assign_down(&mut self, x: i32, y: i32, current_ts: u64) {
         self.down = Some(Pos(x, y));
         self.snap_x = Some((x, current_ts));
     }
 
     #[allow(clippy::comparison_chain)]
-    pub fn check_snap(&self, current_x: i32, current_ts: u128, globals: &Globals) -> Option<Snap> {
+    pub fn check_snap(&self, current_x: i32, current_ts: u64, globals: &Globals) -> Option<Snap> {
         if let Some((snap_x, ts)) = self.snap_x {
             let delta = current_ts - ts;
 
@@ -43,16 +39,8 @@ impl Touches {
                 let delta_x = current_x - snap_x;
 
                 if delta_x < 0 && delta_x < -globals.snap_dist {
-                    unsafe {
-                        let str = CString::new("left").unwrap();
-                        SDL_Log(str.as_ptr());
-                    }
                     return Some(Snap::Left);
                 } else if delta_x > 0 && delta_x > globals.snap_dist {
-                    unsafe {
-                        let str = CString::new("right").unwrap();
-                        SDL_Log(str.as_ptr());
-                    }
                     return Some(Snap::Right);
                 }
             }

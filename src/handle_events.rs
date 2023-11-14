@@ -29,7 +29,7 @@ pub fn handle_events(
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
     victory_buttons: &[ImageButton],
-    current_ts: u128,
+    current_ts: u64,
     globals: &Globals,
 ) -> Msg {
     unsafe {

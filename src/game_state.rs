@@ -2,22 +2,22 @@ use crate::{calc_dot_drop_dist::DroppingDot, pos::Pos, prelude::BTN_HOLD_DELAY_M
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LevelChange {
-    pub initial: u128,
-    pub last: Option<u128>,
+    pub initial: u64,
+    pub last: Option<u64>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum GameState {
     PieceLanded,
     DroppingDots(Vec<Option<DroppingDot>>, Vec<i32>),
-    DotsLanded(u128),
-    Normal(u128),
-    PreppingNextPiece(u128, Pos),
+    DotsLanded(u64),
+    Normal(u64),
+    PreppingNextPiece(u64, Pos),
     Suspended,
     Victory,
     Defeat,
     Paused,
-    DroppingPiece((i32, f64, u128, i32)),
+    DroppingPiece((i32, f64, u64, i32)),
     Menu(Option<LevelChange>),
     About,
 }
@@ -47,7 +47,7 @@ impl GameState {
         matches!(*self, GameState::Menu(_))
     }
 
-    pub fn can_level_change(&self, current_ts: u128) -> bool {
+    pub fn can_level_change(&self, current_ts: u64) -> bool {
         match self {
             GameState::Menu(lvl) => {
                 if let Some(lvl) = lvl {
@@ -68,7 +68,7 @@ impl GameState {
         }
     }
 
-    pub fn level_changed(&mut self, current_ts: u128) {
+    pub fn level_changed(&mut self, current_ts: u64) {
         if let GameState::Menu(Some(lvl)) = self {
             lvl.last = Some(current_ts);
         }

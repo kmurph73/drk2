@@ -63,12 +63,15 @@ pub fn handle_keydown(
         Some(Direction::Right)
     } else if down {
         Some(Direction::Down)
-    } else if up {
-        Some(Direction::Up)
     } else {
         None
     } {
         let cmd = Cmd::Move(dir);
+        cmds.push(cmd);
+    }
+
+    if up {
+        let cmd = Cmd::DropPiece;
         cmds.push(cmd);
     }
 
