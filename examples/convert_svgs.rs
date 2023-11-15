@@ -169,8 +169,15 @@ fn numbers() {
 }
 
 fn main() {
-    std::fs::remove_dir_all(OUT).expect("rm failed");
-    std::fs::create_dir(OUT).expect("mkdir failed");
+    let result = std::fs::remove_dir_all(OUT);
+    match result {
+        Ok(_) => {
+            std::fs::create_dir(OUT).expect("mkdir failed");
+        }
+        Err(_) => {
+            std::fs::create_dir(OUT).expect("mkdir failed");
+        }
+    }
 
     kodamas();
     numbers();

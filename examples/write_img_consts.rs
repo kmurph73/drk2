@@ -27,7 +27,7 @@ struct JsonImgs {
 }
 
 // #[derive(Serialize, Deserialize, Debug)]
-pub fn main() -> std::io::Result<()> {
+pub fn main() {
     let contents = fs::read_to_string("./resources/img_data.json")
         .expect("Should have been able to read the file");
 
@@ -62,9 +62,22 @@ pub fn main() -> std::io::Result<()> {
 
     // lines.push(String::from("}"));
 
-    let mut output = File::create("./src/img_consts.rs")?;
+    let mut file = File::create("./src/img_consts.rs");
+    match &mut file {
+        Ok(file) => {
+            let code = lines.join("\n");
 
-    let line = lines.join("\n");
+            let result = file.write_all(code.as_bytes());
 
-    write!(output, "{}", line)
+            match result {
+                Ok(_) => {
+                    println!("img_consts.rs written");
+                }
+                Err(_) => {
+                    println!("img_consts.rs NOT written");
+                }
+            }
+        }
+        Err(_) => {}
+    }
 }

@@ -72,8 +72,7 @@ impl MySdl {
             let quality = CString::new("SDL_RENDER_SCALE_QUALITY").unwrap();
             SDL_SetHint(quality.as_ptr(), linear.as_ptr());
 
-            let renderer_flags = SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC
-                | SDL_RendererFlags_SDL_RENDERER_ACCELERATED;
+            let renderer_flags = SDL_RendererFlags_SDL_RENDERER_PRESENTVSYNC;
 
             let renderer = SDL_CreateRenderer(window, 0, renderer_flags);
 

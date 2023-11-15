@@ -40,7 +40,6 @@ pub fn handle_mouseup(
                 match btn.kind {
                     ButtonKind::NewGame => return Msg::NewGame,
                     ButtonKind::NextLevel => {
-                        println!("NEXT LEVEL PLZ");
                         return Msg::NextLevel;
                     }
                     ButtonKind::Menu => return Msg::Menu,
