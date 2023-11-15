@@ -1,6 +1,10 @@
 fn main() {
-    // let search_path = "/opt/homebrew/lib";
-    let search_path = "/usr/lib64";
+    let info = os_info::get();
+
+    let search_path = match info.os_type() {
+        os_info::Type::Macos => "/opt/homebrew/lib",
+        _ => "/usr/lib64",
+    };
 
     println!("cargo:rustc-link-search={search_path}");
 
