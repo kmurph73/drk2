@@ -23,7 +23,10 @@ use my_sdl::{MySdl, SDL_Rect};
 use number_images::NumberImages;
 use piece::Piece;
 use pos::Pos;
-use prelude::{LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, TICK_RATE_MS, TOPSET};
+use prelude::{
+    LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, SPEED_INCREASE_AMT_MS,
+    SPEED_INCREASE_DELAY_MS, TOPSET,
+};
 use touches::Touches;
 use util::{contains2, plot_line, tuple_to_rect};
 
@@ -76,8 +79,9 @@ mod prelude {
     pub const NUM_SQUARES: i32 = COLS * ROWS;
 
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
+    pub const SPEED_INCREASE_DELAY_MS: u64 = 10000;
+    pub const SPEED_INCREASE_AMT_MS: u64 = 50;
     pub const LANDED_DELAY_MS: u64 = 200;
-    pub const TICK_RATE_MS: u64 = 800;
     pub const LEVEL_DEFAULT: usize = 1;
 
     pub const PIECE_DROP_MS: u64 = 50;
@@ -196,6 +200,10 @@ pub extern "C" fn run_the_game() {
         pressed: Keyboard::init(false),
         enabled: Keyboard::init(true),
     };
+
+    let mut accume_time_ms: u64 = 0;
+    let mut tick_rate_ms: u64 = 800;
+    let mut previous_ts = MySdl::get_ticks();
 
     let top_menu_btn = gen_top_menu_btn(&globals);
 
@@ -356,7 +364,7 @@ pub extern "C" fn run_the_game() {
                 }
             }
             GameState::DotsLanded(last_drop) => {
-                let delta = MySdl::get_ticks() - last_drop;
+                let delta = current_ts - last_drop;
                 if delta > LANDED_DELAY_MS {
                     let indexes_to_remove = get_indexes_to_remove(&squares);
 
@@ -434,7 +442,7 @@ pub extern "C" fn run_the_game() {
                         _ => {
                             let delta = current_ts - last_tick;
 
-                            if delta > TICK_RATE_MS {
+                            if delta > tick_rate_ms {
                                 if piece.can_lower(&squares) {
                                     piece.lower_mut();
 
@@ -442,6 +450,13 @@ pub extern "C" fn run_the_game() {
                                 } else {
                                     state = GameState::PieceLanded;
                                 }
+                            }
+
+                            accume_time_ms += current_ts - previous_ts;
+
+                            if accume_time_ms > SPEED_INCREASE_DELAY_MS {
+                                tick_rate_ms -= SPEED_INCREASE_AMT_MS;
+                                accume_time_ms = 0;
                             }
                         }
                     }
@@ -576,6 +591,8 @@ pub extern "C" fn run_the_game() {
             //     SDL_RenderFillRect(sdl.renderer, &rect);
             // }
         }
+
+        previous_ts = current_ts;
 
         sdl.present();
     }
