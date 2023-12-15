@@ -3,11 +3,12 @@ use rand::Rng;
 
 use crate::{
     blocks::Blocks,
+    colors::{BLUE, GREEN, ORANGE, RED, YELLOW},
     img_consts::{
         BLUE_DOT_IMG, BLUE_KODAMA_IMG, GREEN_DOT_IMG, GREEN_KODAMA_IMG, ORANGE_DOT_IMG,
         ORANGE_KODAMA_IMG, RED_DOT_IMG, RED_KODAMA_IMG, YELLOW_DOT_IMG, YELLOW_KODAMA_IMG,
     },
-    my_sdl::SDL_Rect,
+    my_sdl::{SDL_Color, SDL_Rect},
     pos::Pos,
     prelude::{COLS, NUM_SQUARES_USIZE, ROWS},
     util::{map_idx, tuple_to_rect},
@@ -23,6 +24,16 @@ pub enum DotColor {
 }
 
 impl DotColor {
+    pub fn color(&self) -> SDL_Color {
+        match self {
+            DotColor::Orange => ORANGE,
+            DotColor::Blue => BLUE,
+            DotColor::Red => RED,
+            DotColor::Green => GREEN,
+            DotColor::Yellow => YELLOW,
+        }
+    }
+
     pub fn random(rng: &mut ThreadRng) -> DotColor {
         let n = rng.gen_range(0..5);
 
@@ -55,6 +66,10 @@ pub struct Dot {
 }
 
 impl Dot {
+    pub fn color(&self) -> SDL_Color {
+        self.color.color()
+    }
+
     pub fn add_mut(&mut self, x: i32, y: i32) {
         self.tile.0 += x;
         self.tile.1 += y;

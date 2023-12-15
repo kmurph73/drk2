@@ -15,9 +15,9 @@ pub const SDL_WHITE: SDL_Color = SDL_Color {
 };
 
 pub const BLUE: SDL_Color = SDL_Color {
-    r: 76,
-    g: 126,
-    b: 219,
+    r: 25,
+    g: 102,
+    b: 252,
     a: 255,
 };
 
