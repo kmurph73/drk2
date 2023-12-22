@@ -1,5 +1,7 @@
 use std::ffi::CString;
 
+use std::ptr::null_mut;
+
 use crate::globals::Globals;
 
 #[allow(clippy::all)]
@@ -27,6 +29,17 @@ pub use self::bindings::{
     SDL_WindowFlags_SDL_WINDOW_ALLOW_HIGHDPI, SDL_WindowFlags_SDL_WINDOW_BORDERLESS,
     SDL_WindowFlags_SDL_WINDOW_FULLSCREEN, SDL_INIT_VIDEO, SDL_WINDOWPOS_UNDEFINED_MASK,
 };
+
+pub enum SdlEvent {
+    KeyDown(u8),
+    KeyUp(u8),
+    Quit,
+    MouseDown { x: i32, y: i32, button: u8 },
+    MouseUp { x: i32, y: i32, button: u8 },
+    Motion((i32, i32)),
+    WillEnterBackground,
+    DidEnterForeground,
+}
 
 pub struct MySdl {
     pub texture: *mut SDL_Texture,
@@ -153,5 +166,100 @@ impl MySdl {
         unsafe {
             SDL_RenderDrawRect(self.renderer, &rect);
         }
+    }
+
+    pub fn draw_image(&self, srcrect: &SDL_Rect, dstrect: &SDL_Rect) {
+        unsafe {
+            SDL_RenderCopy(self.renderer, self.texture, srcrect, dstrect);
+        }
+    }
+
+    pub fn set_draw_color_tuple(&self, (r, g, b, a): (u8, u8, u8, u8)) {
+        unsafe {
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, a);
+        }
+    }
+
+    pub fn set_draw_color(&self, SDL_Color { r, g, b, a }: SDL_Color) {
+        unsafe {
+            SDL_SetRenderDrawColor(self.renderer, r, g, b, a);
+        }
+    }
+
+    pub fn fill_rect(&self, rect: &SDL_Rect) {
+        unsafe {
+            SDL_RenderFillRect(self.renderer, rect);
+        }
+    }
+
+    pub fn draw_rect(&self, rect: &SDL_Rect) {
+        unsafe {
+            SDL_RenderDrawRect(self.renderer, rect);
+        }
+    }
+
+    #[allow(non_upper_case_globals)]
+    pub fn poll_events(&self) -> Vec<SdlEvent> {
+        let mut events: Vec<SdlEvent> = Vec::new();
+
+        unsafe {
+            let mut _event: *mut SDL_Event = null_mut();
+
+            let mut event = SDL_Event { type_: 1 };
+            let sdl_event = &mut event as *mut SDL_Event;
+
+            while SDL_PollEvent(sdl_event) == 1 {
+                let button = (*sdl_event).button;
+
+                match (*sdl_event).type_ {
+                    SDL_EventType_SDL_KEYDOWN => {
+                        let event = SdlEvent::KeyDown(button.button);
+                        events.push(event);
+                    }
+                    SDL_EventType_SDL_KEYUP => {
+                        let event = SdlEvent::KeyUp(button.button);
+                        events.push(event);
+                    }
+                    SDL_EventType_SDL_QUIT => {
+                        let event = SdlEvent::Quit;
+                        events.push(event);
+                    }
+                    SDL_EventType_SDL_MOUSEBUTTONDOWN => {
+                        let event = SdlEvent::MouseDown {
+                            x: button.x,
+                            y: button.y,
+                            button: button.button,
+                        };
+                        events.push(event);
+                    }
+                    SDL_EventType_SDL_MOUSEMOTION => {
+                        let event = SdlEvent::Motion((button.x, button.y));
+                        events.push(event);
+                    }
+
+                    SDL_EventType_SDL_APP_WILLENTERBACKGROUND => {
+                        let event = SdlEvent::WillEnterBackground;
+                        events.push(event);
+                    }
+                    SDL_EventType_SDL_APP_DIDENTERFOREGROUND => {
+                        let event = SdlEvent::DidEnterForeground;
+                        events.push(event);
+                    }
+
+                    SDL_EventType_SDL_MOUSEBUTTONUP => {
+                        let event = SdlEvent::MouseUp {
+                            x: button.x,
+                            y: button.y,
+                            button: button.button,
+                        };
+
+                        events.push(event);
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        events
     }
 }

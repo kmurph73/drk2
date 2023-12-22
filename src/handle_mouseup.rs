@@ -1,5 +1,5 @@
 use crate::{
-    cmd::Cmd, globals::Globals, touches::Touches, ButtonKind, GameState, ImageButton, Msg,
+    cmd::Cmd, globals::Globals, msg::MetaMsg, touches::Touches, ButtonKind, GameState, ImageButton,
 };
 
 pub fn handle_mouseup(
@@ -14,23 +14,21 @@ pub fn handle_mouseup(
     victory_buttons: &[ImageButton],
     cmds: &mut Vec<Cmd>,
     globals: &Globals,
-) -> Msg {
-    if touches.down.is_none() {
-        return Msg::Nada;
-    }
+) -> Option<MetaMsg> {
+    touches.down?;
 
     if is_right_click {
-        return Msg::Nada;
+        return None;
     }
 
     match state {
         GameState::Paused => {
             if let Some(btn) = help_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
                 match btn.kind {
-                    ButtonKind::Resume => return Msg::ResumeGame,
-                    ButtonKind::NewGame => return Msg::NewGame,
-                    ButtonKind::Menu => return Msg::Menu,
-                    ButtonKind::Quit => return Msg::Quit,
+                    ButtonKind::Resume => return Some(MetaMsg::ResumeGame),
+                    ButtonKind::NewGame => return Some(MetaMsg::NewGame),
+                    ButtonKind::Menu => return Some(MetaMsg::Menu),
+                    ButtonKind::Quit => return Some(MetaMsg::Quit),
                     _ => {}
                 }
             };
@@ -38,12 +36,12 @@ pub fn handle_mouseup(
         GameState::Victory => {
             if let Some(btn) = victory_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
                 match btn.kind {
-                    ButtonKind::NewGame => return Msg::NewGame,
+                    ButtonKind::NewGame => return Some(MetaMsg::NewGame),
                     ButtonKind::NextLevel => {
-                        return Msg::NextLevel;
+                        return Some(MetaMsg::NextLevel);
                     }
-                    ButtonKind::Menu => return Msg::Menu,
-                    ButtonKind::Quit => return Msg::Quit,
+                    ButtonKind::Menu => return Some(MetaMsg::Menu),
+                    ButtonKind::Quit => return Some(MetaMsg::Quit),
                     _ => {}
                 }
             };
@@ -51,9 +49,9 @@ pub fn handle_mouseup(
         GameState::Defeat => {
             if let Some(btn) = endgame_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
                 match btn.kind {
-                    ButtonKind::NewGame => return Msg::NewGame,
-                    ButtonKind::Menu => return Msg::Menu,
-                    ButtonKind::Quit => return Msg::Quit,
+                    ButtonKind::NewGame => return Some(MetaMsg::NewGame),
+                    ButtonKind::Menu => return Some(MetaMsg::Menu),
+                    ButtonKind::Quit => return Some(MetaMsg::Quit),
                     _ => {}
                 }
             };
@@ -61,16 +59,18 @@ pub fn handle_mouseup(
         GameState::Menu(_) => {
             if let Some(btn) = menu_buttons.iter().find(|b| b.dstrect.contains(x, y)) {
                 match btn.kind {
-                    ButtonKind::NewGame => return Msg::NewGame,
-                    ButtonKind::About => return Msg::About,
-                    ButtonKind::Quit => return Msg::Quit,
+                    ButtonKind::NewGame => return Some(MetaMsg::NewGame),
+                    ButtonKind::About => return Some(MetaMsg::About),
+                    ButtonKind::Quit => return Some(MetaMsg::Quit),
                     _ => {}
                 }
             }
+
+            return Some(MetaMsg::MenuMouseUp);
         }
         GameState::Normal(_) => {
             if globals.menu_btn.contains(x, y) {
-                return Msg::PauseGame;
+                return Some(MetaMsg::PauseGame);
             } else if !touches.dragged && touches.down.is_some() {
                 let cmd = Cmd::Rotate;
                 cmds.push(cmd);
@@ -78,16 +78,16 @@ pub fn handle_mouseup(
         }
         GameState::PreppingNextPiece(_, _) => {
             if globals.menu_btn.contains(x, y) {
-                return Msg::PauseGame;
+                return Some(MetaMsg::PauseGame);
             }
         }
         GameState::About => {
-            return Msg::Menu;
+            return Some(MetaMsg::Menu);
         }
         _ => {}
     }
 
     touches.clear();
 
-    Msg::MouseUp
+    None
 }

@@ -1,6 +1,7 @@
 use crate::{
+    colors::LINE_COLOR,
     globals::Globals,
-    my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy, SDL_RenderFillRect, SDL_SetRenderDrawColor},
+    my_sdl::{MySdl, SDL_Rect},
     prelude::{COLS, ROWS, TOPSET},
     Image,
 };
@@ -8,14 +9,11 @@ use crate::{
 pub fn draw_line(sdl: &MySdl, line: &Vec<(i32, i32)>) {
     let w = 1;
     let h = 1;
-    unsafe {
-        SDL_SetRenderDrawColor(sdl.renderer, 220, 220, 220, 255);
-    }
+    sdl.set_draw_color_tuple(LINE_COLOR);
+
     for (x, y) in line {
         let rect = SDL_Rect { x: *x, y: *y, w, h };
-        unsafe {
-            SDL_RenderFillRect(sdl.renderer, &rect);
-        }
+        sdl.fill_rect(&rect);
     }
 }
 
@@ -64,24 +62,18 @@ fn draw_cols(
 }
 
 pub fn draw_grid(sdl: &MySdl, globals: &Globals) {
-    unsafe {
-        SDL_SetRenderDrawColor(sdl.renderer, 40, 40, 40, 255);
-    }
+    sdl.set_draw_color_tuple((40, 40, 40, 255));
 
     draw_rows(sdl, globals);
     draw_cols(sdl, globals);
 }
 
 pub fn draw_menu_btn(sdl: &MySdl, Image { srcrect, dstrect }: &Image) {
-    unsafe {
-        SDL_RenderCopy(sdl.renderer, sdl.texture, srcrect, dstrect);
-    }
+    sdl.draw_image(srcrect, dstrect);
 }
 
 pub fn draw_images(sdl: &MySdl, imgs: &[Image]) {
     for i in imgs {
-        unsafe {
-            SDL_RenderCopy(sdl.renderer, sdl.texture, &i.srcrect, &i.dstrect);
-        }
+        sdl.draw_image(&i.srcrect, &i.dstrect);
     }
 }

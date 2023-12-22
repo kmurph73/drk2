@@ -35,6 +35,9 @@ pub fn gen_level_text(globals: &Globals, settings: &Settings, x: i32) -> Vec<Ima
     let srcrect = NumberImages::get_number_img(settings.level);
     let SDL_Rect { w, h, .. } = srcrect;
 
+    let offset_y = dest_height / 5.0;
+
+    let dest_height = dest_height + offset_y;
     let text_ratio = dest_height / h as f64;
 
     let dest_width = w as f64 * text_ratio;
@@ -44,7 +47,7 @@ pub fn gen_level_text(globals: &Globals, settings: &Settings, x: i32) -> Vec<Ima
 
     let dstrect = SDL_Rect {
         x,
-        y: offset,
+        y: offset - ((offset_y / 1.5) as i32),
         w: dest_width as i32,
         h: dest_height as i32,
     };

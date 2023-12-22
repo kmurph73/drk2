@@ -1,5 +1,3 @@
-use std::ptr::null_mut;
-
 use crate::{
     cmd::Cmd,
     globals::Globals,
@@ -8,19 +6,15 @@ use crate::{
     handle_mousedown::handle_mousedown,
     handle_mouseup::handle_mouseup,
     keyboard::KeyboardState,
-    my_sdl::{
-        SDL_Event, SDL_EventType_SDL_APP_DIDENTERFOREGROUND,
-        SDL_EventType_SDL_APP_WILLENTERBACKGROUND, SDL_EventType_SDL_KEYDOWN,
-        SDL_EventType_SDL_KEYUP, SDL_EventType_SDL_MOUSEBUTTONDOWN,
-        SDL_EventType_SDL_MOUSEBUTTONUP, SDL_EventType_SDL_MOUSEMOTION, SDL_EventType_SDL_QUIT,
-        SDL_PollEvent,
-    },
+    msg::MetaMsg,
+    my_sdl::{MySdl, SdlEvent},
     touches::Touches,
-    GameState, ImageButton, Msg,
+    GameState, ImageButton,
 };
 
 #[allow(non_upper_case_globals)]
 pub fn handle_events(
+    sdl: &MySdl,
     keys: &mut KeyboardState,
     cmds: &mut Vec<Cmd>,
     touches: &mut Touches,
@@ -31,86 +25,67 @@ pub fn handle_events(
     victory_buttons: &[ImageButton],
     current_ts: u64,
     globals: &Globals,
-) -> Msg {
-    unsafe {
-        let mut _event: *mut SDL_Event = null_mut();
+) -> Vec<MetaMsg> {
+    let events = sdl.poll_events();
 
-        let mut event = SDL_Event { type_: 1 };
-        let sdl_event = &mut event as *mut SDL_Event;
+    let mut msgs: Vec<MetaMsg> = Vec::new();
 
-        while SDL_PollEvent(sdl_event) == 1 {
-            let button = (*sdl_event).button;
+    for event in events {
+        match event {
+            SdlEvent::KeyDown(key) => {
+                if let Some(msg) = handle_keydown(key, keys, state, cmds) {
+                    msgs.push(msg);
+                }
+            }
+            SdlEvent::KeyUp(key) => {
+                handle_keyup(key, keys);
+            }
+            SdlEvent::MouseDown { x, y, button } => {
+                let is_right_click = button == 3;
 
-            match (*sdl_event).type_ {
-                SDL_EventType_SDL_KEYDOWN => {
-                    let msg = handle_keydown(button.button, keys, state, cmds);
-                    match msg {
-                        Msg::Nada => {}
-                        _ => return msg,
+                handle_mousedown(x, y, current_ts, touches, is_right_click);
+            }
+            SdlEvent::Motion((x, y)) => {
+                touches.assign_motion(x, y);
+            }
+            SdlEvent::WillEnterBackground => {
+                if state.is_normal() {
+                    msgs.push(MetaMsg::SuspendGame);
+                }
+            }
+            SdlEvent::DidEnterForeground => {
+                if state.is_suspended() {
+                    msgs.push(MetaMsg::ResumeGame);
+                }
+            }
+            SdlEvent::MouseUp { x, y, button } => {
+                let is_right_click = button == 3;
+
+                match handle_mouseup(
+                    x,
+                    y,
+                    state,
+                    touches,
+                    is_right_click,
+                    help_buttons,
+                    menu_buttons,
+                    endgame_buttons,
+                    victory_buttons,
+                    cmds,
+                    globals,
+                ) {
+                    None => {}
+                    Some(msg) => {
+                        touches.clear();
+                        msgs.push(msg);
                     }
                 }
-                SDL_EventType_SDL_KEYUP => {
-                    handle_keyup(button.button, keys);
-                }
-                SDL_EventType_SDL_MOUSEBUTTONDOWN => {
-                    let is_right_click = button.button == 3;
-
-                    let msg =
-                        handle_mousedown(button.x, button.y, current_ts, touches, is_right_click);
-
-                    match msg {
-                        Msg::Nada => {}
-                        _ => return msg,
-                    }
-                }
-
-                SDL_EventType_SDL_MOUSEMOTION => {
-                    touches.assign_motion(button.x, button.y);
-                }
-
-                SDL_EventType_SDL_APP_WILLENTERBACKGROUND => {
-                    if state.is_normal() {
-                        return Msg::SuspendGame;
-                    }
-                }
-
-                SDL_EventType_SDL_APP_DIDENTERFOREGROUND => {
-                    if state.is_suspended() {
-                        return Msg::ResumeGame;
-                    }
-                }
-                SDL_EventType_SDL_MOUSEBUTTONUP => {
-                    let is_right_click = button.button == 3;
-
-                    let msg = handle_mouseup(
-                        button.x,
-                        button.y,
-                        state,
-                        touches,
-                        is_right_click,
-                        help_buttons,
-                        menu_buttons,
-                        endgame_buttons,
-                        victory_buttons,
-                        cmds,
-                        globals,
-                    );
-
-                    match msg {
-                        Msg::Nada => {}
-                        _ => {
-                            touches.clear();
-                            return msg;
-                        }
-                    }
-                }
-                SDL_EventType_SDL_QUIT => {
-                    return Msg::Quit;
-                }
-                _ => {}
+            }
+            SdlEvent::Quit => {
+                msgs.push(MetaMsg::Quit);
             }
         }
-
-        Msg::Nada
     }
+
+    msgs
 }

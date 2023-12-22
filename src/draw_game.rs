@@ -2,7 +2,7 @@ use crate::{
     dot::Dot,
     globals::Globals,
     img_consts::CONNECTOR_IMG,
-    my_sdl::{MySdl, SDL_Rect, SDL_RenderCopy},
+    my_sdl::{MySdl, SDL_Rect},
     piece::Piece,
     pos::Pos,
     prelude::TOPSET,
@@ -10,9 +10,7 @@ use crate::{
 };
 
 pub fn draw_image(srcrect: &SDL_Rect, dstrect: &SDL_Rect, sdl: &MySdl) {
-    unsafe {
-        SDL_RenderCopy(sdl.renderer, sdl.texture, srcrect, dstrect);
-    }
+    sdl.draw_image(srcrect, dstrect);
 }
 
 fn draw_dot(dot: &Dot, sdl: &MySdl, (offset_x, offset_y): (i32, i32), globals: &Globals) {
@@ -27,16 +25,14 @@ fn draw_dot(dot: &Dot, sdl: &MySdl, (offset_x, offset_y): (i32, i32), globals: &
     let w = *dot_size;
     let h = w;
 
-    let dest = SDL_Rect {
+    let dstrect = SDL_Rect {
         x: x + offset_x + *dotset,
         y: y + TOPSET + offset_y + *dotset,
         w,
         h,
     };
 
-    unsafe {
-        SDL_RenderCopy(sdl.renderer, sdl.texture, &srcrect, &dest);
-    }
+    sdl.draw_image(&srcrect, &dstrect);
 }
 
 fn draw_connector(
@@ -56,9 +52,7 @@ fn draw_connector(
 
     let srcrect = tuple_to_rect(CONNECTOR_IMG);
 
-    unsafe {
-        SDL_RenderCopy(sdl.renderer, sdl.texture, &srcrect, &dstrect);
-    }
+    sdl.draw_image(&srcrect, &dstrect);
 }
 
 pub fn draw_piece_connectors(pieces: &Vec<Piece>, sdl: &MySdl, globals: &Globals) {

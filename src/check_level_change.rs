@@ -2,7 +2,7 @@ use crate::{
     game_state::{GameState, LevelChange},
     load_save_settings::Settings,
     touches::Touches,
-    ImageButton, Msg,
+    ImageButton, MetaMsg,
 };
 
 pub fn check_level_change(
@@ -15,8 +15,8 @@ pub fn check_level_change(
     let msg = touches.check_level_change(level_buttons);
 
     let dir: Option<i32> = match msg {
-        Msg::LevelDown => Some(-1),
-        Msg::LevelUp => Some(1),
+        Some(MetaMsg::LevelDown) => Some(-1),
+        Some(MetaMsg::LevelUp) => Some(1),
         _ => return None,
     };
 

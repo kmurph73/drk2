@@ -1,11 +1,15 @@
 use crate::{
     cmd::{Cmd, Direction},
     dot::Dot,
+    msg::GameMsg,
     piece::Piece,
-    Msg,
 };
 
-pub fn handle_cmds_mut(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>]) -> Msg {
+pub fn handle_cmds_mut(
+    cmds: &[Cmd],
+    piece: &mut Piece,
+    squares: &[Option<Dot>],
+) -> Option<GameMsg> {
     for cmd in cmds {
         match cmd {
             Cmd::Move(dir) => {
@@ -13,7 +17,7 @@ pub fn handle_cmds_mut(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>])
                     let (lhs, rhs) = new_pos;
                     piece.set_pos(lhs, rhs);
                 } else if *dir == Direction::Down {
-                    return Msg::PieceLanded;
+                    return Some(GameMsg::PieceLanded);
                 }
             }
             Cmd::Rotate => {
@@ -22,7 +26,7 @@ pub fn handle_cmds_mut(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>])
                 }
             }
             Cmd::DropPiece => {
-                return Msg::DropPiece;
+                return Some(GameMsg::DropPiece);
             }
             Cmd::SnapLeft => {
                 if let Some((lhs, rhs)) = piece.snap_left(squares) {
@@ -37,5 +41,5 @@ pub fn handle_cmds_mut(cmds: &[Cmd], piece: &mut Piece, squares: &[Option<Dot>])
         }
     }
 
-    Msg::Nada
+    None
 }

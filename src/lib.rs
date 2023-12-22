@@ -19,6 +19,7 @@ use handle_cmds::handle_cmds_mut;
 use img_consts::{DEFEAT_IMG, PAUSED_IMG, VICTORY_IMG};
 use keyboard::{Keyboard, KeyboardState};
 use load_save_settings::{load_settings, save_settings};
+use msg::{GameMsg, MetaMsg};
 use my_sdl::{MySdl, SDL_Rect};
 use number_images::NumberImages;
 use piece::Piece;
@@ -54,6 +55,7 @@ pub mod handle_mouseup;
 pub mod img_consts;
 pub mod keyboard;
 pub mod load_save_settings;
+pub mod msg;
 pub mod my_sdl;
 pub mod my_sdl_rect;
 pub mod mybindings;
@@ -80,7 +82,7 @@ mod prelude {
 
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const SPEED_INCREASE_DELAY_MS: u64 = 10000;
-    pub const SPEED_INCREASE_AMT_MS: u64 = 50;
+    pub const SPEED_INCREASE_AMT_MS: u64 = 10;
     pub const LANDED_DELAY_MS: u64 = 200;
     pub const LEVEL_DEFAULT: usize = 1;
 
@@ -122,24 +124,6 @@ pub struct ImageButton {
 pub struct Image {
     pub srcrect: SDL_Rect,
     pub dstrect: SDL_Rect,
-}
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum Msg {
-    LevelUp,
-    LevelDown,
-    PauseGame,
-    ResumeGame,
-    SuspendGame,
-    NewGame,
-    NextLevel,
-    Nada,
-    Quit,
-    Menu,
-    MouseUp,
-    PieceLanded,
-    DropPiece,
-    About,
 }
 
 #[no_mangle]
@@ -214,7 +198,8 @@ pub extern "C" fn run_the_game() {
 
         let mut new_cmds: Vec<Cmd> = Vec::new();
 
-        let msg = handle_events(
+        let msgs = handle_events(
+            &sdl,
             &mut keys,
             &mut new_cmds,
             &mut touches,
@@ -231,71 +216,71 @@ pub extern "C" fn run_the_game() {
             process_touches(&mut touches, &mut new_cmds, current_ts, &globals);
         }
 
-        match msg {
-            Msg::About => state = GameState::About,
-            Msg::Quit => {
-                break 'running;
-            }
-            Msg::NewGame => {
-                save_settings(&settings, settings_path);
-                victory_buttons = gen_victory_buttons(&globals, &settings);
-                squares = random_scenario(&mut rng, settings.level * 3);
-                touches.clear();
-                pieces.clear();
-                current_piece = Some(Piece::random(&mut rng));
+        for msg in msgs {
+            match msg {
+                MetaMsg::About => state = GameState::About,
+                MetaMsg::Quit => {
+                    break 'running;
+                }
+                MetaMsg::NewGame => {
+                    save_settings(&settings, settings_path);
+                    victory_buttons = gen_victory_buttons(&globals, &settings);
+                    squares = random_scenario(&mut rng, settings.level * 3);
+                    touches.clear();
+                    pieces.clear();
+                    current_piece = Some(Piece::random(&mut rng));
+                    accume_time_ms = 0;
 
-                let on_deck = Piece::random_on_deck(&mut rng);
-                let x = on_deck.initial_right_x(&globals) + square_size / 8;
+                    let on_deck = Piece::random_on_deck(&mut rng);
+                    let x = on_deck.initial_right_x(&globals) + square_size / 8;
 
-                level_texts = gen_level_text(&globals, &settings, x);
-                on_deck_piece = Some(on_deck);
+                    level_texts = gen_level_text(&globals, &settings, x);
+                    on_deck_piece = Some(on_deck);
 
-                state = GameState::Normal(current_ts);
-            }
-            Msg::NextLevel => {
-                settings.level += 1;
-
-                victory_buttons = gen_victory_buttons(&globals, &settings);
-                squares = random_scenario(&mut rng, settings.level * 3);
-                touches.clear();
-                pieces.clear();
-                current_piece = Some(Piece::random(&mut rng));
-                let on_deck = Piece::random_on_deck(&mut rng);
-                let x = on_deck.initial_right_x(&globals) + square_size / 8;
-                on_deck_piece = Some(on_deck);
-
-                level_texts = gen_level_text(&globals, &settings, x);
-
-                state = GameState::Normal(current_ts);
-            }
-            Msg::Menu => {
-                state = GameState::Menu(None);
-            }
-            Msg::PauseGame => {
-                held_state = state;
-                state = GameState::Paused;
-            }
-            Msg::ResumeGame => match &held_state {
-                GameState::Normal(_) => {
                     state = GameState::Normal(current_ts);
                 }
-                GameState::PreppingNextPiece(_, _) => {
-                    state = GameState::PreppingNextPiece(current_ts, Pos(0, 0));
+                MetaMsg::NextLevel => {
+                    settings.level += 1;
+
+                    victory_buttons = gen_victory_buttons(&globals, &settings);
+                    squares = random_scenario(&mut rng, settings.level * 3);
+                    touches.clear();
+                    pieces.clear();
+                    current_piece = Some(Piece::random(&mut rng));
+                    let on_deck = Piece::random_on_deck(&mut rng);
+                    let x = on_deck.initial_right_x(&globals) + square_size / 8;
+                    on_deck_piece = Some(on_deck);
+
+                    level_texts = gen_level_text(&globals, &settings, x);
+
+                    state = GameState::Normal(current_ts);
                 }
-                _ => state = held_state.clone(),
-            },
-            Msg::LevelDown => {}
-            Msg::LevelUp => {}
-            Msg::Nada => {}
-            Msg::PieceLanded => {}
-            Msg::DropPiece => {}
-            Msg::SuspendGame => {
-                held_state = state;
-                state = GameState::Suspended;
-            }
-            Msg::MouseUp => {
-                if state.is_menu() {
+                MetaMsg::Menu => {
                     state = GameState::Menu(None);
+                }
+                MetaMsg::PauseGame => {
+                    held_state = state;
+                    state = GameState::Paused;
+                }
+                MetaMsg::ResumeGame => match &held_state {
+                    GameState::Normal(_) => {
+                        state = GameState::Normal(current_ts);
+                    }
+                    GameState::PreppingNextPiece(_, _) => {
+                        state = GameState::PreppingNextPiece(current_ts, Pos(0, 0));
+                    }
+                    _ => state = held_state.clone(),
+                },
+                MetaMsg::LevelDown => {}
+                MetaMsg::LevelUp => {}
+                MetaMsg::SuspendGame => {
+                    held_state = state;
+                    state = GameState::Suspended;
+                }
+                MetaMsg::MenuMouseUp => {
+                    if state.is_menu() {
+                        state = GameState::Menu(None);
+                    }
                 }
             }
         }
@@ -428,10 +413,10 @@ pub extern "C" fn run_the_game() {
                     let msg = handle_cmds_mut(&new_cmds, piece, &squares);
 
                     match msg {
-                        Msg::PieceLanded => {
+                        Some(GameMsg::PieceLanded) => {
                             state = GameState::PieceLanded;
                         }
-                        Msg::DropPiece => {
+                        Some(GameMsg::DropPiece) => {
                             if let Some(piece) = &current_piece {
                                 let dist = piece.lowest_y_offset(&squares);
                                 let dist_px = (dist * square_size) as f64;
@@ -439,7 +424,7 @@ pub extern "C" fn run_the_game() {
                                 state = GameState::DroppingPiece((dist, dist_px, current_ts, 0));
                             }
                         }
-                        _ => {
+                        None => {
                             let delta = current_ts - last_tick;
 
                             if delta > tick_rate_ms {
@@ -456,6 +441,7 @@ pub extern "C" fn run_the_game() {
 
                             if accume_time_ms > SPEED_INCREASE_DELAY_MS {
                                 tick_rate_ms -= SPEED_INCREASE_AMT_MS;
+                                println!("{tick_rate_ms}");
                                 accume_time_ms = 0;
                             }
                         }
@@ -584,12 +570,6 @@ pub extern "C" fn run_the_game() {
             } else if state.is_paused() {
                 draw_modal(&sdl, &help_buttons, &paused_image, &globals);
             }
-
-            // let (x, y, w, h) = MENU_BTN;
-            // let rect = SDL_Rect { x, y, w, h };
-            // unsafe {
-            //     SDL_RenderFillRect(sdl.renderer, &rect);
-            // }
         }
 
         previous_ts = current_ts;

@@ -1,7 +1,8 @@
 use crate::{
     cmd::{Cmd, Direction},
     keyboard::{Keyboard, KeyboardState},
-    GameState, Msg,
+    msg::MetaMsg,
+    GameState,
 };
 
 pub const Y: u8 = 28;
@@ -22,7 +23,7 @@ pub fn handle_keydown(
     keys: &mut KeyboardState,
     state: &GameState,
     cmds: &mut Vec<Cmd>,
-) -> Msg {
+) -> Option<MetaMsg> {
     match key {
         ESCAPE => keys.pressed.esc = true,
         X => keys.pressed.x = true,
@@ -54,7 +55,7 @@ pub fn handle_keydown(
     } = keys.pressed;
 
     if esc {
-        return Msg::Quit;
+        return Some(MetaMsg::Quit);
     }
 
     if let Some(dir) = if left {
@@ -77,18 +78,18 @@ pub fn handle_keydown(
 
     if p && keys.enabled.p {
         if state.is_normal() {
-            return Msg::PauseGame;
+            return Some(MetaMsg::PauseGame);
         } else if state.is_paused() {
-            return Msg::ResumeGame;
+            return Some(MetaMsg::ResumeGame);
         }
     }
 
     if y && keys.enabled.y && state.is_endgame() {
-        return Msg::NewGame;
+        return Some(MetaMsg::NewGame);
     }
 
     if n && keys.enabled.n && state.is_endgame() {
-        return Msg::Quit;
+        return Some(MetaMsg::Quit);
     }
 
     if x && keys.enabled.x {
@@ -103,5 +104,5 @@ pub fn handle_keydown(
         keys.enabled.c = false;
     }
 
-    Msg::Nada
+    None
 }

@@ -1,5 +1,7 @@
 use crate::my_sdl::SDL_Color;
 
+pub const LINE_COLOR: (u8, u8, u8, u8) = (220, 220, 220, 255);
+
 pub const SDL_BLACK: SDL_Color = SDL_Color {
     r: 0,
     g: 0,

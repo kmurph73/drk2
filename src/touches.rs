@@ -1,4 +1,4 @@
-use crate::{globals::Globals, pos::Pos, prelude::SNAP_MS, ButtonKind, ImageButton, Msg};
+use crate::{globals::Globals, pos::Pos, prelude::SNAP_MS, ButtonKind, ImageButton, MetaMsg};
 
 pub struct Touches {
     pub down: Option<Pos>,
@@ -69,23 +69,19 @@ impl Touches {
         self.dragged = true;
     }
 
-    pub fn check_level_change(&self, btns: &[ImageButton]) -> Msg {
-        let Pos(x, y) = if let Some(down) = self.down {
-            down
-        } else {
-            return Msg::Nada;
-        };
+    pub fn check_level_change(&self, btns: &[ImageButton]) -> Option<MetaMsg> {
+        let Pos(x, y) = self.down?;
 
         for btn in btns {
             if btn.dstrect.contains(x, y) {
                 match btn.kind {
-                    ButtonKind::LevelDown => return Msg::LevelDown,
-                    ButtonKind::LevelUp => return Msg::LevelUp,
+                    ButtonKind::LevelDown => return Some(MetaMsg::LevelDown),
+                    ButtonKind::LevelUp => return Some(MetaMsg::LevelUp),
                     _ => {}
                 }
             }
         }
 
-        Msg::Nada
+        None
     }
 }

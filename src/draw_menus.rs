@@ -3,49 +3,41 @@ use crate::{
     draw_game::draw_image,
     globals::Globals,
     img_consts::LEVEL_IMG,
-    my_sdl::{
-        MySdl, SDL_Color, SDL_Rect, SDL_RenderCopy, SDL_RenderFillRect, SDL_SetRenderDrawColor,
-    },
+    my_sdl::{MySdl, SDL_Rect},
     number_images::NumberImages,
     util::tuple_to_rect,
     Image, ImageButton,
 };
 
 pub fn draw_modal(sdl: &MySdl, buttons: &Vec<ImageButton>, txt: &Image, globals: &Globals) {
-    unsafe {
-        let SDL_Color { r, g, b, .. } = SDL_BLACK;
-        SDL_SetRenderDrawColor(sdl.renderer, r, g, b, 150);
+    sdl.set_draw_color(SDL_BLACK);
 
-        let rect = SDL_Rect {
-            x: 0,
-            y: 0,
-            w: globals.window_width,
-            h: globals.window_height,
-        };
-        SDL_RenderFillRect(sdl.renderer, &rect);
+    let rect = SDL_Rect {
+        x: 0,
+        y: 0,
+        w: globals.window_width,
+        h: globals.window_height,
+    };
+    sdl.fill_rect(&rect);
 
-        let SDL_Color { r, g, b, .. } = SDL_WHITE;
-        SDL_SetRenderDrawColor(sdl.renderer, r, g, b, 255);
+    sdl.set_draw_color(SDL_WHITE);
 
-        let rect = globals.help_modal;
-        SDL_RenderFillRect(sdl.renderer, &rect);
+    let rect = globals.help_modal;
+    sdl.fill_rect(&rect);
 
-        let SDL_Color { r, g, b, .. } = SDL_BLACK;
-        SDL_SetRenderDrawColor(sdl.renderer, r, g, b, 255);
+    sdl.set_draw_color(SDL_BLACK);
 
-        let rect = rect.shrink(5);
+    let rect = rect.shrink(5);
+    sdl.fill_rect(&rect);
 
-        SDL_RenderFillRect(sdl.renderer, &rect);
-
-        for ImageButton {
-            srcrect, dstrect, ..
-        } in buttons
-        {
-            draw_image(srcrect, dstrect, sdl)
-        }
-
-        draw_image(&txt.srcrect, &txt.dstrect, sdl)
+    for ImageButton {
+        srcrect, dstrect, ..
+    } in buttons
+    {
+        draw_image(srcrect, dstrect, sdl)
     }
+
+    draw_image(&txt.srcrect, &txt.dstrect, sdl)
 }
 
 pub fn draw_menu(
@@ -108,7 +100,5 @@ pub fn draw_about(sdl: &MySdl, globals: &Globals) {
         SDL_Rect::new(half_padding, half_padding, dw as i32, dh as i32)
     };
 
-    unsafe {
-        SDL_RenderCopy(sdl.renderer, sdl.about_texture, &srcrect, &dstrect);
-    }
+    sdl.draw_image(&srcrect, &dstrect);
 }
