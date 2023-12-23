@@ -25,7 +25,7 @@ use number_images::NumberImages;
 use piece::Piece;
 use pos::Pos;
 use prelude::{
-    DEFAULT_TICK_RATE, LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64,
+    DEFAULT_TICK_RATE, LANDED_DELAY_MS, LOWEST_TICK_RATE, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64,
     SPEED_INCREASE_AMT_MS, SPEED_INCREASE_DELAY_MS, TOPSET,
 };
 use touches::Touches;
@@ -82,7 +82,7 @@ mod prelude {
 
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const SPEED_INCREASE_DELAY_MS: u64 = 10000;
-    pub const SPEED_INCREASE_AMT_MS: u64 = 10;
+    pub const SPEED_INCREASE_AMT_MS: u64 = 8;
     pub const LANDED_DELAY_MS: u64 = 200;
     pub const LEVEL_DEFAULT: usize = 1;
 
@@ -95,6 +95,7 @@ mod prelude {
     pub const SNAP_MS: u64 = 120;
     pub const BTN_HOLD_DELAY_MS: u64 = 100;
     pub const DEFAULT_TICK_RATE: u64 = 800;
+    pub const LOWEST_TICK_RATE: u64 = 135;
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -441,7 +442,9 @@ pub extern "C" fn run_the_game() {
 
                             accum_time_ms += current_ts - previous_ts;
 
-                            if accum_time_ms > SPEED_INCREASE_DELAY_MS {
+                            if tick_rate_ms > LOWEST_TICK_RATE
+                                && accum_time_ms > SPEED_INCREASE_DELAY_MS
+                            {
                                 tick_rate_ms -= SPEED_INCREASE_AMT_MS;
                                 println!("{tick_rate_ms}");
                                 accum_time_ms = 0;

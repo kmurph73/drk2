@@ -208,8 +208,6 @@ fn exec(cmd: &String) -> String {
                 Ok(v) => v,
                 Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
             };
-
-            panic!("{s}");
         }
 
         let stdout = match std::str::from_utf8(&output.stdout) {

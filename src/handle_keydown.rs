@@ -47,7 +47,6 @@ pub fn handle_keydown(
         up,
         right,
         down,
-        y,
         n,
         p,
         space,
@@ -84,12 +83,8 @@ pub fn handle_keydown(
         }
     }
 
-    if y && keys.enabled.y && state.is_endgame() {
-        return Some(MetaMsg::NewGame);
-    }
-
     if n && keys.enabled.n && state.is_endgame() {
-        return Some(MetaMsg::Quit);
+        return Some(MetaMsg::NewGame);
     }
 
     if x && keys.enabled.x {
