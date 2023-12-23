@@ -25,8 +25,8 @@ use number_images::NumberImages;
 use piece::Piece;
 use pos::Pos;
 use prelude::{
-    LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64, SPEED_INCREASE_AMT_MS,
-    SPEED_INCREASE_DELAY_MS, TOPSET,
+    DEFAULT_TICK_RATE, LANDED_DELAY_MS, PIECE_DROP_MS_F64, PIECE_TRANSFER_MS_F64,
+    SPEED_INCREASE_AMT_MS, SPEED_INCREASE_DELAY_MS, TOPSET,
 };
 use touches::Touches;
 use util::{contains2, plot_line, tuple_to_rect};
@@ -94,6 +94,7 @@ mod prelude {
     pub const DROP_MS: i32 = 120;
     pub const SNAP_MS: u64 = 120;
     pub const BTN_HOLD_DELAY_MS: u64 = 100;
+    pub const DEFAULT_TICK_RATE: u64 = 800;
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -185,8 +186,8 @@ pub extern "C" fn run_the_game() {
         enabled: Keyboard::init(true),
     };
 
-    let mut accume_time_ms: u64 = 0;
-    let mut tick_rate_ms: u64 = 800;
+    let mut accum_time_ms: u64 = 0;
+    let mut tick_rate_ms: u64 = DEFAULT_TICK_RATE;
     let mut previous_ts = MySdl::get_ticks();
 
     let top_menu_btn = gen_top_menu_btn(&globals);
@@ -229,7 +230,8 @@ pub extern "C" fn run_the_game() {
                     touches.clear();
                     pieces.clear();
                     current_piece = Some(Piece::random(&mut rng));
-                    accume_time_ms = 0;
+                    accum_time_ms = 0;
+                    tick_rate_ms = DEFAULT_TICK_RATE;
 
                     let on_deck = Piece::random_on_deck(&mut rng);
                     let x = on_deck.initial_right_x(&globals) + square_size / 8;
@@ -437,12 +439,12 @@ pub extern "C" fn run_the_game() {
                                 }
                             }
 
-                            accume_time_ms += current_ts - previous_ts;
+                            accum_time_ms += current_ts - previous_ts;
 
-                            if accume_time_ms > SPEED_INCREASE_DELAY_MS {
+                            if accum_time_ms > SPEED_INCREASE_DELAY_MS {
                                 tick_rate_ms -= SPEED_INCREASE_AMT_MS;
                                 println!("{tick_rate_ms}");
-                                accume_time_ms = 0;
+                                accum_time_ms = 0;
                             }
                         }
                     }
