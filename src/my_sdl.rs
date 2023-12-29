@@ -174,6 +174,12 @@ impl MySdl {
         }
     }
 
+    pub fn draw_about_image(&self, srcrect: &SDL_Rect, dstrect: &SDL_Rect) {
+        unsafe {
+            SDL_RenderCopy(self.renderer, self.about_texture, srcrect, dstrect);
+        }
+    }
+
     pub fn set_draw_color_tuple(&self, (r, g, b, a): (u8, u8, u8, u8)) {
         unsafe {
             SDL_SetRenderDrawColor(self.renderer, r, g, b, a);
