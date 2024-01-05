@@ -140,7 +140,6 @@ impl MySdl {
     pub fn present(&self) {
         unsafe {
             SDL_RenderPresent(self.renderer);
-            // SDL_Delay(32);
         }
     }
 

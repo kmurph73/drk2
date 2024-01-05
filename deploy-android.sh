@@ -1,4 +1,4 @@
-PRJ=/Users/kmurph/code/drk2-android-prj
+PRJ=/Users/kmurph/code/android-project
 
 cargo build --target aarch64-linux-android --release
 rm $PRJ/app/jni/src/libdrrust.a 2> /dev/null

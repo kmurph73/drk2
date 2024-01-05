@@ -82,7 +82,7 @@ mod prelude {
 
     pub const NUM_SQUARES_USIZE: usize = NUM_SQUARES as usize;
     pub const SPEED_INCREASE_DELAY_MS: u64 = 10000;
-    pub const SPEED_INCREASE_AMT_MS: u64 = 8;
+    pub const SPEED_INCREASE_AMT_MS: u64 = 7;
     pub const LANDED_DELAY_MS: u64 = 200;
     pub const LEVEL_DEFAULT: usize = 1;
 
