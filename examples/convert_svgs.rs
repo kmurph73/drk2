@@ -186,7 +186,6 @@ fn main() {
 }
 
 fn exec(cmd: &String) -> String {
-    println!("{}", cmd);
     let mut cmds = cmd.split(' ');
     if let Some(program) = cmds.next() {
         let mut cmd = Command::new(program);
@@ -204,7 +203,7 @@ fn exec(cmd: &String) -> String {
         let stderr = output.stderr;
 
         if !stderr.is_empty() {
-            let s = match std::str::from_utf8(&stderr) {
+            match std::str::from_utf8(&stderr) {
                 Ok(v) => v,
                 Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
             };

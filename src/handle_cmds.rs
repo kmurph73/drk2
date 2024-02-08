@@ -28,16 +28,6 @@ pub fn handle_cmds_mut(
             Cmd::DropPiece => {
                 return Some(GameMsg::DropPiece);
             }
-            Cmd::SnapLeft => {
-                if let Some((lhs, rhs)) = piece.snap_left(squares) {
-                    piece.set_pos(lhs, rhs);
-                }
-            }
-            Cmd::SnapRight => {
-                if let Some((lhs, rhs)) = piece.snap_right(squares) {
-                    piece.set_pos(lhs, rhs);
-                }
-            }
         }
     }
 

@@ -53,6 +53,13 @@ impl MySdl {
         unsafe { SDL_GetTicks64() }
     }
 
+    pub fn log(msg: String) {
+        let str = CString::new(msg).unwrap();
+        unsafe {
+            SDL_Log(str.as_ptr());
+        }
+    }
+
     pub fn init_sdl(is_android: bool) -> (MySdl, Globals) {
         unsafe {
             if SDL_Init(SDL_INIT_VIDEO) < 0 {

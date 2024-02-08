@@ -79,7 +79,7 @@ pub fn draw_menu(
 }
 
 pub fn draw_about(sdl: &MySdl, globals: &Globals) {
-    let srcrect = SDL_Rect::new(0, 0, 1428, 2246);
+    let srcrect = SDL_Rect::new(0, 0, 1428, 2000);
     let padding = globals.square_size;
     let half_padding = padding / 2;
 

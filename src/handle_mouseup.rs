@@ -15,7 +15,9 @@ pub fn handle_mouseup(
     cmds: &mut Vec<Cmd>,
     globals: &Globals,
 ) -> Option<MetaMsg> {
-    touches.down?;
+    if touches.down.is_none() {
+        return None;
+    }
 
     if is_right_click {
         return None;

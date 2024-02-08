@@ -92,7 +92,6 @@ mod prelude {
     pub const PIECE_TRANSFER_MS: u64 = 210;
     pub const PIECE_TRANSFER_MS_F64: f64 = PIECE_TRANSFER_MS as f64;
     pub const DROP_MS: i32 = 120;
-    pub const SNAP_MS: u64 = 120;
     pub const BTN_HOLD_DELAY_MS: u64 = 100;
     pub const DEFAULT_TICK_RATE: u64 = 800;
     pub const LOWEST_TICK_RATE: u64 = 135;
@@ -210,12 +209,12 @@ pub extern "C" fn run_the_game() {
             &menu_buttons,
             &endgame_buttons,
             &victory_buttons,
-            current_ts,
             &globals,
+            current_ts,
         );
 
         if state.is_normal() {
-            process_touches(&mut touches, &mut new_cmds, current_ts, &globals);
+            process_touches(&mut touches, &mut new_cmds, &globals, current_ts);
         }
 
         for msg in msgs {
@@ -446,7 +445,6 @@ pub extern "C" fn run_the_game() {
                                 && accum_time_ms > SPEED_INCREASE_DELAY_MS
                             {
                                 tick_rate_ms -= SPEED_INCREASE_AMT_MS;
-                                println!("{tick_rate_ms}");
                                 accum_time_ms = 0;
                             }
                         }

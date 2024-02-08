@@ -1,32 +1,24 @@
 use crate::{
     cmd::{Cmd, Direction},
     globals::Globals,
+    my_sdl::MySdl,
     pos::Pos,
-    touches::{Snap, Touches},
+    touches::Touches,
 };
 
 #[allow(clippy::manual_range_contains)]
-pub fn process_touches(
-    touches: &mut Touches,
-    cmds: &mut Vec<Cmd>,
-    current_ts: u64,
-    globals: &Globals,
-) {
-    let Globals {
-        drag_diff,
-        drag_drop_diff,
-        ..
-    } = *globals;
+pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>, globals: &Globals, ts: u64) {
+    let Globals { drag_diff, .. } = *globals;
 
     let mut cmd: Option<Cmd> = None;
-    let Pos(x, y) = if let Some(down) = touches.down {
-        down
+    let Pos(x, y) = if let Some(mouse) = &touches.down {
+        mouse.pos
     } else {
         return;
     };
 
-    let Pos(current_x, current_y) = if let Some(current) = touches.current {
-        current
+    let Pos(current_x, current_y) = if let Some(current) = touches.touches.last() {
+        current.pos
     } else {
         return;
     };
@@ -44,23 +36,20 @@ pub fn process_touches(
 
     if delta_y > drag_diff && delta_y > delta_x.abs() {
         cmd = Some(Cmd::Move(Direction::Down));
-    } else if delta_y < -drag_drop_diff && cmd.is_none() {
-        cmd = Some(Cmd::DropPiece);
-    }
+    } else if cmd.is_none() {
+        if let Some(velo) = &touches.velocity {
+            let string = format!("{}veloy: {},{}", touches.touches.len(), velo.0, velo.1);
+            MySdl::log(string);
 
-    if let Some(snap) = touches.check_snap(current_x, current_ts, globals) {
-        match snap {
-            Snap::Clear => {
-                touches.snap_x = None;
+            if velo.1 > 2.0 {
+                cmd = Some(Cmd::DropPiece);
             }
-            Snap::Right => cmd = Some(Cmd::SnapRight),
-            Snap::Left => cmd = Some(Cmd::SnapLeft),
         }
     }
 
     if let Some(cmd) = cmd {
         cmds.push(cmd);
         touches.dragged = true;
-        touches.moved_piece();
+        touches.moved_piece(ts);
     }
 }

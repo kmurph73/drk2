@@ -35,8 +35,6 @@ pub enum Cmd {
     Move(Direction),
     Rotate,
     DropPiece,
-    SnapRight,
-    SnapLeft,
 }
 
 pub enum Event {

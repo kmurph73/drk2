@@ -23,8 +23,8 @@ pub fn handle_events(
     menu_buttons: &[ImageButton],
     endgame_buttons: &[ImageButton],
     victory_buttons: &[ImageButton],
-    current_ts: u64,
     globals: &Globals,
+    ts: u64,
 ) -> Vec<MetaMsg> {
     let events = sdl.poll_events();
 
@@ -43,10 +43,10 @@ pub fn handle_events(
             SdlEvent::MouseDown { x, y, button } => {
                 let is_right_click = button == 3;
 
-                handle_mousedown(x, y, current_ts, touches, is_right_click);
+                handle_mousedown(x, y, touches, is_right_click, ts);
             }
             SdlEvent::Motion((x, y)) => {
-                touches.assign_motion(x, y);
+                touches.assign_motion(x, y, ts);
             }
             SdlEvent::WillEnterBackground => {
                 if state.is_normal() {
