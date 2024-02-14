@@ -1,7 +1,6 @@
 use crate::{
     cmd::{Cmd, Direction},
     globals::Globals,
-    my_sdl::MySdl,
     pos::Pos,
     touches::Touches,
 };
@@ -17,7 +16,7 @@ pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>, globals: &Glo
         return;
     };
 
-    let Pos(current_x, current_y) = if let Some(current) = touches.touches.last() {
+    let Pos(current_x, current_y) = if let Some(current) = touches.latest() {
         current.pos
     } else {
         return;
@@ -38,9 +37,6 @@ pub fn process_touches(touches: &mut Touches, cmds: &mut Vec<Cmd>, globals: &Glo
         cmd = Some(Cmd::Move(Direction::Down));
     } else if cmd.is_none() {
         if let Some(velo) = &touches.velocity {
-            let string = format!("{}veloy: {},{}", touches.touches.len(), velo.0, velo.1);
-            MySdl::log(string);
-
             if velo.1 > 2.0 {
                 cmd = Some(Cmd::DropPiece);
             }
