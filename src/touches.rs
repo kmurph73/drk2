@@ -49,7 +49,7 @@ impl Touches {
         let current = Mouse { ts, pos: Pos(x, y) };
 
         if let Some((prev, idx)) = self.earliest_touch(ts) {
-            let dx = (prev.pos.0 - current.pos.0) as f32;
+            let dx = (current.pos.0 - prev.pos.0) as f32;
             let dy = (prev.pos.1 - current.pos.1) as f32;
 
             let dt = (current.ts - prev.ts) as f32;

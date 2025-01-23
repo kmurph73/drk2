@@ -47,6 +47,10 @@ pub fn handle_events(
             }
             SdlEvent::Motion((x, y)) => {
                 touches.assign_motion(x, y, ts);
+                if let Some((x, y)) = &touches.velocity {
+                    let msg = format!("velo: {x}, {y}");
+                    MySdl::log(msg);
+                }
             }
             SdlEvent::WillEnterBackground => {
                 if state.is_normal() {
